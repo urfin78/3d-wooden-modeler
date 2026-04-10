@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Wooden Modeler</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; overflow: hidden; background: #1a1a1a; color: #ddd; }
+    #toolbar {
+        position: fixed; top: 0; left: 0; right: 0; height: 48px; z-index: 100;
+        background: #2a2a2a; border-bottom: 2px solid #c8934a;
+        display: flex; align-items: center; padding: 0 8px; gap: 4px;
+        overflow-x: auto;
+    }
+    #toolbar button {
+        background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 4px;
+        padding: 6px 10px; cursor: pointer; white-space: nowrap; font-size: 12px;
+    }
+    #toolbar button:hover { background: #4a4a4a; }
+    #toolbar button.active { background: #c8934a; color: #1a1a1a; border-color: #e8a030; }
+    #toolbar .separator { width: 1px; height: 28px; background: #555; margin: 0 4px; flex-shrink: 0; }
+    #snap-indicator {
+        position: fixed; top: 56px; left: 50%; transform: translateX(-50%);
+        background: #c8934a; color: #1a1a1a; padding: 4px 12px; border-radius: 4px;
+        font-size: 12px; font-weight: bold; display: none; z-index: 200;
+    }
+    #side-panel {
+        position: fixed; top: 48px; right: 0; bottom: 0; width: 280px; z-index: 90;
+        background: #2a2a2a; border-left: 2px solid #c8934a; padding: 12px;
+        overflow-y: auto; font-size: 13px;
+    }
+    #side-panel h3 { color: #c8934a; margin: 10px 0 6px; font-size: 14px; }
+    #side-panel h3:first-child { margin-top: 0; }
+    #side-panel label { display: block; margin: 4px 0 2px; color: #aaa; font-size: 11px; }
+    #side-panel input[type="number"], #side-panel input[type="text"] {
+        width: 100%; background: #1a1a1a; color: #ddd; border: 1px solid #555;
+        border-radius: 3px; padding: 4px 6px; font-size: 12px;
+    }
+    .input-row { display: flex; gap: 6px; }
+    .input-row > div { flex: 1; }
+    #size-summary {
+        background: #1a1a1a; border: 1px solid #555; border-radius: 3px;
+        padding: 6px 8px; margin-top: 6px; font-size: 12px; color: #aaa;
+        min-height: 20px;
+    }
+    #overlap-list {
+        background: #1a1a1a; border: 1px solid #555; border-radius: 3px;
+        padding: 6px 8px; margin-top: 6px; font-size: 11px; color: #ff6666;
+        max-height: 120px; overflow-y: auto; display: none;
+    }
+    #no-selection { color: #666; font-style: italic; padding: 20px 0; text-align: center; }
+    #dim-fields, #pos-fields, #rot-fields, #rot-buttons, #label-field, #summary-section { display: none; }
+    #viewport { position: fixed; top: 48px; left: 0; right: 280px; bottom: 0; }
+    canvas { display: block; }
+    #object-list { margin-bottom: 8px; }
+    #object-list-items {
+        max-height: 160px; overflow-y: auto;
+        background: #1a1a1a; border: 1px solid #555; border-radius: 3px;
+    }
+    .obj-list-item {
+        padding: 4px 8px; cursor: pointer; font-size: 12px;
+        border-bottom: 1px solid #333; display: flex; justify-content: space-between;
+    }
+    .obj-list-item:last-child { border-bottom: none; }
+    .obj-list-item:hover { background: #333; }
+    .obj-list-item.selected { background: #c8934a; color: #1a1a1a; }
+    .obj-list-item .obj-type { color: #888; font-size: 10px; }
+    .obj-list-item.selected .obj-type { color: #3a2a0a; }
+    .rot-btn-row { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+    .rot-btn-row button {
+        background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 3px;
+        padding: 3px 6px; cursor: pointer; font-size: 11px; flex: 1; min-width: 0;
+    }
+    .rot-btn-row button:hover { background: #4a4a4a; }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+    <button id="btn-add-board">+ Board</button>
+    <button id="btn-add-dowel">+ Dowel</button>
+    <button id="btn-add-wedge">+ Wedge</button>
+    <button id="btn-add-lbracket">+ L-Bracket</button>
+    <button id="btn-add-tapered">+ Tapered Leg</button>
+    <div class="separator"></div>
+    <button id="btn-snap">Snap OFF</button>
+    <button id="btn-labels">Labels OFF</button>
+    <div class="separator"></div>
+    <button id="btn-cut">Cut Joint</button>
+    <button id="btn-overlaps">Show Overlaps</button>
+    <div class="separator"></div>
+    <button id="btn-undo">Undo</button>
+    <button id="btn-redo">Redo</button>
+    <div class="separator"></div>
+    <button id="btn-delete">Delete</button>
+    <button id="btn-clear">Clear All</button>
+    <div class="separator"></div>
+    <button id="btn-export">Export CSV</button>
+</div>
+
+<div id="snap-indicator">Snapped!</div>
+
+<div id="side-panel">
+    <div id="object-list">
+        <h3>Objects</h3>
+        <div id="object-list-items"></div>
+    </div>
+
+    <div id="no-selection">No piece selected</div>
+
+    <div id="dim-fields">
+        <h3>Dimensions (mm)</h3>
+        <div id="dim-whd">
+            <div class="input-row">
+                <div><label>W</label><input type="number" id="dim-w" step="1" min="1"></div>
+                <div><label>H</label><input type="number" id="dim-h" step="1" min="1"></div>
+                <div><label>D</label><input type="number" id="dim-d" step="1" min="1"></div>
+            </div>
+        </div>
+        <div id="dim-rh" style="display:none">
+            <div class="input-row">
+                <div><label>Radius</label><input type="number" id="dim-r" step="1" min="1"></div>
+                <div><label>Height</label><input type="number" id="dim-rh-h" step="1" min="1"></div>
+            </div>
+        </div>
+        <div id="dim-tapered" style="display:none">
+            <div class="input-row">
+                <div><label>Top R</label><input type="number" id="dim-rt" step="1" min="1"></div>
+                <div><label>Bot R</label><input type="number" id="dim-rb" step="1" min="1"></div>
+                <div><label>Height</label><input type="number" id="dim-th" step="1" min="1"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pos-fields">
+        <h3>Position (mm)</h3>
+        <div class="input-row">
+            <div><label>X</label><input type="number" id="pos-x" step="1"></div>
+            <div><label>Y</label><input type="number" id="pos-y" step="1"></div>
+            <div><label>Z</label><input type="number" id="pos-z" step="1"></div>
+        </div>
+    </div>
+
+    <div id="rot-fields">
+        <h3>Rotation (degrees)</h3>
+        <div class="input-row">
+            <div><label>X</label><input type="number" id="rot-x" step="1"></div>
+            <div><label>Y</label><input type="number" id="rot-y" step="1"></div>
+            <div><label>Z</label><input type="number" id="rot-z" step="1"></div>
+        </div>
+    </div>
+
+    <div id="rot-buttons">
+        <h3>Quick Rotate</h3>
+        <div class="rot-btn-row">
+            <button id="rot-x-l">X -90</button>
+            <button id="rot-x-r">X +90</button>
+            <button id="rot-x-180">X 180</button>
+        </div>
+        <div class="rot-btn-row">
+            <button id="rot-y-l">Y -90</button>
+            <button id="rot-y-r">Y +90</button>
+            <button id="rot-y-180">Y 180</button>
+        </div>
+        <div class="rot-btn-row">
+            <button id="rot-z-l">Z -90</button>
+            <button id="rot-z-r">Z +90</button>
+            <button id="rot-z-180">Z 180</button>
+        </div>
+    </div>
+
+    <div id="label-field">
+        <h3>Label</h3>
+        <input type="text" id="label-input" placeholder="Enter label...">
+    </div>
+
+    <div id="summary-section">
+        <h3>Size Summary</h3>
+        <div id="size-summary"></div>
+    </div>
+
+    <div id="overlap-list"></div>
+</div>
+
+<div id="viewport"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+window.addEventListener('load', function() {
+    "use strict";
+
+    // ============================================================
+    // CSG BSP-Tree Implementation (Evan Wallace algorithm)
+    // ============================================================
+
+    var EPSILON = 1e-5;
+    var COPLANAR = 0;
+    var FRONT = 1;
+    var BACK = 2;
+    var SPANNING = 3;
+
+    function CSGVertex(pos, normal) {
+        this.pos = pos.clone();
+        this.normal = normal.clone();
+    }
+    CSGVertex.prototype.clone = function() {
+        return new CSGVertex(this.pos, this.normal);
+    };
+    CSGVertex.prototype.flip = function() {
+        this.normal.negate();
+    };
+    CSGVertex.prototype.interpolate = function(other, t) {
+        return new CSGVertex(
+            this.pos.clone().lerp(other.pos, t),
+            this.normal.clone().lerp(other.normal, t).normalize()
+        );
+    };
+
+    function CSGPlane(normal, w) {
+        this.normal = normal;
+        this.w = w;
+    }
+    CSGPlane.fromPoints = function(a, b, c) {
+        var n = new THREE.Vector3().crossVectors(
+            new THREE.Vector3().subVectors(b, a),
+            new THREE.Vector3().subVectors(c, a)
+        ).normalize();
+        return new CSGPlane(n, n.dot(a));
+    };
+    CSGPlane.prototype.clone = function() {
+        return new CSGPlane(this.normal.clone(), this.w);
+    };
+    CSGPlane.prototype.flip = function() {
+        this.normal.negate();
+        this.w = -this.w;
+    };
+    CSGPlane.prototype.splitPolygon = function(polygon, coplanarFront, coplanarBack, front, back) {
+        var polygonType = 0;
+        var types = [];
+        for (var i = 0; i < polygon.vertices.length; i++) {
+            var t = this.normal.dot(polygon.vertices[i].pos) - this.w;
+            var type = (t < -EPSILON) ? BACK : (t > EPSILON) ? FRONT : COPLANAR;
+            polygonType |= type;
+            types.push(type);
+        }
+        switch (polygonType) {
+            case COPLANAR:
+                (this.normal.dot(polygon.plane.normal) > 0 ? coplanarFront : coplanarBack).push(polygon);
+                break;
+            case FRONT:
+                front.push(polygon);
+                break;
+            case BACK:
+                back.push(polygon);
+                break;
+            case SPANNING:
+                var f = [], b = [];
+                for (var i = 0; i < polygon.vertices.length; i++) {
+                    var j = (i + 1) % polygon.vertices.length;
+                    var ti = types[i], tj = types[j];
+                    var vi = polygon.vertices[i], vj = polygon.vertices[j];
+                    if (ti !== BACK) f.push(vi);
+                    if (ti !== FRONT) b.push(ti !== BACK ? vi.clone() : vi);
+                    if ((ti | tj) === SPANNING) {
+                        var t = (this.w - this.normal.dot(vi.pos)) / this.normal.dot(new THREE.Vector3().subVectors(vj.pos, vi.pos));
+                        var v = vi.interpolate(vj, t);
+                        f.push(v);
+                        b.push(v.clone());
+                    }
+                }
+                if (f.length >= 3) front.push(new CSGPolygon(f, polygon.shared));
+                if (b.length >= 3) back.push(new CSGPolygon(b, polygon.shared));
+                break;
+        }
+    };
+
+    function CSGPolygon(vertices, shared) {
+        this.vertices = vertices;
+        this.shared = shared;
+        this.plane = CSGPlane.fromPoints(vertices[0].pos, vertices[1].pos, vertices[2].pos);
+    }
+    CSGPolygon.prototype.clone = function() {
+        var vs = this.vertices.map(function(v) { return v.clone(); });
+        return new CSGPolygon(vs, this.shared);
+    };
+    CSGPolygon.prototype.flip = function() {
+        this.vertices.reverse().forEach(function(v) { v.flip(); });
+        this.plane.flip();
+    };
+
+    function CSGNode(polygons) {
+        this.plane = null;
+        this.front = null;
+        this.back = null;
+        this.polygons = [];
+        if (polygons && polygons.length) this.build(polygons);
+    }
+    CSGNode.prototype.clone = function() {
+        var node = new CSGNode();
+        node.plane = this.plane && this.plane.clone();
+        node.front = this.front && this.front.clone();
+        node.back = this.back && this.back.clone();
+        node.polygons = this.polygons.map(function(p) { return p.clone(); });
+        return node;
+    };
+    CSGNode.prototype.invert = function() {
+        for (var i = 0; i < this.polygons.length; i++) this.polygons[i].flip();
+        if (this.plane) this.plane.flip();
+        if (this.front) this.front.invert();
+        if (this.back) this.back.invert();
+        var temp = this.front;
+        this.front = this.back;
+        this.back = temp;
+    };
+    CSGNode.prototype.clipPolygons = function(polygons) {
+        if (!this.plane) return polygons.slice();
+        var front = [], back = [];
+        for (var i = 0; i < polygons.length; i++) {
+            this.plane.splitPolygon(polygons[i], front, back, front, back);
+        }
+        if (this.front) front = this.front.clipPolygons(front);
+        if (this.back) back = this.back.clipPolygons(back);
+        else back = [];
+        return front.concat(back);
+    };
+    CSGNode.prototype.clipTo = function(bsp) {
+        this.polygons = bsp.clipPolygons(this.polygons);
+        if (this.front) this.front.clipTo(bsp);
+        if (this.back) this.back.clipTo(bsp);
+    };
+    CSGNode.prototype.allPolygons = function() {
+        var polygons = this.polygons.slice();
+        if (this.front) polygons = polygons.concat(this.front.allPolygons());
+        if (this.back) polygons = polygons.concat(this.back.allPolygons());
+        return polygons;
+    };
+    CSGNode.prototype.build = function(polygons) {
+        if (!polygons.length) return;
+        if (!this.plane) this.plane = polygons[0].plane.clone();
+        var front = [], back = [];
+        for (var i = 0; i < polygons.length; i++) {
+            this.plane.splitPolygon(polygons[i], this.polygons, this.polygons, front, back);
+        }
+        if (front.length) {
+            if (!this.front) this.front = new CSGNode();
+            this.front.build(front);
+        }
+        if (back.length) {
+            if (!this.back) this.back = new CSGNode();
+            this.back.build(back);
+        }
+    };
+
+    function csgFromMesh(mesh) {
+        mesh.updateMatrixWorld(true);
+        var geo = mesh.geometry;
+        var pos = geo.attributes.position;
+        var norm = geo.attributes.normal;
+        var idx = geo.index;
+        var polygons = [];
+        var triCount = idx ? idx.count / 3 : pos.count / 3;
+        for (var i = 0; i < triCount; i++) {
+            var vertices = [];
+            for (var j = 0; j < 3; j++) {
+                var k = idx ? idx.getX(i * 3 + j) : i * 3 + j;
+                var p = new THREE.Vector3(pos.getX(k), pos.getY(k), pos.getZ(k));
+                var n = new THREE.Vector3(norm.getX(k), norm.getY(k), norm.getZ(k));
+                p.applyMatrix4(mesh.matrixWorld);
+                n.applyMatrix3(new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld)).normalize();
+                vertices.push(new CSGVertex(p, n));
+            }
+            polygons.push(new CSGPolygon(vertices, null));
+        }
+        return polygons;
+    }
+
+    function csgSubtract(meshA, meshB) {
+        var a = new CSGNode(csgFromMesh(meshA));
+        var b = new CSGNode(csgFromMesh(meshB));
+        a.clipTo(b);
+        b.clipTo(a);
+        b.invert();
+        b.clipTo(a);
+        b.invert();
+        a.build(b.allPolygons());
+        a.invert();
+        var polygons = a.allPolygons();
+        // Convert back to geometry in meshA's local space
+        var inverseMatrix = new THREE.Matrix4().copy(meshA.matrixWorld).invert();
+        var inverseNormalMatrix = new THREE.Matrix3().getNormalMatrix(inverseMatrix);
+        var positions = [];
+        var normals = [];
+        for (var i = 0; i < polygons.length; i++) {
+            var vs = polygons[i].vertices;
+            // Fan triangulate
+            for (var j = 2; j < vs.length; j++) {
+                var tri = [vs[0], vs[j - 1], vs[j]];
+                for (var k = 0; k < 3; k++) {
+                    var p = tri[k].pos.clone().applyMatrix4(inverseMatrix);
+                    var n = tri[k].normal.clone().applyMatrix3(inverseNormalMatrix).normalize();
+                    positions.push(p.x, p.y, p.z);
+                    normals.push(n.x, n.y, n.z);
+                }
+            }
+        }
+        var newGeo = new THREE.BufferGeometry();
+        newGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        newGeo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+        return newGeo;
+    }
+
+    // ============================================================
+    // Three.js Scene Setup
+    // ============================================================
+
+    var viewport = document.getElementById('viewport');
+    var renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setClearColor(0x1a1a1a);
+    viewport.appendChild(renderer.domElement);
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(50, viewport.clientWidth / viewport.clientHeight, 1, 10000);
+    camera.position.set(400, 300, 400);
+
+    // Inline OrbitControls (minimal)
+    var OrbitControls = (function() {
+        function OC(camera, domElement) {
+            this.camera = camera;
+            this.domElement = domElement;
+            this.target = new THREE.Vector3();
+            this.enableDamping = false;
+            this.dampingFactor = 0.05;
+            this.rotateSpeed = 1.0;
+            this.zoomSpeed = 1.0;
+            this.panSpeed = 1.0;
+            this._spherical = new THREE.Spherical();
+            this._sphericalDelta = new THREE.Spherical();
+            this._scale = 1;
+            this._panOffset = new THREE.Vector3();
+            this._rotateStart = new THREE.Vector2();
+            this._rotateEnd = new THREE.Vector2();
+            this._panStart = new THREE.Vector2();
+            this._panEnd = new THREE.Vector2();
+            this._state = -1; // -1=none, 0=rotate, 1=zoom, 2=pan
+            this._enabled = true;
+            var self = this;
+            this._onMouseDown = function(e) { self._mouseDown(e); };
+            this._onMouseMove = function(e) { self._mouseMove(e); };
+            this._onMouseUp = function(e) { self._mouseUp(e); };
+            this._onWheel = function(e) { self._wheel(e); };
+            this._onContextMenu = function(e) { e.preventDefault(); };
+            domElement.addEventListener('mousedown', this._onMouseDown, false);
+            domElement.addEventListener('wheel', this._onWheel, false);
+            domElement.addEventListener('contextmenu', this._onContextMenu, false);
+            this.update();
+        }
+        OC.prototype._mouseDown = function(e) {
+            if (!this._enabled) return;
+            if (e.button === 0) this._state = 0; // left=rotate
+            else if (e.button === 1) this._state = 1; // middle=zoom
+            else if (e.button === 2) this._state = 2; // right=pan
+            if (this._state === 0) {
+                this._rotateStart.set(e.clientX, e.clientY);
+            } else if (this._state === 2) {
+                this._panStart.set(e.clientX, e.clientY);
+            }
+            document.addEventListener('mousemove', this._onMouseMove, false);
+            document.addEventListener('mouseup', this._onMouseUp, false);
+        };
+        OC.prototype._mouseMove = function(e) {
+            if (!this._enabled) return;
+            if (this._state === 0) {
+                this._rotateEnd.set(e.clientX, e.clientY);
+                var delta = new THREE.Vector2().subVectors(this._rotateEnd, this._rotateStart);
+                this._sphericalDelta.theta -= 2 * Math.PI * delta.x / this.domElement.clientHeight * this.rotateSpeed;
+                this._sphericalDelta.phi -= 2 * Math.PI * delta.y / this.domElement.clientHeight * this.rotateSpeed;
+                this._rotateStart.copy(this._rotateEnd);
+            } else if (this._state === 2) {
+                this._panEnd.set(e.clientX, e.clientY);
+                var delta = new THREE.Vector2().subVectors(this._panEnd, this._panStart);
+                this._pan(delta.x, delta.y);
+                this._panStart.copy(this._panEnd);
+            }
+            this.update();
+        };
+        OC.prototype._mouseUp = function(e) {
+            this._state = -1;
+            document.removeEventListener('mousemove', this._onMouseMove, false);
+            document.removeEventListener('mouseup', this._onMouseUp, false);
+        };
+        OC.prototype._wheel = function(e) {
+            if (!this._enabled) return;
+            e.preventDefault();
+            if (e.deltaY < 0) this._scale *= 0.95;
+            else this._scale *= 1.05;
+            this.update();
+        };
+        OC.prototype._pan = function(dx, dy) {
+            var offset = new THREE.Vector3();
+            var pos = this.camera.position;
+            offset.copy(pos).sub(this.target);
+            var dist = offset.length();
+            dist *= Math.tan((this.camera.fov / 2) * Math.PI / 180.0);
+            var right = new THREE.Vector3();
+            right.setFromMatrixColumn(this.camera.matrix, 0);
+            right.multiplyScalar(-2 * dx * dist / this.domElement.clientHeight * this.panSpeed);
+            var up = new THREE.Vector3();
+            up.setFromMatrixColumn(this.camera.matrix, 1);
+            up.multiplyScalar(2 * dy * dist / this.domElement.clientHeight * this.panSpeed);
+            this._panOffset.add(right).add(up);
+        };
+        OC.prototype.update = function() {
+            var offset = new THREE.Vector3();
+            offset.copy(this.camera.position).sub(this.target);
+            this._spherical.setFromVector3(offset);
+            this._spherical.theta += this._sphericalDelta.theta;
+            this._spherical.phi += this._sphericalDelta.phi;
+            this._spherical.phi = Math.max(0.01, Math.min(Math.PI - 0.01, this._spherical.phi));
+            this._spherical.radius *= this._scale;
+            this._spherical.radius = Math.max(10, Math.min(5000, this._spherical.radius));
+            this.target.add(this._panOffset);
+            offset.setFromSpherical(this._spherical);
+            this.camera.position.copy(this.target).add(offset);
+            this.camera.lookAt(this.target);
+            this._sphericalDelta.set(0, 0, 0);
+            this._scale = 1;
+            this._panOffset.set(0, 0, 0);
+        };
+        return OC;
+    })();
+
+    var controls = new OrbitControls(camera, renderer.domElement);
+
+    // Grid
+    var grid = new THREE.GridHelper(1000, 100, 0x555555, 0x333333);
+    scene.add(grid);
+
+    // Floor plane for shadows
+    var floorGeo = new THREE.PlaneGeometry(2000, 2000);
+    var floorMat = new THREE.ShadowMaterial({ opacity: 0.3 });
+    var floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -0.1;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Lights
+    var ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    var dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight.position.set(300, 500, 400);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    dirLight.shadow.camera.near = 1;
+    dirLight.shadow.camera.far = 2000;
+    dirLight.shadow.camera.left = -600;
+    dirLight.shadow.camera.right = 600;
+    dirLight.shadow.camera.top = 600;
+    dirLight.shadow.camera.bottom = -600;
+    scene.add(dirLight);
+
+    // ============================================================
+    // Application State
+    // ============================================================
+
+    var WOOD_COLOR = 0xc8934a;
+    var SELECT_COLOR = 0xe8a030;
+    var CUT_TARGET_COLOR = 0x4488ff;
+    var CUT_TOOL_COLOR = 0x44ff88;
+    var OVERLAP_COLOR = 0xff4444;
+
+    var pieces = [];
+    var selectedPiece = null;
+    var snapEnabled = false;
+    var labelsVisible = false;
+    var cutMode = false;
+    var cutTarget = null;
+    var overlapMode = false;
+    var overlapHighlighted = [];
+
+    // Undo/Redo
+    var undoStack = [];
+    var redoStack = [];
+    var MAX_UNDO = 10;
+
+    var raycaster = new THREE.Raycaster();
+    var mouse = new THREE.Vector2();
+
+    // ============================================================
+    // Shape Factory
+    // ============================================================
+
+    var pieceCounter = 0;
+
+    function createWoodMaterial() {
+        return new THREE.MeshStandardMaterial({ color: WOOD_COLOR, roughness: 0.7, metalness: 0.05 });
+    }
+
+    function makeBoard(w, h, d) {
+        w = w || 100; h = h || 20; d = d || 50;
+        var geo = new THREE.BoxGeometry(w, h, d);
+        var mesh = new THREE.Mesh(geo, createWoodMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.position.y = h / 2;
+        mesh.userData = {
+            type: 'Board', id: ++pieceCounter,
+            w: w, h: h, d: d, label: 'Board ' + pieceCounter, notches: 0, csgModified: false
+        };
+        return mesh;
+    }
+
+    function makeDowel(r, h) {
+        r = r || 10; h = h || 100;
+        var geo = new THREE.CylinderGeometry(r, r, h, 32);
+        var mesh = new THREE.Mesh(geo, createWoodMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.position.y = h / 2;
+        mesh.userData = {
+            type: 'Dowel', id: ++pieceCounter,
+            r: r, h: h, label: 'Dowel ' + pieceCounter, notches: 0, csgModified: false
+        };
+        return mesh;
+    }
+
+    function makeWedge(w, h, d) {
+        w = w || 80; h = h || 60; d = d || 40;
+        var shape = new THREE.Shape();
+        shape.moveTo(0, 0);
+        shape.lineTo(w, 0);
+        shape.lineTo(0, h);
+        shape.closePath();
+        var extrudeSettings = { depth: d, bevelEnabled: false };
+        var geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+        // Center the geometry
+        geo.computeBoundingBox();
+        var bb = geo.boundingBox;
+        geo.translate(
+            -(bb.max.x + bb.min.x) / 2,
+            -(bb.max.y + bb.min.y) / 2,
+            -(bb.max.z + bb.min.z) / 2
+        );
+        var mesh = new THREE.Mesh(geo, createWoodMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.position.y = h / 2;
+        mesh.userData = {
+            type: 'Wedge', id: ++pieceCounter,
+            w: w, h: h, d: d, label: 'Wedge ' + pieceCounter, notches: 0, csgModified: false
+        };
+        return mesh;
+    }
+
+    function makeLBracket(w, h, d) {
+        w = w || 60; h = h || 80; d = d || 20;
+        var t = Math.min(w, h) * 0.3;
+        var shape = new THREE.Shape();
+        shape.moveTo(0, 0);
+        shape.lineTo(w, 0);
+        shape.lineTo(w, t);
+        shape.lineTo(t, t);
+        shape.lineTo(t, h);
+        shape.lineTo(0, h);
+        shape.closePath();
+        var extrudeSettings = { depth: d, bevelEnabled: false };
+        var geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+        geo.computeBoundingBox();
+        var bb = geo.boundingBox;
+        geo.translate(
+            -(bb.max.x + bb.min.x) / 2,
+            -(bb.max.y + bb.min.y) / 2,
+            -(bb.max.z + bb.min.z) / 2
+        );
+        var mesh = new THREE.Mesh(geo, createWoodMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.position.y = h / 2;
+        mesh.userData = {
+            type: 'L-Bracket', id: ++pieceCounter,
+            w: w, h: h, d: d, label: 'L-Bracket ' + pieceCounter, notches: 0, csgModified: false
+        };
+        return mesh;
+    }
+
+    function makeTaperedLeg(rTop, rBottom, h) {
+        rTop = rTop || 15; rBottom = rBottom || 25; h = h || 200;
+        var geo = new THREE.CylinderGeometry(rTop, rBottom, h, 32);
+        var mesh = new THREE.Mesh(geo, createWoodMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.position.y = h / 2;
+        mesh.userData = {
+            type: 'Tapered Leg', id: ++pieceCounter,
+            rTop: rTop, rBottom: rBottom, h: h,
+            label: 'Tapered ' + pieceCounter, notches: 0, csgModified: false
+        };
+        return mesh;
+    }
+
+    function addPiece(mesh) {
+        pushUndo();
+        scene.add(mesh);
+        pieces.push(mesh);
+        if (labelsVisible) createLabel(mesh);
+        selectPiece(mesh);
+    }
+
+    // ============================================================
+    // Labels
+    // ============================================================
+
+    function createLabelSprite(text) {
+        var canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 64;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(0, 0, 256, 64);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 128, 32);
+        var tex = new THREE.CanvasTexture(canvas);
+        var mat = new THREE.SpriteMaterial({ map: tex, depthTest: false });
+        var sprite = new THREE.Sprite(mat);
+        sprite.scale.set(80, 20, 1);
+        return sprite;
+    }
+
+    function createLabel(mesh) {
+        if (mesh.userData._label) removeLabel(mesh);
+        var sprite = createLabelSprite(mesh.userData.label || '');
+        mesh.userData._label = sprite;
+        scene.add(sprite);
+        updateLabelPosition(mesh);
+    }
+
+    function removeLabel(mesh) {
+        if (mesh.userData._label) {
+            scene.remove(mesh.userData._label);
+            if (mesh.userData._label.material.map) mesh.userData._label.material.map.dispose();
+            mesh.userData._label.material.dispose();
+            mesh.userData._label = null;
+        }
+    }
+
+    function updateLabelPosition(mesh) {
+        if (!mesh.userData._label) return;
+        var box = new THREE.Box3().setFromObject(mesh);
+        mesh.userData._label.position.set(
+            (box.min.x + box.max.x) / 2,
+            box.max.y + 15,
+            (box.min.z + box.max.z) / 2
+        );
+    }
+
+    function updateLabelText(mesh) {
+        if (!mesh.userData._label) return;
+        removeLabel(mesh);
+        createLabel(mesh);
+    }
+
+    function showAllLabels() {
+        pieces.forEach(function(m) { createLabel(m); });
+    }
+
+    function hideAllLabels() {
+        pieces.forEach(function(m) { removeLabel(m); });
+    }
+
+    // ============================================================
+    // Selection & Side Panel
+    // ============================================================
+
+    var dimFields = document.getElementById('dim-fields');
+    var posFields = document.getElementById('pos-fields');
+    var rotFields = document.getElementById('rot-fields');
+    var labelField = document.getElementById('label-field');
+    var summarySection = document.getElementById('summary-section');
+    var noSelection = document.getElementById('no-selection');
+
+    var dimWHD = document.getElementById('dim-whd');
+    var dimRH = document.getElementById('dim-rh');
+    var dimTapered = document.getElementById('dim-tapered');
+
+    var inputW = document.getElementById('dim-w');
+    var inputH = document.getElementById('dim-h');
+    var inputD = document.getElementById('dim-d');
+    var inputR = document.getElementById('dim-r');
+    var inputRHH = document.getElementById('dim-rh-h');
+    var inputRT = document.getElementById('dim-rt');
+    var inputRB = document.getElementById('dim-rb');
+    var inputTH = document.getElementById('dim-th');
+
+    var inputPX = document.getElementById('pos-x');
+    var inputPY = document.getElementById('pos-y');
+    var inputPZ = document.getElementById('pos-z');
+
+    var inputRX = document.getElementById('rot-x');
+    var inputRY = document.getElementById('rot-y');
+    var inputRZ = document.getElementById('rot-z');
+
+    var inputLabel = document.getElementById('label-input');
+    var sizeSummary = document.getElementById('size-summary');
+
+    function selectPiece(mesh) {
+        clearOverlaps();
+        if (selectedPiece && selectedPiece !== mesh) {
+            selectedPiece.material.color.setHex(WOOD_COLOR);
+        }
+        selectedPiece = mesh;
+        if (!mesh) {
+            noSelection.style.display = 'block';
+            dimFields.style.display = 'none';
+            posFields.style.display = 'none';
+            rotFields.style.display = 'none';
+            document.getElementById('rot-buttons').style.display = 'none';
+            labelField.style.display = 'none';
+            summarySection.style.display = 'none';
+            updateObjectList();
+            return;
+        }
+        mesh.material.color.setHex(SELECT_COLOR);
+        noSelection.style.display = 'none';
+        dimFields.style.display = 'block';
+        posFields.style.display = 'block';
+        rotFields.style.display = 'block';
+        document.getElementById('rot-buttons').style.display = 'block';
+        labelField.style.display = 'block';
+        summarySection.style.display = 'block';
+
+        var ud = mesh.userData;
+        var type = ud.type;
+
+        // Show correct dimension fields
+        dimWHD.style.display = 'none';
+        dimRH.style.display = 'none';
+        dimTapered.style.display = 'none';
+
+        if (type === 'Board' || type === 'Wedge' || type === 'L-Bracket') {
+            dimWHD.style.display = 'block';
+            inputW.value = ud.w;
+            inputH.value = ud.h;
+            inputD.value = ud.d;
+        } else if (type === 'Dowel') {
+            dimRH.style.display = 'block';
+            inputR.value = ud.r;
+            inputRHH.value = ud.h;
+        } else if (type === 'Tapered Leg') {
+            dimTapered.style.display = 'block';
+            inputRT.value = ud.rTop;
+            inputRB.value = ud.rBottom;
+            inputTH.value = ud.h;
+        }
+
+        inputPX.value = Math.round(mesh.position.x);
+        inputPY.value = Math.round(mesh.position.y);
+        inputPZ.value = Math.round(mesh.position.z);
+
+        inputRX.value = Math.round(THREE.MathUtils.radToDeg(mesh.rotation.x));
+        inputRY.value = Math.round(THREE.MathUtils.radToDeg(mesh.rotation.y));
+        inputRZ.value = Math.round(THREE.MathUtils.radToDeg(mesh.rotation.z));
+
+        inputLabel.value = ud.label || '';
+
+        updateSizeSummary();
+        updateObjectList();
+    }
+
+    function updateSizeSummary() {
+        if (!selectedPiece) return;
+        var ud = selectedPiece.userData;
+        var text = '';
+        if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
+            text = ud.w + ' x ' + ud.h + ' x ' + ud.d + ' mm';
+        } else if (ud.type === 'Dowel') {
+            text = 'R' + ud.r + ' x H' + ud.h + ' mm (dia ' + (ud.r * 2) + ')';
+        } else if (ud.type === 'Tapered Leg') {
+            text = 'R' + ud.rTop + '/' + ud.rBottom + ' x H' + ud.h + ' mm';
+        }
+        text += ' | Notches: ' + ud.notches;
+        sizeSummary.textContent = text;
+    }
+
+    // ============================================================
+    // Object List
+    // ============================================================
+
+    var objectListItems = document.getElementById('object-list-items');
+
+    function updateObjectList() {
+        objectListItems.innerHTML = '';
+        if (pieces.length === 0) {
+            objectListItems.innerHTML = '<div style="padding:6px 8px;color:#666;font-size:11px;font-style:italic">No objects</div>';
+            return;
+        }
+        pieces.forEach(function(mesh) {
+            var item = document.createElement('div');
+            item.className = 'obj-list-item';
+            if (mesh === selectedPiece) item.className += ' selected';
+            item.innerHTML = '<span>' + (mesh.userData.label || 'Unnamed') + '</span><span class="obj-type">' + mesh.userData.type + '</span>';
+            item.addEventListener('click', function() {
+                selectPiece(mesh);
+            });
+            objectListItems.appendChild(item);
+        });
+    }
+
+    // ============================================================
+    // Quick Rotate Buttons
+    // ============================================================
+
+    function quickRotate(axis, degrees) {
+        if (!selectedPiece) return;
+        pushUndo();
+        var rad = THREE.MathUtils.degToRad(degrees);
+        if (axis === 'x') selectedPiece.rotation.x += rad;
+        else if (axis === 'y') selectedPiece.rotation.y += rad;
+        else if (axis === 'z') selectedPiece.rotation.z += rad;
+        // Update panel inputs
+        inputRX.value = Math.round(THREE.MathUtils.radToDeg(selectedPiece.rotation.x));
+        inputRY.value = Math.round(THREE.MathUtils.radToDeg(selectedPiece.rotation.y));
+        inputRZ.value = Math.round(THREE.MathUtils.radToDeg(selectedPiece.rotation.z));
+        if (labelsVisible) updateLabelPosition(selectedPiece);
+    }
+
+    document.getElementById('rot-x-l').addEventListener('click', function() { quickRotate('x', -90); });
+    document.getElementById('rot-x-r').addEventListener('click', function() { quickRotate('x', 90); });
+    document.getElementById('rot-x-180').addEventListener('click', function() { quickRotate('x', 180); });
+    document.getElementById('rot-y-l').addEventListener('click', function() { quickRotate('y', -90); });
+    document.getElementById('rot-y-r').addEventListener('click', function() { quickRotate('y', 90); });
+    document.getElementById('rot-y-180').addEventListener('click', function() { quickRotate('y', 180); });
+    document.getElementById('rot-z-l').addEventListener('click', function() { quickRotate('z', -90); });
+    document.getElementById('rot-z-r').addEventListener('click', function() { quickRotate('z', 90); });
+    document.getElementById('rot-z-180').addEventListener('click', function() { quickRotate('z', 180); });
+
+    function rebuildGeometry(mesh) {
+        if (mesh.userData.csgModified) return;
+        var ud = mesh.userData;
+        var oldGeo = mesh.geometry;
+        var newGeo;
+        if (ud.type === 'Board') {
+            newGeo = new THREE.BoxGeometry(ud.w, ud.h, ud.d);
+        } else if (ud.type === 'Dowel') {
+            newGeo = new THREE.CylinderGeometry(ud.r, ud.r, ud.h, 32);
+        } else if (ud.type === 'Wedge') {
+            var shape = new THREE.Shape();
+            shape.moveTo(0, 0);
+            shape.lineTo(ud.w, 0);
+            shape.lineTo(0, ud.h);
+            shape.closePath();
+            newGeo = new THREE.ExtrudeGeometry(shape, { depth: ud.d, bevelEnabled: false });
+            newGeo.computeBoundingBox();
+            var bb = newGeo.boundingBox;
+            newGeo.translate(-(bb.max.x + bb.min.x) / 2, -(bb.max.y + bb.min.y) / 2, -(bb.max.z + bb.min.z) / 2);
+        } else if (ud.type === 'L-Bracket') {
+            var t = Math.min(ud.w, ud.h) * 0.3;
+            var shape = new THREE.Shape();
+            shape.moveTo(0, 0);
+            shape.lineTo(ud.w, 0);
+            shape.lineTo(ud.w, t);
+            shape.lineTo(t, t);
+            shape.lineTo(t, ud.h);
+            shape.lineTo(0, ud.h);
+            shape.closePath();
+            newGeo = new THREE.ExtrudeGeometry(shape, { depth: ud.d, bevelEnabled: false });
+            newGeo.computeBoundingBox();
+            var bb = newGeo.boundingBox;
+            newGeo.translate(-(bb.max.x + bb.min.x) / 2, -(bb.max.y + bb.min.y) / 2, -(bb.max.z + bb.min.z) / 2);
+        } else if (ud.type === 'Tapered Leg') {
+            newGeo = new THREE.CylinderGeometry(ud.rTop, ud.rBottom, ud.h, 32);
+        }
+        if (newGeo) {
+            mesh.geometry = newGeo;
+            oldGeo.dispose();
+            if (labelsVisible) updateLabelPosition(mesh);
+        }
+    }
+
+    // ============================================================
+    // Panel Input Handlers
+    // ============================================================
+
+    function onDimChange() {
+        if (!selectedPiece) return;
+        pushUndo();
+        var ud = selectedPiece.userData;
+        if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
+            ud.w = Math.max(1, parseFloat(inputW.value) || 1);
+            ud.h = Math.max(1, parseFloat(inputH.value) || 1);
+            ud.d = Math.max(1, parseFloat(inputD.value) || 1);
+        } else if (ud.type === 'Dowel') {
+            ud.r = Math.max(1, parseFloat(inputR.value) || 1);
+            ud.h = Math.max(1, parseFloat(inputRHH.value) || 1);
+        } else if (ud.type === 'Tapered Leg') {
+            ud.rTop = Math.max(1, parseFloat(inputRT.value) || 1);
+            ud.rBottom = Math.max(1, parseFloat(inputRB.value) || 1);
+            ud.h = Math.max(1, parseFloat(inputTH.value) || 1);
+        }
+        rebuildGeometry(selectedPiece);
+        updateSizeSummary();
+    }
+
+    function snapValue(val) {
+        return Math.round(val / 10) * 10;
+    }
+
+    function onPosChange() {
+        if (!selectedPiece) return;
+        pushUndo();
+        var x = parseFloat(inputPX.value) || 0;
+        var y = parseFloat(inputPY.value) || 0;
+        var z = parseFloat(inputPZ.value) || 0;
+        if (snapEnabled) {
+            var sx = snapValue(x), sy = snapValue(y), sz = snapValue(z);
+            var changed = (sx !== x || sy !== y || sz !== z);
+            x = sx; y = sy; z = sz;
+            inputPX.value = x;
+            inputPY.value = y;
+            inputPZ.value = z;
+            if (changed) flashSnap();
+        }
+        selectedPiece.position.set(x, y, z);
+        if (labelsVisible) updateLabelPosition(selectedPiece);
+    }
+
+    function onRotChange() {
+        if (!selectedPiece) return;
+        pushUndo();
+        var rx = parseFloat(inputRX.value) || 0;
+        var ry = parseFloat(inputRY.value) || 0;
+        var rz = parseFloat(inputRZ.value) || 0;
+        selectedPiece.rotation.set(
+            THREE.MathUtils.degToRad(rx),
+            THREE.MathUtils.degToRad(ry),
+            THREE.MathUtils.degToRad(rz)
+        );
+        if (labelsVisible) updateLabelPosition(selectedPiece);
+    }
+
+    function onLabelChange() {
+        if (!selectedPiece) return;
+        selectedPiece.userData.label = inputLabel.value;
+        if (labelsVisible) updateLabelText(selectedPiece);
+    }
+
+    [inputW, inputH, inputD, inputR, inputRHH, inputRT, inputRB, inputTH].forEach(function(inp) {
+        inp.addEventListener('change', onDimChange);
+    });
+    [inputPX, inputPY, inputPZ].forEach(function(inp) {
+        inp.addEventListener('change', onPosChange);
+    });
+    [inputRX, inputRY, inputRZ].forEach(function(inp) {
+        inp.addEventListener('change', onRotChange);
+    });
+    inputLabel.addEventListener('input', onLabelChange);
+
+    // ============================================================
+    // Snap
+    // ============================================================
+
+    var snapIndicator = document.getElementById('snap-indicator');
+    var snapTimer = null;
+
+    function flashSnap() {
+        snapIndicator.style.display = 'block';
+        clearTimeout(snapTimer);
+        snapTimer = setTimeout(function() {
+            snapIndicator.style.display = 'none';
+        }, 600);
+    }
+
+    // ============================================================
+    // Undo / Redo
+    // ============================================================
+
+    function serializeScene() {
+        var state = [];
+        pieces.forEach(function(mesh) {
+            var ud = mesh.userData;
+            var entry = {
+                type: ud.type, id: ud.id, label: ud.label, notches: ud.notches,
+                csgModified: ud.csgModified,
+                px: mesh.position.x, py: mesh.position.y, pz: mesh.position.z,
+                rx: mesh.rotation.x, ry: mesh.rotation.y, rz: mesh.rotation.z
+            };
+            if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
+                entry.w = ud.w; entry.h = ud.h; entry.d = ud.d;
+            } else if (ud.type === 'Dowel') {
+                entry.r = ud.r; entry.h = ud.h;
+            } else if (ud.type === 'Tapered Leg') {
+                entry.rTop = ud.rTop; entry.rBottom = ud.rBottom; entry.h = ud.h;
+            }
+            if (ud.csgModified) {
+                // Store raw geometry data
+                var pos = mesh.geometry.attributes.position.array;
+                var norm = mesh.geometry.attributes.normal.array;
+                entry.geoPositions = Array.prototype.slice.call(pos);
+                entry.geoNormals = Array.prototype.slice.call(norm);
+            }
+            state.push(entry);
+        });
+        return JSON.stringify(state);
+    }
+
+    function restoreScene(json) {
+        // Clear current
+        pieces.forEach(function(m) {
+            removeLabel(m);
+            scene.remove(m);
+            m.geometry.dispose();
+            m.material.dispose();
+        });
+        pieces = [];
+        selectedPiece = null;
+
+        var state = JSON.parse(json);
+        state.forEach(function(entry) {
+            var mesh;
+            if (entry.csgModified) {
+                // Restore from raw geometry
+                var geo = new THREE.BufferGeometry();
+                geo.setAttribute('position', new THREE.Float32BufferAttribute(entry.geoPositions, 3));
+                geo.setAttribute('normal', new THREE.Float32BufferAttribute(entry.geoNormals, 3));
+                mesh = new THREE.Mesh(geo, createWoodMaterial());
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+            } else {
+                if (entry.type === 'Board') mesh = makeBoard(entry.w, entry.h, entry.d);
+                else if (entry.type === 'Dowel') mesh = makeDowel(entry.r, entry.h);
+                else if (entry.type === 'Wedge') mesh = makeWedge(entry.w, entry.h, entry.d);
+                else if (entry.type === 'L-Bracket') mesh = makeLBracket(entry.w, entry.h, entry.d);
+                else if (entry.type === 'Tapered Leg') mesh = makeTaperedLeg(entry.rTop, entry.rBottom, entry.h);
+                // Undo the pieceCounter increment from factory
+                pieceCounter--;
+            }
+            mesh.position.set(entry.px, entry.py, entry.pz);
+            mesh.rotation.set(entry.rx, entry.ry, entry.rz);
+            mesh.userData.id = entry.id;
+            mesh.userData.label = entry.label;
+            mesh.userData.notches = entry.notches;
+            mesh.userData.csgModified = entry.csgModified;
+            if (entry.type === 'Board' || entry.type === 'Wedge' || entry.type === 'L-Bracket') {
+                mesh.userData.w = entry.w; mesh.userData.h = entry.h; mesh.userData.d = entry.d;
+            } else if (entry.type === 'Dowel') {
+                mesh.userData.r = entry.r; mesh.userData.h = entry.h;
+            } else if (entry.type === 'Tapered Leg') {
+                mesh.userData.rTop = entry.rTop; mesh.userData.rBottom = entry.rBottom; mesh.userData.h = entry.h;
+            }
+            scene.add(mesh);
+            pieces.push(mesh);
+            if (labelsVisible) createLabel(mesh);
+        });
+        selectPiece(null);
+    }
+
+    function pushUndo() {
+        undoStack.push(serializeScene());
+        if (undoStack.length > MAX_UNDO) undoStack.shift();
+        redoStack = [];
+    }
+
+    function undo() {
+        if (undoStack.length === 0) return;
+        redoStack.push(serializeScene());
+        if (redoStack.length > MAX_UNDO) redoStack.shift();
+        restoreScene(undoStack.pop());
+    }
+
+    function redo() {
+        if (redoStack.length === 0) return;
+        undoStack.push(serializeScene());
+        if (undoStack.length > MAX_UNDO) undoStack.shift();
+        restoreScene(redoStack.pop());
+    }
+
+    // ============================================================
+    // Cut Joint (CSG)
+    // ============================================================
+
+    function enterCutMode() {
+        cutMode = true;
+        cutTarget = null;
+        document.getElementById('btn-cut').classList.add('active');
+        // Deselect current
+        if (selectedPiece) {
+            selectedPiece.material.color.setHex(WOOD_COLOR);
+            selectedPiece = null;
+        }
+    }
+
+    function exitCutMode() {
+        cutMode = false;
+        if (cutTarget) {
+            cutTarget.material.color.setHex(WOOD_COLOR);
+            cutTarget = null;
+        }
+        document.getElementById('btn-cut').classList.remove('active');
+    }
+
+    function performCut(target, tool) {
+        pushUndo();
+        try {
+            var newGeo = csgSubtract(target, tool);
+            target.geometry.dispose();
+            target.geometry = newGeo;
+            target.userData.notches++;
+            target.userData.csgModified = true;
+            target.material.color.setHex(WOOD_COLOR);
+            tool.material.color.setHex(WOOD_COLOR);
+            selectPiece(target);
+        } catch (e) {
+            console.error('CSG cut failed:', e);
+            target.material.color.setHex(WOOD_COLOR);
+            tool.material.color.setHex(WOOD_COLOR);
+        }
+        exitCutMode();
+    }
+
+    // ============================================================
+    // Overlap Detection
+    // ============================================================
+
+    var overlapList = document.getElementById('overlap-list');
+
+    function clearOverlaps() {
+        overlapHighlighted.forEach(function(m) {
+            if (m === selectedPiece) m.material.color.setHex(SELECT_COLOR);
+            else m.material.color.setHex(WOOD_COLOR);
+        });
+        overlapHighlighted = [];
+        overlapList.style.display = 'none';
+        overlapList.textContent = '';
+    }
+
+    function showOverlaps() {
+        clearOverlaps();
+        var pairs = [];
+        for (var i = 0; i < pieces.length; i++) {
+            for (var j = i + 1; j < pieces.length; j++) {
+                var boxA = new THREE.Box3().setFromObject(pieces[i]);
+                var boxB = new THREE.Box3().setFromObject(pieces[j]);
+                if (boxA.intersectsBox(boxB)) {
+                    pairs.push([pieces[i], pieces[j]]);
+                    if (overlapHighlighted.indexOf(pieces[i]) === -1) {
+                        pieces[i].material.color.setHex(OVERLAP_COLOR);
+                        overlapHighlighted.push(pieces[i]);
+                    }
+                    if (overlapHighlighted.indexOf(pieces[j]) === -1) {
+                        pieces[j].material.color.setHex(OVERLAP_COLOR);
+                        overlapHighlighted.push(pieces[j]);
+                    }
+                }
+            }
+        }
+        if (pairs.length > 0) {
+            overlapList.style.display = 'block';
+            overlapList.innerHTML = '<strong>Overlapping pairs:</strong><br>' +
+                pairs.map(function(p) {
+                    return p[0].userData.label + ' &harr; ' + p[1].userData.label;
+                }).join('<br>');
+        } else {
+            overlapList.style.display = 'block';
+            overlapList.style.color = '#88ff88';
+            overlapList.textContent = 'No overlaps found.';
+            setTimeout(function() {
+                overlapList.style.display = 'none';
+                overlapList.style.color = '#ff6666';
+            }, 2000);
+        }
+    }
+
+    // ============================================================
+    // Delete & Clear
+    // ============================================================
+
+    function deleteSelected() {
+        if (!selectedPiece) return;
+        pushUndo();
+        var idx = pieces.indexOf(selectedPiece);
+        if (idx !== -1) pieces.splice(idx, 1);
+        removeLabel(selectedPiece);
+        scene.remove(selectedPiece);
+        selectedPiece.geometry.dispose();
+        selectedPiece.material.dispose();
+        selectedPiece = null;
+        selectPiece(null);
+    }
+
+    function clearAll() {
+        if (pieces.length === 0) return;
+        if (!confirm('Clear all pieces?')) return;
+        pushUndo();
+        pieces.forEach(function(m) {
+            removeLabel(m);
+            scene.remove(m);
+            m.geometry.dispose();
+            m.material.dispose();
+        });
+        pieces = [];
+        selectedPiece = null;
+        selectPiece(null);
+    }
+
+    // ============================================================
+    // CSV Export
+    // ============================================================
+
+    function exportCSV() {
+        var rows = [['Part', 'Type', 'Label', 'W', 'H', 'D', 'Dia', 'Notches']];
+        pieces.forEach(function(m, i) {
+            var ud = m.userData;
+            var row = [i + 1, ud.type, '"' + (ud.label || '') + '"'];
+            if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
+                row.push(ud.w, ud.h, ud.d, '', ud.notches);
+            } else if (ud.type === 'Dowel') {
+                row.push('', ud.h, '', ud.r * 2, ud.notches);
+            } else if (ud.type === 'Tapered Leg') {
+                row.push('', ud.h, '', ud.rTop * 2 + '/' + ud.rBottom * 2, ud.notches);
+            }
+            rows.push(row);
+        });
+        var csv = rows.map(function(r) { return r.join(','); }).join('\n');
+        var blob = new Blob([csv], { type: 'text/csv' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'cut_list.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // ============================================================
+    // Click / Raycasting
+    // ============================================================
+
+    var isDragging = false;
+    var mouseDownPos = new THREE.Vector2();
+
+    // Drag-to-move state
+    var dragMode = false;
+    var dragPiece = null;
+    var dragPlane = new THREE.Plane();
+    var dragOffset = new THREE.Vector3();
+    var dragStarted = false;
+    var dragIntersect = new THREE.Vector3();
+
+    function getMouseNDC(e) {
+        var rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    }
+
+    renderer.domElement.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        mouseDownPos.set(e.clientX, e.clientY);
+        isDragging = false;
+        dragStarted = false;
+
+        // Don't start object drag in cut mode
+        if (cutMode) return;
+
+        // Raycast to see if we hit a piece
+        getMouseNDC(e);
+        raycaster.setFromCamera(mouse, camera);
+        var meshes = pieces.filter(function(m) { return m.visible; });
+        var intersects = raycaster.intersectObjects(meshes, false);
+
+        if (intersects.length > 0) {
+            dragPiece = intersects[0].object;
+            dragMode = true;
+            selectPiece(dragPiece);
+
+            // Build drag plane
+            if (e.shiftKey) {
+                // Vertical (Y) mode: plane faces camera
+                var camDir = new THREE.Vector3();
+                camera.getWorldDirection(camDir);
+                camDir.y = 0;
+                camDir.normalize();
+                if (camDir.length() < 0.01) camDir.set(0, 0, 1);
+                dragPlane.setFromNormalAndCoplanarPoint(camDir, dragPiece.position);
+            } else {
+                // XZ ground plane at piece's current Y
+                dragPlane.setFromNormalAndCoplanarPoint(
+                    new THREE.Vector3(0, 1, 0), dragPiece.position
+                );
+            }
+
+            // Compute offset from piece origin to click point
+            raycaster.ray.intersectPlane(dragPlane, dragIntersect);
+            dragOffset.subVectors(dragPiece.position, dragIntersect);
+
+            // Disable orbit controls during drag
+            controls._enabled = false;
+            renderer.domElement.style.cursor = 'grabbing';
+        }
+    });
+
+    renderer.domElement.addEventListener('mousemove', function(e) {
+        var dx = e.clientX - mouseDownPos.x;
+        var dy = e.clientY - mouseDownPos.y;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) isDragging = true;
+
+        if (dragMode && dragPiece) {
+            if (!dragStarted) {
+                dragStarted = true;
+                pushUndo();
+            }
+
+            getMouseNDC(e);
+            raycaster.setFromCamera(mouse, camera);
+
+            if (raycaster.ray.intersectPlane(dragPlane, dragIntersect)) {
+                var newPos = dragIntersect.add(dragOffset);
+
+                if (e.shiftKey) {
+                    // Only update Y
+                    var yVal = newPos.y;
+                    if (snapEnabled) {
+                        var snapped = snapValue(yVal);
+                        if (snapped !== Math.round(yVal)) flashSnap();
+                        yVal = snapped;
+                    }
+                    dragPiece.position.y = yVal;
+                } else {
+                    // Update X and Z
+                    var xVal = newPos.x;
+                    var zVal = newPos.z;
+                    if (snapEnabled) {
+                        var sx = snapValue(xVal), sz = snapValue(zVal);
+                        if (sx !== Math.round(xVal) || sz !== Math.round(zVal)) flashSnap();
+                        xVal = sx;
+                        zVal = sz;
+                    }
+                    dragPiece.position.x = xVal;
+                    dragPiece.position.z = zVal;
+                }
+
+                // Update side panel inputs
+                if (dragPiece === selectedPiece) {
+                    inputPX.value = Math.round(dragPiece.position.x);
+                    inputPY.value = Math.round(dragPiece.position.y);
+                    inputPZ.value = Math.round(dragPiece.position.z);
+                }
+
+                if (labelsVisible) updateLabelPosition(dragPiece);
+            }
+            return;
+        }
+
+        // Hover cursor: show grab cursor when hovering over a piece
+        if (!dragMode && e.buttons === 0 && !cutMode) {
+            getMouseNDC(e);
+            raycaster.setFromCamera(mouse, camera);
+            var meshes = pieces.filter(function(m) { return m.visible; });
+            var hits = raycaster.intersectObjects(meshes, false);
+            renderer.domElement.style.cursor = hits.length > 0 ? 'grab' : '';
+        }
+    });
+
+    renderer.domElement.addEventListener('mouseup', function(e) {
+        if (e.button !== 0) return;
+
+        // End drag
+        if (dragMode) {
+            controls._enabled = true;
+            dragMode = false;
+            dragPiece = null;
+            renderer.domElement.style.cursor = '';
+            if (dragStarted) {
+                // Was a real drag — don't fire click-to-select
+                return;
+            }
+            // If not dragStarted, it was just a click on a piece — already selected in mousedown
+            return;
+        }
+
+        if (isDragging) return;
+
+        // Normal click-to-select
+        getMouseNDC(e);
+        raycaster.setFromCamera(mouse, camera);
+
+        var meshes = pieces.filter(function(m) { return m.visible; });
+        var intersects = raycaster.intersectObjects(meshes, false);
+
+        if (cutMode) {
+            if (intersects.length > 0) {
+                var hit = intersects[0].object;
+                if (!cutTarget) {
+                    cutTarget = hit;
+                    cutTarget.material.color.setHex(CUT_TARGET_COLOR);
+                } else if (hit !== cutTarget) {
+                    hit.material.color.setHex(CUT_TOOL_COLOR);
+                    setTimeout(function() {
+                        performCut(cutTarget, hit);
+                    }, 100);
+                }
+            }
+            return;
+        }
+
+        if (intersects.length > 0) {
+            selectPiece(intersects[0].object);
+        } else {
+            selectPiece(null);
+        }
+    });
+
+    // ============================================================
+    // Toolbar Button Handlers
+    // ============================================================
+
+    document.getElementById('btn-add-board').addEventListener('click', function() {
+        addPiece(makeBoard());
+    });
+    document.getElementById('btn-add-dowel').addEventListener('click', function() {
+        addPiece(makeDowel());
+    });
+    document.getElementById('btn-add-wedge').addEventListener('click', function() {
+        addPiece(makeWedge());
+    });
+    document.getElementById('btn-add-lbracket').addEventListener('click', function() {
+        addPiece(makeLBracket());
+    });
+    document.getElementById('btn-add-tapered').addEventListener('click', function() {
+        addPiece(makeTaperedLeg());
+    });
+
+    document.getElementById('btn-snap').addEventListener('click', function() {
+        snapEnabled = !snapEnabled;
+        this.textContent = snapEnabled ? 'Snap ON' : 'Snap OFF';
+        this.classList.toggle('active', snapEnabled);
+    });
+
+    document.getElementById('btn-labels').addEventListener('click', function() {
+        labelsVisible = !labelsVisible;
+        this.textContent = labelsVisible ? 'Labels ON' : 'Labels OFF';
+        this.classList.toggle('active', labelsVisible);
+        if (labelsVisible) showAllLabels();
+        else hideAllLabels();
+    });
+
+    document.getElementById('btn-cut').addEventListener('click', function() {
+        if (cutMode) exitCutMode();
+        else enterCutMode();
+    });
+
+    document.getElementById('btn-overlaps').addEventListener('click', function() {
+        if (overlapMode) {
+            overlapMode = false;
+            this.classList.remove('active');
+            clearOverlaps();
+        } else {
+            overlapMode = true;
+            this.classList.add('active');
+            showOverlaps();
+        }
+    });
+
+    document.getElementById('btn-undo').addEventListener('click', undo);
+    document.getElementById('btn-redo').addEventListener('click', redo);
+    document.getElementById('btn-delete').addEventListener('click', deleteSelected);
+    document.getElementById('btn-clear').addEventListener('click', clearAll);
+    document.getElementById('btn-export').addEventListener('click', exportCSV);
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+            e.preventDefault();
+            undo();
+        } else if (e.ctrlKey && e.key === 'Z' && e.shiftKey) {
+            e.preventDefault();
+            redo();
+        } else if (e.key === 'Delete') {
+            deleteSelected();
+        }
+    });
+
+    // ============================================================
+    // Window Resize
+    // ============================================================
+
+    window.addEventListener('resize', function() {
+        var w = viewport.clientWidth;
+        var h = viewport.clientHeight;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+    });
+
+    // ============================================================
+    // Render Loop
+    // ============================================================
+
+    function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+    }
+    animate();
+    updateObjectList();
+
+});
+</script>
+</body>
+</html>

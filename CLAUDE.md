@@ -54,5 +54,5 @@ Everything runs inside a `window.addEventListener('load', ...)` closure in `inde
 ## Git Repo Conventions
 - add a commit including message for changes
 - work on feature branches, not directly on main
-- merge to main when features are tested and ready
+- merge to main via pull requests only (main branch is protected)
 - when adding features or making changes, update both CLAUDE.md and README.md to reflect the current state

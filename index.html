@@ -73,17 +73,17 @@
         padding: 3px 6px; cursor: pointer; font-size: 11px; flex: 1; min-width: 0;
     }
     .rot-btn-row button:hover { background: #4a4a4a; }
-    #template-library { margin-top: 12px; border-top: 1px solid #555; padding-top: 8px; }
-    #template-library h3 { cursor: pointer; user-select: none; }
-    #template-library h3::before { content: '\25B6 '; font-size: 10px; }
-    #template-library h3.open::before { content: '\25BC '; font-size: 10px; }
-    #template-filter { width: 100%; background: #1a1a1a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 4px 6px; font-size: 12px; margin-bottom: 6px; }
-    #template-list { }
-    .tpl-category { color: #888; font-size: 10px; text-transform: uppercase; margin: 8px 0 4px; }
-    .tpl-category:first-child { margin-top: 0; }
-    .tpl-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 6px; cursor: pointer; font-size: 12px; border-radius: 3px; }
-    .tpl-item:hover { background: #3a3a3a; }
-    .tpl-item .tpl-dims { color: #888; font-size: 10px; }
+    .add-dropdown { position: relative; display: inline-block; }
+    .add-dropdown > button { background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 4px; padding: 6px 10px; cursor: pointer; white-space: nowrap; font-size: 12px; }
+    .add-dropdown > button:hover { background: #4a4a4a; }
+    .add-dropdown > button::after { content: ' \25BC'; font-size: 8px; }
+    .add-menu { display: none; position: absolute; top: 100%; left: 0; min-width: 180px; background: #2a2a2a; border: 1px solid #555; border-radius: 4px; z-index: 300; padding: 4px 0; margin-top: 2px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    .add-dropdown.open .add-menu { display: block; }
+    .add-menu-item { display: flex; justify-content: space-between; padding: 5px 10px; cursor: pointer; font-size: 12px; color: #ddd; }
+    .add-menu-item:hover { background: #4a4a4a; }
+    .add-menu-item .tpl-dims { color: #888; font-size: 10px; }
+    .add-menu-sep { height: 1px; background: #555; margin: 4px 8px; }
+    .add-menu-label { padding: 4px 10px; font-size: 10px; color: #888; text-transform: uppercase; }
     .tpl-delete { background: none; border: none; color: #ff6666; cursor: pointer; font-size: 14px; padding: 0 4px; }
     .tpl-delete:hover { color: #ff3333; }
     #btn-save-template { display: none; width: 100%; background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 4px 8px; cursor: pointer; font-size: 12px; margin-top: 6px; }
@@ -101,11 +101,11 @@
 <body>
 
 <div id="toolbar">
-    <button id="btn-add-board">+ Board</button>
-    <button id="btn-add-dowel">+ Dowel</button>
-    <button id="btn-add-wedge">+ Wedge</button>
-    <button id="btn-add-lbracket">+ L-Bracket</button>
-    <button id="btn-add-tapered">+ Tapered Leg</button>
+    <div class="add-dropdown" data-type="Board"><button>+ Board</button><div class="add-menu"></div></div>
+    <div class="add-dropdown" data-type="Dowel"><button>+ Dowel</button><div class="add-menu"></div></div>
+    <div class="add-dropdown" data-type="Wedge"><button>+ Wedge</button><div class="add-menu"></div></div>
+    <div class="add-dropdown" data-type="L-Bracket"><button>+ L-Bracket</button><div class="add-menu"></div></div>
+    <div class="add-dropdown" data-type="Tapered Leg"><button>+ Tapered Leg</button><div class="add-menu"></div></div>
     <div class="separator"></div>
     <button id="btn-snap">Snap OFF</button>
     <button id="btn-labels">Labels OFF</button>
@@ -225,13 +225,6 @@
         <div id="cost-total">Total: 0</div>
     </div>
 
-    <div id="template-library">
-        <h3 id="template-toggle">Parts Library</h3>
-        <div id="template-content" style="display:none">
-            <input type="text" id="template-filter" placeholder="Filter templates...">
-            <div id="template-list"></div>
-        </div>
-    </div>
 </div>
 
 <div id="viewport"></div>
@@ -1454,60 +1447,6 @@ window.addEventListener('load', function() {
         return '';
     }
 
-    function renderTemplateList() {
-        var container = document.getElementById('template-list');
-        var filter = document.getElementById('template-filter').value.toLowerCase();
-        container.innerHTML = '';
-
-        var custom = loadCustomTemplates();
-        var sections = [
-            { label: 'Built-in', items: builtInTemplates, custom: false },
-            { label: 'Custom', items: custom, custom: true }
-        ];
-
-        sections.forEach(function(section) {
-            var filtered = section.items.filter(function(t) {
-                return t.name.toLowerCase().indexOf(filter) !== -1 || t.type.toLowerCase().indexOf(filter) !== -1;
-            });
-            if (filtered.length === 0) return;
-
-            var cat = document.createElement('div');
-            cat.className = 'tpl-category';
-            cat.textContent = section.label;
-            container.appendChild(cat);
-
-            filtered.forEach(function(tpl, i) {
-                var row = document.createElement('div');
-                row.className = 'tpl-item';
-                var left = document.createElement('span');
-                left.textContent = tpl.name;
-                left.style.cursor = 'pointer';
-                var dims = document.createElement('span');
-                dims.className = 'tpl-dims';
-                dims.textContent = templateDimsText(tpl);
-                row.appendChild(left);
-                row.appendChild(dims);
-
-                if (section.custom) {
-                    var del = document.createElement('button');
-                    del.className = 'tpl-delete';
-                    del.textContent = '\u00D7';
-                    del.title = 'Delete template';
-                    // Find original index in custom array
-                    var origIdx = section.items.indexOf(tpl);
-                    del.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        deleteCustomTemplate(origIdx);
-                    });
-                    row.appendChild(del);
-                }
-
-                row.addEventListener('click', function() { addFromTemplate(tpl); });
-                container.appendChild(row);
-            });
-        });
-    }
-
     // ============================================================
     // Cut Joint (CSG)
     // ============================================================
@@ -1862,21 +1801,125 @@ window.addEventListener('load', function() {
     // Toolbar Button Handlers
     // ============================================================
 
-    document.getElementById('btn-add-board').addEventListener('click', function() {
-        addPiece(makeBoard());
-    });
-    document.getElementById('btn-add-dowel').addEventListener('click', function() {
-        addPiece(makeDowel());
-    });
-    document.getElementById('btn-add-wedge').addEventListener('click', function() {
-        addPiece(makeWedge());
-    });
-    document.getElementById('btn-add-lbracket').addEventListener('click', function() {
-        addPiece(makeLBracket());
-    });
-    document.getElementById('btn-add-tapered').addEventListener('click', function() {
-        addPiece(makeTaperedLeg());
-    });
+    // Add-piece dropdowns
+    function closeAllDropdowns() {
+        var drops = document.querySelectorAll('.add-dropdown');
+        for (var i = 0; i < drops.length; i++) drops[i].classList.remove('open');
+    }
+
+    function makeDefaultForType(type) {
+        if (type === 'Board') return makeBoard();
+        if (type === 'Dowel') return makeDowel();
+        if (type === 'Wedge') return makeWedge();
+        if (type === 'L-Bracket') return makeLBracket();
+        if (type === 'Tapered Leg') return makeTaperedLeg();
+    }
+
+    function buildDropdownMenu(dropdown) {
+        var type = dropdown.getAttribute('data-type');
+        var menu = dropdown.querySelector('.add-menu');
+        menu.innerHTML = '';
+
+        // Default option
+        var def = document.createElement('div');
+        def.className = 'add-menu-item';
+        def.innerHTML = '<span>Default ' + type + '</span><span class="tpl-dims">' + templateDimsText(getDefaultDims(type)) + '</span>';
+        def.addEventListener('click', function(e) {
+            e.stopPropagation();
+            addPiece(makeDefaultForType(type));
+            closeAllDropdowns();
+        });
+        menu.appendChild(def);
+
+        // Built-in templates for this type
+        var matching = builtInTemplates.filter(function(t) { return t.type === type; });
+        var custom = loadCustomTemplates().filter(function(t) { return t.type === type; });
+
+        if (matching.length > 0) {
+            var sep = document.createElement('div');
+            sep.className = 'add-menu-sep';
+            menu.appendChild(sep);
+            var lbl = document.createElement('div');
+            lbl.className = 'add-menu-label';
+            lbl.textContent = 'Built-in';
+            menu.appendChild(lbl);
+            matching.forEach(function(tpl) {
+                var item = document.createElement('div');
+                item.className = 'add-menu-item';
+                item.innerHTML = '<span>' + tpl.name + '</span><span class="tpl-dims">' + templateDimsText(tpl) + '</span>';
+                item.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    addFromTemplate(tpl);
+                    closeAllDropdowns();
+                });
+                menu.appendChild(item);
+            });
+        }
+
+        if (custom.length > 0) {
+            var sep2 = document.createElement('div');
+            sep2.className = 'add-menu-sep';
+            menu.appendChild(sep2);
+            var lbl2 = document.createElement('div');
+            lbl2.className = 'add-menu-label';
+            lbl2.textContent = 'Custom';
+            menu.appendChild(lbl2);
+            custom.forEach(function(tpl, idx) {
+                var item = document.createElement('div');
+                item.className = 'add-menu-item';
+                var origIdx = loadCustomTemplates().indexOf(tpl);
+                item.innerHTML = '<span>' + tpl.name + '</span><span class="tpl-dims">' + templateDimsText(tpl) + '</span>';
+                var del = document.createElement('button');
+                del.className = 'tpl-delete';
+                del.textContent = '\u00D7';
+                del.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    deleteCustomTemplate(idx);
+                    buildDropdownMenus();
+                });
+                item.appendChild(del);
+                item.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    addFromTemplate(tpl);
+                    closeAllDropdowns();
+                });
+                menu.appendChild(item);
+            });
+        }
+    }
+
+    function getDefaultDims(type) {
+        if (type === 'Board') return { type: 'Board', w: 100, h: 20, d: 50 };
+        if (type === 'Dowel') return { type: 'Dowel', r: 10, h: 100 };
+        if (type === 'Wedge') return { type: 'Wedge', w: 80, h: 60, d: 40 };
+        if (type === 'L-Bracket') return { type: 'L-Bracket', w: 60, h: 80, d: 20 };
+        if (type === 'Tapered Leg') return { type: 'Tapered Leg', rTop: 15, rBottom: 25, h: 200 };
+        return {};
+    }
+
+    function buildDropdownMenus() {
+        var drops = document.querySelectorAll('.add-dropdown');
+        for (var i = 0; i < drops.length; i++) buildDropdownMenu(drops[i]);
+    }
+
+    // Toggle dropdown on button click
+    var dropdowns = document.querySelectorAll('.add-dropdown');
+    for (var di = 0; di < dropdowns.length; di++) {
+        (function(dd) {
+            dd.querySelector('button').addEventListener('click', function(e) {
+                e.stopPropagation();
+                var wasOpen = dd.classList.contains('open');
+                closeAllDropdowns();
+                if (!wasOpen) {
+                    buildDropdownMenu(dd);
+                    dd.classList.add('open');
+                }
+            });
+        })(dropdowns[di]);
+    }
+
+    // Close dropdowns when clicking elsewhere
+    document.addEventListener('click', closeAllDropdowns);
 
     document.getElementById('btn-snap').addEventListener('click', function() {
         snapEnabled = !snapEnabled;
@@ -1926,16 +1969,10 @@ window.addEventListener('load', function() {
         }
     });
 
-    // Template library toggle
-    document.getElementById('template-toggle').addEventListener('click', function() {
-        var content = document.getElementById('template-content');
-        var open = content.style.display === 'none';
-        content.style.display = open ? 'block' : 'none';
-        this.classList.toggle('open', open);
-        if (open) renderTemplateList();
+    document.getElementById('btn-save-template').addEventListener('click', function() {
+        saveAsTemplate();
+        buildDropdownMenus();
     });
-    document.getElementById('template-filter').addEventListener('input', renderTemplateList);
-    document.getElementById('btn-save-template').addEventListener('click', saveAsTemplate);
 
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {

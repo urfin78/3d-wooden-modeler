@@ -53,3 +53,5 @@ Everything runs inside a `window.addEventListener('load', ...)` closure in `inde
 
 ## Git Repo Conventions
 - add a commit including message for changes
+- work on feature branches, not directly on main
+- merge to main when features are tested and ready

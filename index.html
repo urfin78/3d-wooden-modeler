@@ -78,7 +78,7 @@
     #template-library h3::before { content: '\25B6 '; font-size: 10px; }
     #template-library h3.open::before { content: '\25BC '; font-size: 10px; }
     #template-filter { width: 100%; background: #1a1a1a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 4px 6px; font-size: 12px; margin-bottom: 6px; }
-    #template-list { max-height: 240px; overflow-y: auto; }
+    #template-list { }
     .tpl-category { color: #888; font-size: 10px; text-transform: uppercase; margin: 8px 0 4px; }
     .tpl-category:first-child { margin-top: 0; }
     .tpl-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 6px; cursor: pointer; font-size: 12px; border-radius: 3px; }
@@ -589,17 +589,42 @@ window.addEventListener('load', function() {
     var controls = new OrbitControls(camera, renderer.domElement);
 
     // Grid
-    var grid = new THREE.GridHelper(1000, 100, 0x555555, 0x333333);
+    var gridSize = 1000;
+    var grid = new THREE.GridHelper(gridSize, gridSize / 10, 0x555555, 0x333333);
     scene.add(grid);
 
     // Floor plane for shadows
-    var floorGeo = new THREE.PlaneGeometry(2000, 2000);
+    var floorGeo = new THREE.PlaneGeometry(4000, 4000);
     var floorMat = new THREE.ShadowMaterial({ opacity: 0.3 });
     var floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -0.1;
     floor.receiveShadow = true;
     scene.add(floor);
+
+    function updateGrid() {
+        // Minimum grid size
+        var minSize = 1000;
+        var needed = minSize;
+        if (pieces.length > 0) {
+            var box = new THREE.Box3();
+            pieces.forEach(function(m) { box.expandByObject(m); });
+            // Use the largest XZ extent, with padding
+            var extX = Math.max(Math.abs(box.min.x), Math.abs(box.max.x));
+            var extZ = Math.max(Math.abs(box.min.z), Math.abs(box.max.z));
+            needed = Math.max(minSize, Math.ceil((Math.max(extX, extZ) * 2 + 200) / 100) * 100);
+        }
+        if (needed !== gridSize) {
+            gridSize = needed;
+            scene.remove(grid);
+            grid.geometry.dispose();
+            grid = new THREE.GridHelper(gridSize, gridSize / 10, 0x555555, 0x333333);
+            scene.add(grid);
+            // Resize floor to match
+            floor.geometry.dispose();
+            floor.geometry = new THREE.PlaneGeometry(gridSize * 2, gridSize * 2);
+        }
+    }
 
     // Lights
     var ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -763,6 +788,7 @@ window.addEventListener('load', function() {
         pieces.push(mesh);
         if (labelsVisible) createLabel(mesh);
         selectPiece(mesh);
+        updateGrid();
     }
 
     // ============================================================
@@ -1074,6 +1100,7 @@ window.addEventListener('load', function() {
         }
         rebuildGeometry(selectedPiece);
         updateSizeSummary();
+        updateGrid();
     }
 
     function snapValue(val) {
@@ -1097,6 +1124,7 @@ window.addEventListener('load', function() {
         }
         selectedPiece.position.set(x, y, z);
         if (labelsVisible) updateLabelPosition(selectedPiece);
+        updateGrid();
     }
 
     function onRotChange() {
@@ -1274,6 +1302,7 @@ window.addEventListener('load', function() {
             if (labelsVisible) createLabel(mesh);
         });
         selectPiece(null);
+        updateGrid();
     }
 
     function pushUndo() {
@@ -1350,15 +1379,15 @@ window.addEventListener('load', function() {
     // ============================================================
 
     var builtInTemplates = [
-        { name: '2x4 Stud', type: 'Board', w: 89, h: 38, d: 2438, price: 3.50 },
-        { name: '2x6 Plank', type: 'Board', w: 140, h: 38, d: 2438, price: 5.00 },
-        { name: '1x4 Board', type: 'Board', w: 89, h: 19, d: 2438, price: 2.50 },
-        { name: 'Shelf Board', type: 'Board', w: 300, h: 18, d: 600, price: 8.00 },
+        { name: 'Batten 40x20', type: 'Board', w: 40, h: 20, d: 2000, price: 2.00 },
+        { name: 'Plank 100x20', type: 'Board', w: 100, h: 20, d: 2000, price: 4.00 },
+        { name: 'Beam 60x40', type: 'Board', w: 60, h: 40, d: 2000, price: 5.50 },
+        { name: 'Shelf Board 300x18', type: 'Board', w: 300, h: 18, d: 600, price: 8.00 },
         { name: '6mm Dowel Pin', type: 'Dowel', r: 3, h: 30, price: 0.20 },
         { name: '8mm Dowel Pin', type: 'Dowel', r: 4, h: 35, price: 0.25 },
         { name: '10mm Dowel Rod', type: 'Dowel', r: 5, h: 300, price: 1.50 },
         { name: 'Corner Brace', type: 'L-Bracket', w: 50, h: 50, d: 20, price: 2.00 },
-        { name: 'Table Leg', type: 'Tapered Leg', rTop: 20, rBottom: 30, h: 720, price: 12.00 },
+        { name: 'Table Leg 720mm', type: 'Tapered Leg', rTop: 20, rBottom: 30, h: 720, price: 12.00 },
         { name: 'Door Wedge', type: 'Wedge', w: 80, h: 30, d: 40, price: 1.00 }
     ];
 
@@ -1590,6 +1619,7 @@ window.addEventListener('load', function() {
         selectedPiece.material.dispose();
         selectedPiece = null;
         selectPiece(null);
+        updateGrid();
     }
 
     function clearAll() {
@@ -1605,6 +1635,7 @@ window.addEventListener('load', function() {
         pieces = [];
         selectedPiece = null;
         selectPiece(null);
+        updateGrid();
     }
 
     // ============================================================
@@ -1788,6 +1819,7 @@ window.addEventListener('load', function() {
             renderer.domElement.style.cursor = '';
             if (dragStarted) {
                 // Was a real drag — don't fire click-to-select
+                updateGrid();
                 return;
             }
             // If not dragStarted, it was just a click on a piece — already selected in mousedown
@@ -1913,7 +1945,7 @@ window.addEventListener('load', function() {
         } else if (e.ctrlKey && e.key === 'Z' && e.shiftKey) {
             e.preventDefault();
             redo();
-        } else if (e.key === 'Delete') {
+        } else if (e.key === 'Delete' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
             deleteSelected();
         }
     });

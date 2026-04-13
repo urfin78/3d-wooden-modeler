@@ -73,6 +73,29 @@
         padding: 3px 6px; cursor: pointer; font-size: 11px; flex: 1; min-width: 0;
     }
     .rot-btn-row button:hover { background: #4a4a4a; }
+    #template-library { margin-top: 12px; border-top: 1px solid #555; padding-top: 8px; }
+    #template-library h3 { cursor: pointer; user-select: none; }
+    #template-library h3::before { content: '\25B6 '; font-size: 10px; }
+    #template-library h3.open::before { content: '\25BC '; font-size: 10px; }
+    #template-filter { width: 100%; background: #1a1a1a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 4px 6px; font-size: 12px; margin-bottom: 6px; }
+    #template-list { max-height: 240px; overflow-y: auto; }
+    .tpl-category { color: #888; font-size: 10px; text-transform: uppercase; margin: 8px 0 4px; }
+    .tpl-category:first-child { margin-top: 0; }
+    .tpl-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 6px; cursor: pointer; font-size: 12px; border-radius: 3px; }
+    .tpl-item:hover { background: #3a3a3a; }
+    .tpl-item .tpl-dims { color: #888; font-size: 10px; }
+    .tpl-delete { background: none; border: none; color: #ff6666; cursor: pointer; font-size: 14px; padding: 0 4px; }
+    .tpl-delete:hover { color: #ff3333; }
+    #btn-save-template { display: none; width: 100%; background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 4px 8px; cursor: pointer; font-size: 12px; margin-top: 6px; }
+    #btn-save-template:hover { background: #4a4a4a; }
+    #cost-summary { margin-top: 12px; border-top: 1px solid #555; padding-top: 8px; }
+    #cost-items { max-height: 120px; overflow-y: auto; font-size: 11px; background: #1a1a1a; border: 1px solid #555; border-radius: 3px; padding: 4px 6px; margin-bottom: 4px; }
+    .cost-row { display: flex; justify-content: space-between; padding: 1px 0; }
+    #cost-total { font-weight: bold; font-size: 13px; text-align: right; color: #c8934a; }
+    .price-row { display: flex; gap: 6px; align-items: flex-end; }
+    .price-row > div:first-child { flex: 1; }
+    .price-row select { background: #1a1a1a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 4px 2px; font-size: 12px; }
+    #currency-select { background: #1a1a1a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 2px 4px; font-size: 11px; float: right; }
 </style>
 </head>
 <body>
@@ -97,6 +120,10 @@
     <button id="btn-clear">Clear All</button>
     <div class="separator"></div>
     <button id="btn-export">Export CSV</button>
+    <div class="separator"></div>
+    <button id="btn-save">Save</button>
+    <button id="btn-load">Load</button>
+    <input type="file" id="load-file-input" accept=".woodmodel.json,.json" style="display:none">
 </div>
 
 <div id="snap-indicator">Snapped!</div>
@@ -175,12 +202,36 @@
         <input type="text" id="label-input" placeholder="Enter label...">
     </div>
 
+    <div id="price-field" style="display:none">
+        <h3>Price</h3>
+        <div class="price-row">
+            <div><label>Unit Price</label><input type="number" id="price-input" step="0.01" min="0" value="0"></div>
+            <div><label>Mode</label><select id="price-mode"><option value="fixed">Fixed</option><option value="per_mm">Per mm</option></select></div>
+        </div>
+    </div>
+
     <div id="summary-section">
         <h3>Size Summary</h3>
         <div id="size-summary"></div>
     </div>
 
+    <button id="btn-save-template">Save as Template</button>
+
     <div id="overlap-list"></div>
+
+    <div id="cost-summary">
+        <h3>Cost Summary <select id="currency-select"><option value="$">$</option><option value="€">€</option><option value="£">£</option></select></h3>
+        <div id="cost-items"></div>
+        <div id="cost-total">Total: 0</div>
+    </div>
+
+    <div id="template-library">
+        <h3 id="template-toggle">Parts Library</h3>
+        <div id="template-content" style="display:none">
+            <input type="text" id="template-filter" placeholder="Filter templates...">
+            <div id="template-list"></div>
+        </div>
+    </div>
 </div>
 
 <div id="viewport"></div>
@@ -812,6 +863,10 @@ window.addEventListener('load', function() {
 
     var inputLabel = document.getElementById('label-input');
     var sizeSummary = document.getElementById('size-summary');
+    var priceField = document.getElementById('price-field');
+    var inputPrice = document.getElementById('price-input');
+    var inputPriceMode = document.getElementById('price-mode');
+    var btnSaveTemplate = document.getElementById('btn-save-template');
 
     function selectPiece(mesh) {
         clearOverlaps();
@@ -826,8 +881,11 @@ window.addEventListener('load', function() {
             rotFields.style.display = 'none';
             document.getElementById('rot-buttons').style.display = 'none';
             labelField.style.display = 'none';
+            priceField.style.display = 'none';
             summarySection.style.display = 'none';
+            btnSaveTemplate.style.display = 'none';
             updateObjectList();
+            updateCostSummary();
             return;
         }
         mesh.material.color.setHex(SELECT_COLOR);
@@ -837,9 +895,13 @@ window.addEventListener('load', function() {
         rotFields.style.display = 'block';
         document.getElementById('rot-buttons').style.display = 'block';
         labelField.style.display = 'block';
+        priceField.style.display = 'block';
         summarySection.style.display = 'block';
+        btnSaveTemplate.style.display = 'block';
 
         var ud = mesh.userData;
+        if (ud.price === undefined) ud.price = 0;
+        if (!ud.priceMode) ud.priceMode = 'fixed';
         var type = ud.type;
 
         // Show correct dimension fields
@@ -872,9 +934,12 @@ window.addEventListener('load', function() {
         inputRZ.value = Math.round(THREE.MathUtils.radToDeg(mesh.rotation.z));
 
         inputLabel.value = ud.label || '';
+        inputPrice.value = ud.price;
+        inputPriceMode.value = ud.priceMode;
 
         updateSizeSummary();
         updateObjectList();
+        updateCostSummary();
     }
 
     function updateSizeSummary() {
@@ -1065,6 +1130,50 @@ window.addEventListener('load', function() {
     });
     inputLabel.addEventListener('input', onLabelChange);
 
+    function onPriceChange() {
+        if (!selectedPiece) return;
+        selectedPiece.userData.price = parseFloat(inputPrice.value) || 0;
+        selectedPiece.userData.priceMode = inputPriceMode.value;
+        updateCostSummary();
+    }
+    inputPrice.addEventListener('change', onPriceChange);
+    inputPriceMode.addEventListener('change', onPriceChange);
+
+    // Currency
+    var currencySelect = document.getElementById('currency-select');
+    var storedCurrency = localStorage.getItem('woodmodeler_currency');
+    if (storedCurrency) currencySelect.value = storedCurrency;
+    currencySelect.addEventListener('change', function() {
+        localStorage.setItem('woodmodeler_currency', this.value);
+        updateCostSummary();
+    });
+
+    function computePieceCost(mesh) {
+        var ud = mesh.userData;
+        var price = ud.price || 0;
+        if (!price) return 0;
+        if (ud.priceMode === 'per_mm') return price * ud.h;
+        return price;
+    }
+
+    function updateCostSummary() {
+        var currency = currencySelect.value;
+        var costItems = document.getElementById('cost-items');
+        var costTotal = document.getElementById('cost-total');
+        var total = 0;
+        var html = '';
+        pieces.forEach(function(m) {
+            var ud = m.userData;
+            if (ud.price === undefined) ud.price = 0;
+            if (!ud.priceMode) ud.priceMode = 'fixed';
+            var cost = computePieceCost(m);
+            total += cost;
+            html += '<div class="cost-row"><span>' + (ud.label || ud.type) + '</span><span>' + currency + cost.toFixed(2) + '</span></div>';
+        });
+        costItems.innerHTML = html;
+        costTotal.textContent = 'Total: ' + currency + total.toFixed(2);
+    }
+
     // ============================================================
     // Snap
     // ============================================================
@@ -1091,6 +1200,7 @@ window.addEventListener('load', function() {
             var entry = {
                 type: ud.type, id: ud.id, label: ud.label, notches: ud.notches,
                 csgModified: ud.csgModified,
+                price: ud.price || 0, priceMode: ud.priceMode || 'fixed',
                 px: mesh.position.x, py: mesh.position.y, pz: mesh.position.z,
                 rx: mesh.rotation.x, ry: mesh.rotation.y, rz: mesh.rotation.z
             };
@@ -1150,6 +1260,8 @@ window.addEventListener('load', function() {
             mesh.userData.label = entry.label;
             mesh.userData.notches = entry.notches;
             mesh.userData.csgModified = entry.csgModified;
+            mesh.userData.price = entry.price || 0;
+            mesh.userData.priceMode = entry.priceMode || 'fixed';
             if (entry.type === 'Board' || entry.type === 'Wedge' || entry.type === 'L-Bracket') {
                 mesh.userData.w = entry.w; mesh.userData.h = entry.h; mesh.userData.d = entry.d;
             } else if (entry.type === 'Dowel') {
@@ -1182,6 +1294,189 @@ window.addEventListener('load', function() {
         undoStack.push(serializeScene());
         if (undoStack.length > MAX_UNDO) undoStack.shift();
         restoreScene(redoStack.pop());
+    }
+
+    // ============================================================
+    // Save & Load
+    // ============================================================
+
+    function saveModel() {
+        var name = prompt('Project name:', 'My Project');
+        if (name === null) return;
+        var data = {
+            version: 1,
+            name: name,
+            created: new Date().toISOString(),
+            pieces: JSON.parse(serializeScene())
+        };
+        var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = (name || 'model').replace(/[^a-zA-Z0-9_-]/g, '_') + '.woodmodel.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function loadModel(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                var data = JSON.parse(e.target.result);
+                var piecesData;
+                // Support both wrapped format (version 1) and raw array (undo format)
+                if (data.version && data.pieces) {
+                    piecesData = data.pieces;
+                } else if (Array.isArray(data)) {
+                    piecesData = data;
+                } else {
+                    alert('Invalid file format.');
+                    return;
+                }
+                if (pieces.length > 0) {
+                    if (!confirm('Replace current model?')) return;
+                }
+                restoreScene(JSON.stringify(piecesData));
+                updateObjectList();
+            } catch (err) {
+                alert('Failed to load file: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // ============================================================
+    // Template Library
+    // ============================================================
+
+    var builtInTemplates = [
+        { name: '2x4 Stud', type: 'Board', w: 89, h: 38, d: 2438, price: 3.50 },
+        { name: '2x6 Plank', type: 'Board', w: 140, h: 38, d: 2438, price: 5.00 },
+        { name: '1x4 Board', type: 'Board', w: 89, h: 19, d: 2438, price: 2.50 },
+        { name: 'Shelf Board', type: 'Board', w: 300, h: 18, d: 600, price: 8.00 },
+        { name: '6mm Dowel Pin', type: 'Dowel', r: 3, h: 30, price: 0.20 },
+        { name: '8mm Dowel Pin', type: 'Dowel', r: 4, h: 35, price: 0.25 },
+        { name: '10mm Dowel Rod', type: 'Dowel', r: 5, h: 300, price: 1.50 },
+        { name: 'Corner Brace', type: 'L-Bracket', w: 50, h: 50, d: 20, price: 2.00 },
+        { name: 'Table Leg', type: 'Tapered Leg', rTop: 20, rBottom: 30, h: 720, price: 12.00 },
+        { name: 'Door Wedge', type: 'Wedge', w: 80, h: 30, d: 40, price: 1.00 }
+    ];
+
+    function loadCustomTemplates() {
+        try {
+            var stored = localStorage.getItem('woodmodeler_templates');
+            return stored ? JSON.parse(stored) : [];
+        } catch (e) { return []; }
+    }
+
+    function saveCustomTemplates(templates) {
+        localStorage.setItem('woodmodeler_templates', JSON.stringify(templates));
+    }
+
+    function addFromTemplate(tpl) {
+        var mesh;
+        if (tpl.type === 'Board') mesh = makeBoard(tpl.w, tpl.h, tpl.d);
+        else if (tpl.type === 'Dowel') mesh = makeDowel(tpl.r, tpl.h);
+        else if (tpl.type === 'Wedge') mesh = makeWedge(tpl.w, tpl.h, tpl.d);
+        else if (tpl.type === 'L-Bracket') mesh = makeLBracket(tpl.w, tpl.h, tpl.d);
+        else if (tpl.type === 'Tapered Leg') mesh = makeTaperedLeg(tpl.rTop, tpl.rBottom, tpl.h);
+        if (mesh) {
+            mesh.userData.label = tpl.name + ' ' + mesh.userData.id;
+            mesh.userData.price = tpl.price || 0;
+            mesh.userData.priceMode = 'fixed';
+            addPiece(mesh);
+        }
+    }
+
+    function saveAsTemplate() {
+        if (!selectedPiece) return;
+        var ud = selectedPiece.userData;
+        var name = prompt('Template name:', ud.label || ud.type);
+        if (!name) return;
+        var tpl = { name: name, type: ud.type, price: ud.price || 0 };
+        if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
+            tpl.w = ud.w; tpl.h = ud.h; tpl.d = ud.d;
+        } else if (ud.type === 'Dowel') {
+            tpl.r = ud.r; tpl.h = ud.h;
+        } else if (ud.type === 'Tapered Leg') {
+            tpl.rTop = ud.rTop; tpl.rBottom = ud.rBottom; tpl.h = ud.h;
+        }
+        var custom = loadCustomTemplates();
+        custom.push(tpl);
+        saveCustomTemplates(custom);
+        renderTemplateList();
+    }
+
+    function deleteCustomTemplate(index) {
+        var custom = loadCustomTemplates();
+        custom.splice(index, 1);
+        saveCustomTemplates(custom);
+        renderTemplateList();
+    }
+
+    function templateDimsText(tpl) {
+        if (tpl.type === 'Board' || tpl.type === 'Wedge' || tpl.type === 'L-Bracket') {
+            return tpl.w + 'x' + tpl.h + 'x' + tpl.d;
+        } else if (tpl.type === 'Dowel') {
+            return 'R' + tpl.r + ' H' + tpl.h;
+        } else if (tpl.type === 'Tapered Leg') {
+            return 'R' + tpl.rTop + '/' + tpl.rBottom + ' H' + tpl.h;
+        }
+        return '';
+    }
+
+    function renderTemplateList() {
+        var container = document.getElementById('template-list');
+        var filter = document.getElementById('template-filter').value.toLowerCase();
+        container.innerHTML = '';
+
+        var custom = loadCustomTemplates();
+        var sections = [
+            { label: 'Built-in', items: builtInTemplates, custom: false },
+            { label: 'Custom', items: custom, custom: true }
+        ];
+
+        sections.forEach(function(section) {
+            var filtered = section.items.filter(function(t) {
+                return t.name.toLowerCase().indexOf(filter) !== -1 || t.type.toLowerCase().indexOf(filter) !== -1;
+            });
+            if (filtered.length === 0) return;
+
+            var cat = document.createElement('div');
+            cat.className = 'tpl-category';
+            cat.textContent = section.label;
+            container.appendChild(cat);
+
+            filtered.forEach(function(tpl, i) {
+                var row = document.createElement('div');
+                row.className = 'tpl-item';
+                var left = document.createElement('span');
+                left.textContent = tpl.name;
+                left.style.cursor = 'pointer';
+                var dims = document.createElement('span');
+                dims.className = 'tpl-dims';
+                dims.textContent = templateDimsText(tpl);
+                row.appendChild(left);
+                row.appendChild(dims);
+
+                if (section.custom) {
+                    var del = document.createElement('button');
+                    del.className = 'tpl-delete';
+                    del.textContent = '\u00D7';
+                    del.title = 'Delete template';
+                    // Find original index in custom array
+                    var origIdx = section.items.indexOf(tpl);
+                    del.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        deleteCustomTemplate(origIdx);
+                    });
+                    row.appendChild(del);
+                }
+
+                row.addEventListener('click', function() { addFromTemplate(tpl); });
+                container.appendChild(row);
+            });
+        });
     }
 
     // ============================================================
@@ -1317,9 +1612,13 @@ window.addEventListener('load', function() {
     // ============================================================
 
     function exportCSV() {
-        var rows = [['Part', 'Type', 'Label', 'W', 'H', 'D', 'Dia', 'Notches']];
+        var currency = currencySelect.value;
+        var rows = [['Part', 'Type', 'Label', 'W', 'H', 'D', 'Dia', 'Notches', 'UnitPrice', 'Cost']];
+        var totalCost = 0;
         pieces.forEach(function(m, i) {
             var ud = m.userData;
+            var cost = computePieceCost(m);
+            totalCost += cost;
             var row = [i + 1, ud.type, '"' + (ud.label || '') + '"'];
             if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
                 row.push(ud.w, ud.h, ud.d, '', ud.notches);
@@ -1328,8 +1627,10 @@ window.addEventListener('load', function() {
             } else if (ud.type === 'Tapered Leg') {
                 row.push('', ud.h, '', ud.rTop * 2 + '/' + ud.rBottom * 2, ud.notches);
             }
+            row.push(currency + (ud.price || 0).toFixed(2), currency + cost.toFixed(2));
             rows.push(row);
         });
+        rows.push(['', '', '', '', '', '', '', '', 'Total', currency + totalCost.toFixed(2)]);
         var csv = rows.map(function(r) { return r.join(','); }).join('\n');
         var blob = new Blob([csv], { type: 'text/csv' });
         var url = URL.createObjectURL(blob);
@@ -1582,6 +1883,28 @@ window.addEventListener('load', function() {
     document.getElementById('btn-clear').addEventListener('click', clearAll);
     document.getElementById('btn-export').addEventListener('click', exportCSV);
 
+    document.getElementById('btn-save').addEventListener('click', saveModel);
+    document.getElementById('btn-load').addEventListener('click', function() {
+        document.getElementById('load-file-input').click();
+    });
+    document.getElementById('load-file-input').addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            loadModel(e.target.files[0]);
+            e.target.value = '';
+        }
+    });
+
+    // Template library toggle
+    document.getElementById('template-toggle').addEventListener('click', function() {
+        var content = document.getElementById('template-content');
+        var open = content.style.display === 'none';
+        content.style.display = open ? 'block' : 'none';
+        this.classList.toggle('open', open);
+        if (open) renderTemplateList();
+    });
+    document.getElementById('template-filter').addEventListener('input', renderTemplateList);
+    document.getElementById('btn-save-template').addEventListener('click', saveAsTemplate);
+
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
@@ -1617,6 +1940,7 @@ window.addEventListener('load', function() {
     }
     animate();
     updateObjectList();
+    updateCostSummary();
 
 });
 </script>

@@ -378,6 +378,7 @@ window.addEventListener('load', function() {
     function csgSubtract(meshA, meshB) {
         var a = new CSGNode(csgFromMesh(meshA));
         var b = new CSGNode(csgFromMesh(meshB));
+        a.invert();
         a.clipTo(b);
         b.clipTo(a);
         b.invert();

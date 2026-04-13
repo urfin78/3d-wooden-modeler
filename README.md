@@ -2,7 +2,9 @@
 
 > This project was fully created using [Claude Code](https://claude.ai/claude-code) by Anthropic.
 
-A browser-based 3D woodworking modeller for planning and visualizing wooden constructions. Built as a single self-contained HTML file with no build tools, no frameworks, and no installation required -- just open `index.html` in your browser.
+**[Try it live](https://urfin78.github.io/3d-wooden-modeler/)** — no installation required, runs entirely in the browser.
+
+A browser-based 3D woodworking modeller for planning and visualizing wooden constructions. Built as a single self-contained HTML file with no build tools, no frameworks, and no dependencies.
 
 ## Features
 

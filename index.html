@@ -1884,7 +1884,8 @@ window.addEventListener('load', function() {
             version: 1,
             name: name,
             created: new Date().toISOString(),
-            pieces: JSON.parse(serializeScene())
+            pieces: JSON.parse(serializeScene()),
+            customTemplates: loadCustomTemplates()
         };
         var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         var url = URL.createObjectURL(blob);
@@ -1914,6 +1915,15 @@ window.addEventListener('load', function() {
                     if (!confirm(t('load.replace'))) return;
                 }
                 restoreScene(JSON.stringify(piecesData));
+                // Restore custom templates if present, merging with existing
+                if (data.customTemplates && data.customTemplates.length > 0) {
+                    var existing = loadCustomTemplates();
+                    var existingNames = existing.map(function(t) { return t.name; });
+                    data.customTemplates.forEach(function(t) {
+                        if (existingNames.indexOf(t.name) === -1) existing.push(t);
+                    });
+                    saveCustomTemplates(existing);
+                }
                 updateObjectList();
             } catch (err) {
                 alert(t('load.failed', { msg: err.message }));

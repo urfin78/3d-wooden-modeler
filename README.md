@@ -9,21 +9,30 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 - **5 shape types**: Board, Dowel, Wedge, L-Bracket, and Tapered Leg
 - **Interactive 3D viewport** with orbit controls (pan, rotate, zoom)
 - **Real-time editing** of dimensions, position, and rotation via the side panel
+- **Drag-to-move** pieces directly in the viewport (Shift+drag for vertical movement)
+- **Duplicate** selected piece via toolbar button or Ctrl+D
 - **CSG boolean subtraction** (Cut Joint) to carve joints and holes between pieces
 - **Snap mode** for aligning pieces to a 10mm grid
 - **Labels** displayed as 3D sprites above each piece
 - **Overlap detection** to highlight intersecting pieces
-- **Undo/Redo** support (including Ctrl+Z / Ctrl+Shift+Z)
-- **CSV export** of a cut list with dimensions, types, and notch counts
+- **Undo/Redo** support (Ctrl+Z / Ctrl+Shift+Z)
+- **Auto-resizing grid** that adapts to the size of your model
+- **Template library** with built-in metric woodworking parts and custom templates (stored in localStorage), integrated into toolbar dropdowns
+- **Save/Load** models as `.woodmodel.json` files for persistent projects
+- **Cost calculator** with per-piece pricing (fixed or per-mm), currency selector, and live cost summary
+- **CSV export** of a cut list with dimensions, types, notch counts, and costs
 
 ## Usage
 
 1. Open `index.html` in any modern browser
-2. Use the toolbar to add pieces (boards, dowels, wedges, etc.)
+2. Use the toolbar dropdowns to add pieces — choose from defaults or library templates
 3. Click a piece to select it and edit its dimensions, position, rotation, and label in the side panel
-4. Use **Cut Joint** to carve one piece into another (e.g., drill a dowel hole into a board)
-5. Use **Show Overlaps** to check for unintended intersections
-6. Export your cut list as CSV when done
+4. Drag pieces to reposition them (Shift+drag for vertical movement)
+5. Use **Cut Joint** to carve one piece into another (e.g., drill a dowel hole into a board)
+6. Use **Show Overlaps** to check for unintended intersections
+7. Set prices per piece and check the **Cost Summary** for budgeting
+8. **Save** your model and **Load** it later to continue working
+9. Export your cut list as CSV when done
 
 ## Tech Stack
 
@@ -34,4 +43,3 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-

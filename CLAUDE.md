@@ -32,7 +32,7 @@ Everything runs inside a `window.addEventListener('load', ...)` closure in `inde
 
 9. **Save & Load** — `saveModel()` wraps serialized scene with metadata and triggers `.woodmodel.json` download. `loadModel()` reads the file and calls `restoreScene()`.
 
-10. **Template Library** — Built-in metric templates array + custom templates stored in `localStorage`. Collapsible sidebar panel with filter/search.
+10. **Template Library** — Built-in metric templates + custom templates stored in `localStorage`. Integrated into toolbar add-piece dropdowns grouped by type.
 
 11. **Cut Joint Mode** — Two-click workflow: select target, then tool piece. Calls `csgSubtract` and records notch info in `userData.notches`.
 
@@ -55,3 +55,4 @@ Everything runs inside a `window.addEventListener('load', ...)` closure in `inde
 - add a commit including message for changes
 - work on feature branches, not directly on main
 - merge to main when features are tested and ready
+- when adding features or making changes, update both CLAUDE.md and README.md to reflect the current state

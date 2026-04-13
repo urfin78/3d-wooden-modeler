@@ -77,7 +77,7 @@
     .add-dropdown > button { background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 4px; padding: 6px 10px; cursor: pointer; white-space: nowrap; font-size: 12px; }
     .add-dropdown > button:hover { background: #4a4a4a; }
     .add-dropdown > button::after { content: ' \25BC'; font-size: 8px; }
-    .add-menu { display: none; position: absolute; top: 100%; left: 0; min-width: 180px; background: #2a2a2a; border: 1px solid #555; border-radius: 4px; z-index: 300; padding: 4px 0; margin-top: 2px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    .add-menu { display: none; position: fixed; min-width: 180px; background: #2a2a2a; border: 1px solid #555; border-radius: 4px; z-index: 300; padding: 4px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
     .add-dropdown.open .add-menu { display: block; }
     .add-menu-item { display: flex; justify-content: space-between; padding: 5px 10px; cursor: pointer; font-size: 12px; color: #ddd; }
     .add-menu-item:hover { background: #4a4a4a; }
@@ -116,6 +116,7 @@
     <button id="btn-undo">Undo</button>
     <button id="btn-redo">Redo</button>
     <div class="separator"></div>
+    <button id="btn-duplicate">Duplicate</button>
     <button id="btn-delete">Delete</button>
     <button id="btn-clear">Clear All</button>
     <div class="separator"></div>
@@ -1547,6 +1548,46 @@ window.addEventListener('load', function() {
     // Delete & Clear
     // ============================================================
 
+    function duplicateSelected() {
+        if (!selectedPiece) return;
+        var ud = selectedPiece.userData;
+        var mesh;
+        if (ud.csgModified) {
+            // Clone raw geometry for CSG-modified pieces
+            var geo = selectedPiece.geometry.clone();
+            mesh = new THREE.Mesh(geo, createWoodMaterial());
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+        } else {
+            if (ud.type === 'Board') mesh = makeBoard(ud.w, ud.h, ud.d);
+            else if (ud.type === 'Dowel') mesh = makeDowel(ud.r, ud.h);
+            else if (ud.type === 'Wedge') mesh = makeWedge(ud.w, ud.h, ud.d);
+            else if (ud.type === 'L-Bracket') mesh = makeLBracket(ud.w, ud.h, ud.d);
+            else if (ud.type === 'Tapered Leg') mesh = makeTaperedLeg(ud.rTop, ud.rBottom, ud.h);
+        }
+        // Copy transform with a small offset so it's visible
+        mesh.position.copy(selectedPiece.position);
+        mesh.position.x += 30;
+        mesh.position.z += 30;
+        mesh.rotation.copy(selectedPiece.rotation);
+        // Copy userData
+        mesh.userData.type = ud.type;
+        mesh.userData.id = ++pieceCounter;
+        mesh.userData.label = (ud.label || ud.type) + ' Copy';
+        mesh.userData.notches = ud.csgModified ? ud.notches : 0;
+        mesh.userData.csgModified = ud.csgModified || false;
+        mesh.userData.price = ud.price || 0;
+        mesh.userData.priceMode = ud.priceMode || 'fixed';
+        if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
+            mesh.userData.w = ud.w; mesh.userData.h = ud.h; mesh.userData.d = ud.d;
+        } else if (ud.type === 'Dowel') {
+            mesh.userData.r = ud.r; mesh.userData.h = ud.h;
+        } else if (ud.type === 'Tapered Leg') {
+            mesh.userData.rTop = ud.rTop; mesh.userData.rBottom = ud.rBottom; mesh.userData.h = ud.h;
+        }
+        addPiece(mesh);
+    }
+
     function deleteSelected() {
         if (!selectedPiece) return;
         pushUndo();
@@ -1913,6 +1954,12 @@ window.addEventListener('load', function() {
                 if (!wasOpen) {
                     buildDropdownMenu(dd);
                     dd.classList.add('open');
+                    // Position the fixed menu below the button
+                    var btn = dd.querySelector('button');
+                    var rect = btn.getBoundingClientRect();
+                    var menu = dd.querySelector('.add-menu');
+                    menu.style.top = rect.bottom + 2 + 'px';
+                    menu.style.left = rect.left + 'px';
                 }
             });
         })(dropdowns[di]);
@@ -1954,6 +2001,7 @@ window.addEventListener('load', function() {
 
     document.getElementById('btn-undo').addEventListener('click', undo);
     document.getElementById('btn-redo').addEventListener('click', redo);
+    document.getElementById('btn-duplicate').addEventListener('click', duplicateSelected);
     document.getElementById('btn-delete').addEventListener('click', deleteSelected);
     document.getElementById('btn-clear').addEventListener('click', clearAll);
     document.getElementById('btn-export').addEventListener('click', exportCSV);
@@ -1982,6 +2030,9 @@ window.addEventListener('load', function() {
         } else if (e.ctrlKey && e.key === 'Z' && e.shiftKey) {
             e.preventDefault();
             redo();
+        } else if (e.ctrlKey && e.key === 'd') {
+            e.preventDefault();
+            duplicateSelected();
         } else if (e.key === 'Delete' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
             deleteSelected();
         }

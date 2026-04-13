@@ -1377,7 +1377,14 @@ window.addEventListener('load', function() {
         var intersects = raycaster.intersectObjects(meshes, false);
 
         if (intersects.length > 0) {
+            // Prefer the already-selected piece when multiple overlap
             dragPiece = intersects[0].object;
+            for (var i = 0; i < intersects.length; i++) {
+                if (intersects[i].object === selectedPiece) {
+                    dragPiece = selectedPiece;
+                    break;
+                }
+            }
             dragMode = true;
             selectPiece(dragPiece);
 

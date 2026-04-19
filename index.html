@@ -96,6 +96,23 @@
     .price-row > div:first-child { flex: 1; }
     .price-row select { background: #1a1a1a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 4px 2px; font-size: 12px; }
     #currency-select { background: #1a1a1a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 2px 4px; font-size: 11px; float: right; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: #2a2a2a; border: 1px solid #c8934a; border-radius: 6px; padding: 16px 18px; width: 320px; box-shadow: 0 6px 24px rgba(0,0,0,0.5); }
+    .modal-box h3 { color: #c8934a; margin: 0 0 10px; font-size: 15px; }
+    .modal-box label { display: block; margin: 8px 0 2px; color: #aaa; font-size: 11px; }
+    .modal-box input[type="number"], .modal-box select {
+        width: 100%; background: #1a1a1a; color: #ddd; border: 1px solid #555;
+        border-radius: 3px; padding: 5px 6px; font-size: 12px;
+    }
+    #split-preview { background: #1a1a1a; border: 1px solid #555; border-radius: 3px; padding: 6px 8px; margin-top: 10px; font-size: 12px; color: #aaa; min-height: 18px; }
+    #split-preview.err { color: #ff6666; }
+    .modal-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+    .modal-buttons button { background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 6px 14px; cursor: pointer; font-size: 12px; }
+    .modal-buttons button:hover { background: #4a4a4a; }
+    .modal-buttons button.primary { background: #c8934a; color: #1a1a1a; border-color: #e8a030; }
+    .modal-buttons button.primary:hover { background: #e8a030; }
+    .modal-buttons button.primary:disabled { background: #555; color: #888; border-color: #555; cursor: not-allowed; }
 </style>
 </head>
 <body>
@@ -111,6 +128,7 @@
     <button id="btn-labels">Labels OFF</button>
     <div class="separator"></div>
     <button id="btn-cut">Cut Joint</button>
+    <button id="btn-split">Split</button>
     <button id="btn-overlaps">Show Overlaps</button>
     <div class="separator"></div>
     <button id="btn-undo">Undo</button>
@@ -229,6 +247,40 @@
 </div>
 
 <div id="viewport"></div>
+
+<div id="split-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>Split Piece</h3>
+        <label>Mode</label>
+        <select id="split-mode">
+            <option value="count">By number of parts</option>
+            <option value="length">By part length</option>
+        </select>
+        <div id="split-count-row">
+            <label>Number of parts</label>
+            <input type="number" id="split-count" min="2" step="1" value="2">
+        </div>
+        <div id="split-length-row" style="display:none">
+            <label>Part length (mm)</label>
+            <input type="number" id="split-length" min="1" step="1" value="100">
+            <label style="display:flex; align-items:center; gap:6px; margin-top:8px; cursor:pointer;">
+                <input type="checkbox" id="split-keep-leftover" style="width:auto; margin:0;">
+                <span>Keep leftover as extra piece</span>
+            </label>
+        </div>
+        <label>Kerf — saw blade thickness (mm)</label>
+        <input type="number" id="split-kerf" min="0" step="0.1" value="3">
+        <div id="split-axis-row">
+            <label>Cut axis</label>
+            <select id="split-axis"></select>
+        </div>
+        <div id="split-preview"></div>
+        <div class="modal-buttons">
+            <button id="split-cancel">Cancel</button>
+            <button id="split-confirm" class="primary">Split</button>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -1588,6 +1640,265 @@ window.addEventListener('load', function() {
         addPiece(mesh);
     }
 
+    // ============================================================
+    // Split Piece (kerf-aware)
+    // ============================================================
+
+    var SPLIT_KERF_KEY = 'woodmodeler.splitKerf';
+    var SPLIT_MODE_KEY = 'woodmodeler.splitMode';
+    var SPLIT_KEEP_LEFTOVER_KEY = 'woodmodeler.splitKeepLeftover';
+
+    function canSplit(mesh) {
+        if (!mesh) return false;
+        if (mesh.userData.csgModified) return false;
+        var t = mesh.userData.type;
+        return t === 'Board' || t === 'Dowel';
+    }
+
+    function splitAxisOptionsForSelected() {
+        if (!selectedPiece) return [];
+        var ud = selectedPiece.userData;
+        if (ud.type === 'Board') {
+            return [
+                { key: 'w', label: 'W (width) — ' + ud.w + ' mm', len: ud.w },
+                { key: 'h', label: 'H (height) — ' + ud.h + ' mm', len: ud.h },
+                { key: 'd', label: 'D (depth) — ' + ud.d + ' mm', len: ud.d }
+            ];
+        }
+        if (ud.type === 'Dowel') {
+            return [{ key: 'h', label: 'H (length) — ' + ud.h + ' mm', len: ud.h }];
+        }
+        return [];
+    }
+
+    function openSplitModal() {
+        if (!canSplit(selectedPiece)) {
+            alert('Select an unmodified Board or Dowel to split.');
+            return;
+        }
+        var axisSel = document.getElementById('split-axis');
+        var axisRow = document.getElementById('split-axis-row');
+        var opts = splitAxisOptionsForSelected();
+        axisSel.innerHTML = '';
+        opts.forEach(function(o) {
+            var opt = document.createElement('option');
+            opt.value = o.key;
+            opt.textContent = o.label;
+            axisSel.appendChild(opt);
+        });
+        // Default axis: longest dimension
+        var longest = opts[0];
+        opts.forEach(function(o) { if (o.len > longest.len) longest = o; });
+        axisSel.value = longest.key;
+        axisRow.style.display = opts.length > 1 ? '' : 'none';
+        // Restore saved kerf
+        var savedKerf = parseFloat(localStorage.getItem(SPLIT_KERF_KEY));
+        document.getElementById('split-kerf').value = isFinite(savedKerf) && savedKerf >= 0 ? savedKerf : 3;
+        // Restore saved mode
+        var savedMode = localStorage.getItem(SPLIT_MODE_KEY);
+        var modeSel = document.getElementById('split-mode');
+        modeSel.value = (savedMode === 'length') ? 'length' : 'count';
+        document.getElementById('split-count').value = 2;
+        // Default part length: half of the selected axis length, rounded to 10mm
+        document.getElementById('split-length').value = Math.max(1, Math.round(longest.len / 2 / 10) * 10);
+        document.getElementById('split-keep-leftover').checked =
+            localStorage.getItem(SPLIT_KEEP_LEFTOVER_KEY) === '1';
+        updateSplitModeUI();
+        updateSplitPreview();
+        document.getElementById('split-modal').classList.add('open');
+    }
+
+    function updateSplitModeUI() {
+        var mode = document.getElementById('split-mode').value;
+        document.getElementById('split-count-row').style.display = mode === 'count' ? '' : 'none';
+        document.getElementById('split-length-row').style.display = mode === 'length' ? '' : 'none';
+    }
+
+    function closeSplitModal() {
+        document.getElementById('split-modal').classList.remove('open');
+    }
+
+    function getSplitParams() {
+        var mode = document.getElementById('split-mode').value;
+        var kerf = parseFloat(document.getElementById('split-kerf').value);
+        var axis = document.getElementById('split-axis').value;
+        var opts = splitAxisOptionsForSelected();
+        var sel = null;
+        for (var i = 0; i < opts.length; i++) if (opts[i].key === axis) sel = opts[i];
+        var total = sel ? sel.len : 0;
+
+        var keepLeftover = document.getElementById('split-keep-leftover').checked;
+        var n, partLen, remainder, leftoverPiece;
+        if (mode === 'length') {
+            partLen = parseFloat(document.getElementById('split-length').value);
+            if (isFinite(partLen) && partLen > 0 && isFinite(kerf) && kerf >= 0 && total > 0) {
+                // Max n such that n*partLen + (n-1)*kerf <= total
+                n = Math.floor((total + kerf) / (partLen + kerf));
+                if (n < 1) n = 0;
+                // Raw leftover if we stop after n-1 cuts (last piece touches the end)
+                remainder = total - n * partLen - Math.max(0, n - 1) * kerf;
+                // If we want to keep the leftover as a separate piece, one more kerf is consumed
+                leftoverPiece = remainder - kerf;
+            } else {
+                n = NaN; remainder = NaN; leftoverPiece = NaN;
+            }
+        } else {
+            n = parseInt(document.getElementById('split-count').value, 10);
+            if (isFinite(n) && n >= 2 && isFinite(kerf) && kerf >= 0) {
+                partLen = (total - (n - 1) * kerf) / n;
+                remainder = 0;
+                leftoverPiece = 0;
+            } else {
+                partLen = NaN; remainder = 0; leftoverPiece = 0;
+            }
+        }
+        return {
+            mode: mode, n: n, kerf: kerf, axis: axis,
+            total: total, partLen: partLen, remainder: remainder,
+            keepLeftover: keepLeftover, leftoverPiece: leftoverPiece
+        };
+    }
+
+    function updateSplitPreview() {
+        var preview = document.getElementById('split-preview');
+        var confirmBtn = document.getElementById('split-confirm');
+        var p = getSplitParams();
+        if (!isFinite(p.kerf) || p.kerf < 0) {
+            preview.textContent = 'Kerf must be ≥ 0 mm.';
+            preview.classList.add('err');
+            confirmBtn.disabled = true;
+            return;
+        }
+        if (p.mode === 'length') {
+            if (!isFinite(p.partLen) || p.partLen <= 0) {
+                preview.textContent = 'Part length must be > 0.';
+                preview.classList.add('err');
+                confirmBtn.disabled = true;
+                return;
+            }
+            if (p.n < 2) {
+                preview.textContent = 'Length too large — fits fewer than 2 parts.';
+                preview.classList.add('err');
+                confirmBtn.disabled = true;
+                return;
+            }
+        } else {
+            if (!isFinite(p.n) || p.n < 2) {
+                preview.textContent = 'Number of parts must be at least 2.';
+                preview.classList.add('err');
+                confirmBtn.disabled = true;
+                return;
+            }
+            if (!isFinite(p.partLen) || p.partLen <= 0) {
+                preview.textContent = 'Kerf too large — no material left.';
+                preview.classList.add('err');
+                confirmBtn.disabled = true;
+                return;
+            }
+        }
+        preview.classList.remove('err');
+        confirmBtn.disabled = false;
+        var keepLeftover = p.mode === 'length' && p.keepLeftover && p.leftoverPiece > 0.01;
+        var cuts = keepLeftover ? p.n : p.n - 1;
+        var kerfLoss = cuts * p.kerf;
+        var html = p.n + ' × ' + p.partLen.toFixed(2) + ' mm';
+        if (keepLeftover) {
+            html += ' + 1 × ' + p.leftoverPiece.toFixed(2) + ' mm (leftover)';
+        }
+        html += '<br>Kerf loss: ' + kerfLoss.toFixed(2) + ' mm (' + cuts + ' cut' + (cuts === 1 ? '' : 's') + ')';
+        if (p.mode === 'length' && !p.keepLeftover && p.remainder > 0.01) {
+            html += '<br>Leftover: ' + p.remainder.toFixed(2) + ' mm (discarded)';
+        } else if (p.mode === 'length' && p.keepLeftover && p.leftoverPiece <= 0.01 && p.remainder > 0.01) {
+            html += '<br>Leftover too small after cut — discarded (' + p.remainder.toFixed(2) + ' mm).';
+        }
+        preview.innerHTML = html;
+    }
+
+    function splitSelected() {
+        if (!canSplit(selectedPiece)) return;
+        var p = getSplitParams();
+        if (!isFinite(p.kerf) || p.kerf < 0) return;
+        if (!isFinite(p.n) || p.n < 2) return;
+        if (!isFinite(p.partLen) || p.partLen <= 0) return;
+
+        localStorage.setItem(SPLIT_KERF_KEY, String(p.kerf));
+        localStorage.setItem(SPLIT_MODE_KEY, p.mode);
+        localStorage.setItem(SPLIT_KEEP_LEFTOVER_KEY, p.keepLeftover ? '1' : '0');
+
+        var makeLeftover = p.mode === 'length' && p.keepLeftover && p.leftoverPiece > 0.01;
+        var totalParts = p.n + (makeLeftover ? 1 : 0);
+
+        pushUndo();
+
+        var src = selectedPiece;
+        var ud = src.userData;
+        var srcPos = src.position.clone();
+        var srcQuat = src.quaternion.clone();
+        var baseLabel = ud.label || ud.type;
+        var price = ud.price || 0;
+        var priceMode = ud.priceMode || 'fixed';
+        // Split fixed prices across parts (including leftover); per-mm prices stay the same unit rate.
+        var newPrice = priceMode === 'per_mm' ? price : price / totalParts;
+
+        // Local direction of the cut axis
+        var localDir;
+        if (p.axis === 'w') localDir = new THREE.Vector3(1, 0, 0);
+        else if (p.axis === 'h') localDir = new THREE.Vector3(0, 1, 0);
+        else localDir = new THREE.Vector3(0, 0, 1);
+        var worldDir = localDir.clone().applyQuaternion(srcQuat);
+
+        // Remove original
+        var srcIdx = pieces.indexOf(src);
+        if (srcIdx !== -1) pieces.splice(srcIdx, 1);
+        removeLabel(src);
+        scene.remove(src);
+        src.geometry.dispose();
+        src.material.dispose();
+        selectedPiece = null;
+
+        // Pieces start from the original's left edge; any leftover (by-length mode) hangs off the right.
+        var startOffset = -p.total / 2 + p.partLen / 2;
+        var created = [];
+
+        function addSplitMesh(partLen, offsetCenter, label) {
+            var mesh;
+            if (ud.type === 'Board') {
+                var w = p.axis === 'w' ? partLen : ud.w;
+                var h = p.axis === 'h' ? partLen : ud.h;
+                var d = p.axis === 'd' ? partLen : ud.d;
+                mesh = makeBoard(w, h, d);
+            } else {
+                mesh = makeDowel(ud.r, partLen);
+            }
+            mesh.quaternion.copy(srcQuat);
+            mesh.position.copy(srcPos).add(worldDir.clone().multiplyScalar(offsetCenter));
+            mesh.userData.label = label;
+            mesh.userData.price = newPrice;
+            mesh.userData.priceMode = priceMode;
+            scene.add(mesh);
+            pieces.push(mesh);
+            if (labelsVisible) createLabel(mesh);
+            created.push(mesh);
+        }
+
+        for (var i = 0; i < p.n; i++) {
+            var offset = startOffset + i * (p.partLen + p.kerf);
+            addSplitMesh(p.partLen, offset, baseLabel + ' ' + (i + 1) + '/' + totalParts);
+        }
+
+        if (makeLeftover) {
+            // Leftover center = right edge of last piece + kerf + leftoverPiece/2, relative to src center
+            var leftoverOffset = -p.total / 2 + p.n * p.partLen + p.n * p.kerf + p.leftoverPiece / 2;
+            addSplitMesh(p.leftoverPiece, leftoverOffset,
+                baseLabel + ' ' + totalParts + '/' + totalParts + ' (leftover)');
+        }
+
+        if (created.length > 0) selectPiece(created[0]);
+        updateGrid();
+        updateObjectList();
+        updateCostSummary();
+    }
+
     function deleteSelected() {
         if (!selectedPiece) return;
         pushUndo();
@@ -1986,6 +2297,33 @@ window.addEventListener('load', function() {
         if (cutMode) exitCutMode();
         else enterCutMode();
     });
+
+    document.getElementById('btn-split').addEventListener('click', openSplitModal);
+    document.getElementById('split-cancel').addEventListener('click', closeSplitModal);
+    document.getElementById('split-confirm').addEventListener('click', function() {
+        splitSelected();
+        closeSplitModal();
+    });
+    document.getElementById('split-mode').addEventListener('change', function() {
+        updateSplitModeUI();
+        updateSplitPreview();
+    });
+    document.getElementById('split-count').addEventListener('input', updateSplitPreview);
+    document.getElementById('split-length').addEventListener('input', updateSplitPreview);
+    document.getElementById('split-kerf').addEventListener('input', updateSplitPreview);
+    document.getElementById('split-axis').addEventListener('change', updateSplitPreview);
+    document.getElementById('split-keep-leftover').addEventListener('change', updateSplitPreview);
+    (function() {
+        var modal = document.getElementById('split-modal');
+        var mouseDownOnOverlay = false;
+        modal.addEventListener('mousedown', function(e) {
+            mouseDownOnOverlay = (e.target === modal);
+        });
+        modal.addEventListener('mouseup', function(e) {
+            if (mouseDownOnOverlay && e.target === modal) closeSplitModal();
+            mouseDownOnOverlay = false;
+        });
+    })();
 
     document.getElementById('btn-overlaps').addEventListener('click', function() {
         if (overlapMode) {

@@ -24,6 +24,7 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 - **Save/Load** models as `.woodmodel.json` files for persistent projects
 - **Cost calculator** with per-piece pricing (fixed or per-mm), currency selector, and live cost summary
 - **CSV export** of a cut list with dimensions, types, notch counts, and costs
+- **Multi-language UI** — English and German, switchable from the toolbar; language is auto-detected from the browser and persisted
 
 ## Usage
 

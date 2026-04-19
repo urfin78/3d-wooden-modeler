@@ -36,11 +36,13 @@ Everything runs inside a `window.addEventListener('load', ...)` closure in `inde
 
 11. **Cut Joint Mode** — Two-click workflow: select target, then tool piece. Calls `csgSubtract` and records notch info in `userData.notches`.
 
-12. **Overlap Detection** — Bounding-box intersection checks between all piece pairs.
+12. **Split Piece** — `splitSelected()` divides a Board or Dowel into parts along a chosen axis, subtracting kerf (saw blade thickness in mm). Two modes: "by number of parts" (equal-length pieces, kerf taken from each) or "by part length" (fixed target length, max pieces that fit). In length mode, an optional "Keep leftover as extra piece" checkbox preserves the remainder as a separate piece (costs one additional kerf for the separating cut). Kerf default is 3 mm; mode, kerf, and leftover preference persist in `localStorage` (`woodmodeler.splitKerf`, `woodmodeler.splitMode`, `woodmodeler.splitKeepLeftover`). Fixed prices are divided across all resulting parts (including leftover); per-mm prices are preserved. Pieces are laid out starting from the original's left edge (cut axis), keeping the original position/rotation. Not available for CSG-modified pieces.
 
-13. **Cost Calculator** — Per-piece `userData.price` and `userData.priceMode` (fixed/per_mm). `updateCostSummary()` renders live totals in sidebar. Currency persisted in `localStorage`. CSV export includes cost columns.
+13. **Overlap Detection** — Bounding-box intersection checks between all piece pairs.
 
-14. **Mouse/Keyboard Interaction** — Raycasting for piece selection, drag-move (with snap support), keyboard shortcuts. Delete key is suppressed when an input is focused.
+14. **Cost Calculator** — Per-piece `userData.price` and `userData.priceMode` (fixed/per_mm). `updateCostSummary()` renders live totals in sidebar. Currency persisted in `localStorage`. CSV export includes cost columns.
+
+15. **Mouse/Keyboard Interaction** — Raycasting for piece selection, drag-move (with snap support), keyboard shortcuts. Delete key is suppressed when an input is focused.
 
 ## Key Conventions
 

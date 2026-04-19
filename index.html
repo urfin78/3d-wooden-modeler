@@ -96,6 +96,7 @@
     .price-row > div:first-child { flex: 1; }
     .price-row select { background: #1a1a1a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 4px 2px; font-size: 12px; }
     #currency-select { background: #1a1a1a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 2px 4px; font-size: 11px; float: right; }
+    #lang-select { background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 4px; padding: 4px 6px; font-size: 12px; cursor: pointer; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; display: none; align-items: center; justify-content: center; }
     .modal-overlay.open { display: flex; }
     .modal-box { background: #2a2a2a; border: 1px solid #c8934a; border-radius: 6px; padding: 16px 18px; width: 320px; box-shadow: 0 6px 24px rgba(0,0,0,0.5); }
@@ -118,87 +119,92 @@
 <body>
 
 <div id="toolbar">
-    <div class="add-dropdown" data-type="Board"><button>+ Board</button><div class="add-menu"></div></div>
-    <div class="add-dropdown" data-type="Dowel"><button>+ Dowel</button><div class="add-menu"></div></div>
-    <div class="add-dropdown" data-type="Wedge"><button>+ Wedge</button><div class="add-menu"></div></div>
-    <div class="add-dropdown" data-type="L-Bracket"><button>+ L-Bracket</button><div class="add-menu"></div></div>
-    <div class="add-dropdown" data-type="Tapered Leg"><button>+ Tapered Leg</button><div class="add-menu"></div></div>
+    <div class="add-dropdown" data-type="Board"><button data-i18n="toolbar.add.board">+ Board</button><div class="add-menu"></div></div>
+    <div class="add-dropdown" data-type="Dowel"><button data-i18n="toolbar.add.dowel">+ Dowel</button><div class="add-menu"></div></div>
+    <div class="add-dropdown" data-type="Wedge"><button data-i18n="toolbar.add.wedge">+ Wedge</button><div class="add-menu"></div></div>
+    <div class="add-dropdown" data-type="L-Bracket"><button data-i18n="toolbar.add.lbracket">+ L-Bracket</button><div class="add-menu"></div></div>
+    <div class="add-dropdown" data-type="Tapered Leg"><button data-i18n="toolbar.add.taperedLeg">+ Tapered Leg</button><div class="add-menu"></div></div>
     <div class="separator"></div>
     <button id="btn-snap">Snap OFF</button>
     <button id="btn-labels">Labels OFF</button>
     <div class="separator"></div>
-    <button id="btn-cut">Cut Joint</button>
-    <button id="btn-split">Split</button>
-    <button id="btn-overlaps">Show Overlaps</button>
+    <button id="btn-cut" data-i18n="toolbar.cut">Cut Joint</button>
+    <button id="btn-split" data-i18n="toolbar.split">Split</button>
+    <button id="btn-overlaps" data-i18n="toolbar.overlaps">Show Overlaps</button>
     <div class="separator"></div>
-    <button id="btn-undo">Undo</button>
-    <button id="btn-redo">Redo</button>
+    <button id="btn-undo" data-i18n="toolbar.undo">Undo</button>
+    <button id="btn-redo" data-i18n="toolbar.redo">Redo</button>
     <div class="separator"></div>
-    <button id="btn-duplicate">Duplicate</button>
-    <button id="btn-delete">Delete</button>
-    <button id="btn-clear">Clear All</button>
+    <button id="btn-duplicate" data-i18n="toolbar.duplicate">Duplicate</button>
+    <button id="btn-delete" data-i18n="toolbar.delete">Delete</button>
+    <button id="btn-clear" data-i18n="toolbar.clearAll">Clear All</button>
     <div class="separator"></div>
-    <button id="btn-export">Export CSV</button>
+    <button id="btn-export" data-i18n="toolbar.exportCsv">Export CSV</button>
     <div class="separator"></div>
-    <button id="btn-save">Save</button>
-    <button id="btn-load">Load</button>
+    <button id="btn-save" data-i18n="toolbar.save">Save</button>
+    <button id="btn-load" data-i18n="toolbar.load">Load</button>
     <input type="file" id="load-file-input" accept=".woodmodel.json,.json" style="display:none">
+    <div class="separator"></div>
+    <select id="lang-select" data-i18n-title="lang.label">
+        <option value="en">EN</option>
+        <option value="de">DE</option>
+    </select>
 </div>
 
-<div id="snap-indicator">Snapped!</div>
+<div id="snap-indicator" data-i18n="snap.indicator">Snapped!</div>
 
 <div id="side-panel">
     <div id="object-list">
-        <h3>Objects</h3>
+        <h3 data-i18n="panel.objects">Objects</h3>
         <div id="object-list-items"></div>
     </div>
 
-    <div id="no-selection">No piece selected</div>
+    <div id="no-selection" data-i18n="panel.noSelection">No piece selected</div>
 
     <div id="dim-fields">
-        <h3>Dimensions (mm)</h3>
+        <h3 data-i18n="panel.dimensions">Dimensions (mm)</h3>
         <div id="dim-whd">
             <div class="input-row">
-                <div><label>W</label><input type="number" id="dim-w" step="1" min="1"></div>
-                <div><label>H</label><input type="number" id="dim-h" step="1" min="1"></div>
-                <div><label>D</label><input type="number" id="dim-d" step="1" min="1"></div>
+                <div><label data-i18n="panel.dim.w">W</label><input type="number" id="dim-w" step="1" min="1"></div>
+                <div><label data-i18n="panel.dim.h">H</label><input type="number" id="dim-h" step="1" min="1"></div>
+                <div><label data-i18n="panel.dim.d">D</label><input type="number" id="dim-d" step="1" min="1"></div>
             </div>
         </div>
         <div id="dim-rh" style="display:none">
             <div class="input-row">
-                <div><label>Radius</label><input type="number" id="dim-r" step="1" min="1"></div>
-                <div><label>Height</label><input type="number" id="dim-rh-h" step="1" min="1"></div>
+                <div><label data-i18n="panel.dim.radius">Radius</label><input type="number" id="dim-r" step="1" min="1"></div>
+                <div><label data-i18n="panel.dim.height">Height</label><input type="number" id="dim-rh-h" step="1" min="1"></div>
             </div>
         </div>
         <div id="dim-tapered" style="display:none">
             <div class="input-row">
-                <div><label>Top R</label><input type="number" id="dim-rt" step="1" min="1"></div>
-                <div><label>Bot R</label><input type="number" id="dim-rb" step="1" min="1"></div>
-                <div><label>Height</label><input type="number" id="dim-th" step="1" min="1"></div>
+                <div><label data-i18n="panel.dim.topR">Top R</label><input type="number" id="dim-rt" step="1" min="1"></div>
+                <div><label data-i18n="panel.dim.botR">Bot R</label><input type="number" id="dim-rb" step="1" min="1"></div>
+                <div><label data-i18n="panel.dim.height">Height</label><input type="number" id="dim-th" step="1" min="1"></div>
             </div>
         </div>
     </div>
 
     <div id="pos-fields">
-        <h3>Position (mm)</h3>
+        <h3 data-i18n="panel.position">Position (mm)</h3>
         <div class="input-row">
-            <div><label>X</label><input type="number" id="pos-x" step="1"></div>
-            <div><label>Y</label><input type="number" id="pos-y" step="1"></div>
-            <div><label>Z</label><input type="number" id="pos-z" step="1"></div>
+            <div><label data-i18n="panel.pos.x">X</label><input type="number" id="pos-x" step="1"></div>
+            <div><label data-i18n="panel.pos.y">Y</label><input type="number" id="pos-y" step="1"></div>
+            <div><label data-i18n="panel.pos.z">Z</label><input type="number" id="pos-z" step="1"></div>
         </div>
     </div>
 
     <div id="rot-fields">
-        <h3>Rotation (degrees)</h3>
+        <h3 data-i18n="panel.rotation">Rotation (degrees)</h3>
         <div class="input-row">
-            <div><label>X</label><input type="number" id="rot-x" step="1"></div>
-            <div><label>Y</label><input type="number" id="rot-y" step="1"></div>
-            <div><label>Z</label><input type="number" id="rot-z" step="1"></div>
+            <div><label data-i18n="panel.rot.x">X</label><input type="number" id="rot-x" step="1"></div>
+            <div><label data-i18n="panel.rot.y">Y</label><input type="number" id="rot-y" step="1"></div>
+            <div><label data-i18n="panel.rot.z">Z</label><input type="number" id="rot-z" step="1"></div>
         </div>
     </div>
 
     <div id="rot-buttons">
-        <h3>Quick Rotate</h3>
+        <h3 data-i18n="panel.quickRotate">Quick Rotate</h3>
         <div class="rot-btn-row">
             <button id="rot-x-l">X -90</button>
             <button id="rot-x-r">X +90</button>
@@ -217,29 +223,29 @@
     </div>
 
     <div id="label-field">
-        <h3>Label</h3>
-        <input type="text" id="label-input" placeholder="Enter label...">
+        <h3 data-i18n="panel.label">Label</h3>
+        <input type="text" id="label-input" data-i18n-placeholder="panel.labelPlaceholder" placeholder="Enter label...">
     </div>
 
     <div id="price-field" style="display:none">
-        <h3>Price</h3>
+        <h3 data-i18n="panel.price">Price</h3>
         <div class="price-row">
-            <div><label>Unit Price</label><input type="number" id="price-input" step="0.01" min="0" value="0"></div>
-            <div><label>Mode</label><select id="price-mode"><option value="fixed">Fixed</option><option value="per_mm">Per mm</option></select></div>
+            <div><label data-i18n="panel.unitPrice">Unit Price</label><input type="number" id="price-input" step="0.01" min="0" value="0"></div>
+            <div><label data-i18n="panel.priceMode">Mode</label><select id="price-mode"><option value="fixed" data-i18n="panel.priceMode.fixed">Fixed</option><option value="per_mm" data-i18n="panel.priceMode.perMm">Per mm</option></select></div>
         </div>
     </div>
 
     <div id="summary-section">
-        <h3>Size Summary</h3>
+        <h3 data-i18n="panel.sizeSummary">Size Summary</h3>
         <div id="size-summary"></div>
     </div>
 
-    <button id="btn-save-template">Save as Template</button>
+    <button id="btn-save-template" data-i18n="panel.saveAsTemplate">Save as Template</button>
 
     <div id="overlap-list"></div>
 
     <div id="cost-summary">
-        <h3>Cost Summary <select id="currency-select"><option value="$">$</option><option value="€">€</option><option value="£">£</option></select></h3>
+        <h3><span data-i18n="panel.costSummary">Cost Summary</span> <select id="currency-select"><option value="$">$</option><option value="€">€</option><option value="£">£</option></select></h3>
         <div id="cost-items"></div>
         <div id="cost-total">Total: 0</div>
     </div>
@@ -250,34 +256,34 @@
 
 <div id="split-modal" class="modal-overlay">
     <div class="modal-box">
-        <h3>Split Piece</h3>
-        <label>Mode</label>
+        <h3 data-i18n="split.title">Split Piece</h3>
+        <label data-i18n="split.mode">Mode</label>
         <select id="split-mode">
-            <option value="count">By number of parts</option>
-            <option value="length">By part length</option>
+            <option value="count" data-i18n="split.mode.count">By number of parts</option>
+            <option value="length" data-i18n="split.mode.length">By part length</option>
         </select>
         <div id="split-count-row">
-            <label>Number of parts</label>
+            <label data-i18n="split.count">Number of parts</label>
             <input type="number" id="split-count" min="2" step="1" value="2">
         </div>
         <div id="split-length-row" style="display:none">
-            <label>Part length (mm)</label>
+            <label data-i18n="split.length">Part length (mm)</label>
             <input type="number" id="split-length" min="1" step="1" value="100">
             <label style="display:flex; align-items:center; gap:6px; margin-top:8px; cursor:pointer;">
                 <input type="checkbox" id="split-keep-leftover" style="width:auto; margin:0;">
-                <span>Keep leftover as extra piece</span>
+                <span data-i18n="split.keepLeftover">Keep leftover as extra piece</span>
             </label>
         </div>
-        <label>Kerf — saw blade thickness (mm)</label>
+        <label data-i18n="split.kerf">Kerf — saw blade thickness (mm)</label>
         <input type="number" id="split-kerf" min="0" step="0.1" value="3">
         <div id="split-axis-row">
-            <label>Cut axis</label>
+            <label data-i18n="split.axis">Cut axis</label>
             <select id="split-axis"></select>
         </div>
         <div id="split-preview"></div>
         <div class="modal-buttons">
-            <button id="split-cancel">Cancel</button>
-            <button id="split-confirm" class="primary">Split</button>
+            <button id="split-cancel" data-i18n="split.cancel">Cancel</button>
+            <button id="split-confirm" class="primary" data-i18n="split.confirm">Split</button>
         </div>
     </div>
 </div>
@@ -286,6 +292,290 @@
 <script>
 window.addEventListener('load', function() {
     "use strict";
+
+    // ============================================================
+    // i18n — Internationalization
+    // ============================================================
+
+    var LANG_KEY = 'woodmodeler.lang';
+    var SUPPORTED_LANGS = ['en', 'de'];
+    var LANG_NAMES = { en: 'English', de: 'Deutsch' };
+
+    var translations = {
+        en: {
+            'toolbar.add.board': '+ Board',
+            'toolbar.add.dowel': '+ Dowel',
+            'toolbar.add.wedge': '+ Wedge',
+            'toolbar.add.lbracket': '+ L-Bracket',
+            'toolbar.add.taperedLeg': '+ Tapered Leg',
+            'toolbar.snap.on': 'Snap ON',
+            'toolbar.snap.off': 'Snap OFF',
+            'toolbar.labels.on': 'Labels ON',
+            'toolbar.labels.off': 'Labels OFF',
+            'toolbar.cut': 'Cut Joint',
+            'toolbar.split': 'Split',
+            'toolbar.overlaps': 'Show Overlaps',
+            'toolbar.undo': 'Undo',
+            'toolbar.redo': 'Redo',
+            'toolbar.duplicate': 'Duplicate',
+            'toolbar.delete': 'Delete',
+            'toolbar.clearAll': 'Clear All',
+            'toolbar.exportCsv': 'Export CSV',
+            'toolbar.save': 'Save',
+            'toolbar.load': 'Load',
+            'snap.indicator': 'Snapped!',
+            'panel.objects': 'Objects',
+            'panel.noSelection': 'No piece selected',
+            'panel.dimensions': 'Dimensions (mm)',
+            'panel.position': 'Position (mm)',
+            'panel.rotation': 'Rotation (degrees)',
+            'panel.quickRotate': 'Quick Rotate',
+            'panel.label': 'Label',
+            'panel.labelPlaceholder': 'Enter label...',
+            'panel.price': 'Price',
+            'panel.unitPrice': 'Unit Price',
+            'panel.priceMode': 'Mode',
+            'panel.priceMode.fixed': 'Fixed',
+            'panel.priceMode.perMm': 'Per mm',
+            'panel.sizeSummary': 'Size Summary',
+            'panel.saveAsTemplate': 'Save as Template',
+            'panel.costSummary': 'Cost Summary',
+            'panel.costTotal': 'Total',
+            'panel.dim.w': 'W',
+            'panel.dim.h': 'H',
+            'panel.dim.d': 'D',
+            'panel.dim.radius': 'Radius',
+            'panel.dim.height': 'Height',
+            'panel.dim.topR': 'Top R',
+            'panel.dim.botR': 'Bot R',
+            'panel.pos.x': 'X',
+            'panel.pos.y': 'Y',
+            'panel.pos.z': 'Z',
+            'panel.rot.x': 'X',
+            'panel.rot.y': 'Y',
+            'panel.rot.z': 'Z',
+            'panel.objects.none': 'No objects',
+            'panel.objects.unnamed': 'Unnamed',
+            'summary.notches': 'Notches',
+            'summary.dia': 'dia',
+            'overlap.title': 'Overlapping pairs:',
+            'overlap.none': 'No overlaps found.',
+            'split.title': 'Split Piece',
+            'split.mode': 'Mode',
+            'split.mode.count': 'By number of parts',
+            'split.mode.length': 'By part length',
+            'split.count': 'Number of parts',
+            'split.length': 'Part length (mm)',
+            'split.keepLeftover': 'Keep leftover as extra piece',
+            'split.kerf': 'Kerf — saw blade thickness (mm)',
+            'split.axis': 'Cut axis',
+            'split.axis.w': 'W (width) — {len} mm',
+            'split.axis.h': 'H (height) — {len} mm',
+            'split.axis.d': 'D (depth) — {len} mm',
+            'split.axis.hLength': 'H (length) — {len} mm',
+            'split.cancel': 'Cancel',
+            'split.confirm': 'Split',
+            'split.error.kerf': 'Kerf must be ≥ 0 mm.',
+            'split.error.partLength': 'Part length must be > 0.',
+            'split.error.lengthTooLarge': 'Length too large — fits fewer than 2 parts.',
+            'split.error.count': 'Number of parts must be at least 2.',
+            'split.error.kerfTooLarge': 'Kerf too large — no material left.',
+            'split.preview.parts': '{n} × {len} mm',
+            'split.preview.leftoverExtra': ' + 1 × {len} mm (leftover)',
+            'split.preview.kerfLoss': 'Kerf loss: {loss} mm ({n} {cut})',
+            'split.preview.cut': 'cut',
+            'split.preview.cuts': 'cuts',
+            'split.preview.leftoverDiscarded': 'Leftover: {len} mm (discarded)',
+            'split.preview.leftoverTooSmall': 'Leftover too small after cut — discarded ({len} mm).',
+            'split.cannotSplit': 'Select an unmodified Board or Dowel to split.',
+            'split.leftoverSuffix': '(leftover)',
+            'save.projectName': 'Project name:',
+            'save.defaultName': 'My Project',
+            'load.invalid': 'Invalid file format.',
+            'load.replace': 'Replace current model?',
+            'load.failed': 'Failed to load file: {msg}',
+            'template.name': 'Template name:',
+            'template.default': 'Default {type}',
+            'template.builtIn': 'Built-in',
+            'template.custom': 'Custom',
+            'duplicate.suffix': 'Copy',
+            'clearAll.confirm': 'Clear all pieces?',
+            'csv.part': 'Part',
+            'csv.type': 'Type',
+            'csv.label': 'Label',
+            'csv.dia': 'Dia',
+            'csv.notches': 'Notches',
+            'csv.unitPrice': 'UnitPrice',
+            'csv.cost': 'Cost',
+            'csv.total': 'Total',
+            'type.Board': 'Board',
+            'type.Dowel': 'Dowel',
+            'type.Wedge': 'Wedge',
+            'type.L-Bracket': 'L-Bracket',
+            'type.Tapered Leg': 'Tapered Leg',
+            'type.Tapered': 'Tapered',
+            'lang.label': 'Language'
+        },
+        de: {
+            'toolbar.add.board': '+ Brett',
+            'toolbar.add.dowel': '+ Dübel',
+            'toolbar.add.wedge': '+ Keil',
+            'toolbar.add.lbracket': '+ L-Winkel',
+            'toolbar.add.taperedLeg': '+ Konusbein',
+            'toolbar.snap.on': 'Raster EIN',
+            'toolbar.snap.off': 'Raster AUS',
+            'toolbar.labels.on': 'Beschriftung EIN',
+            'toolbar.labels.off': 'Beschriftung AUS',
+            'toolbar.cut': 'Ausschnitt',
+            'toolbar.split': 'Teilen',
+            'toolbar.overlaps': 'Überlappungen',
+            'toolbar.undo': 'Rückgängig',
+            'toolbar.redo': 'Wiederholen',
+            'toolbar.duplicate': 'Duplizieren',
+            'toolbar.delete': 'Löschen',
+            'toolbar.clearAll': 'Alles löschen',
+            'toolbar.exportCsv': 'CSV-Export',
+            'toolbar.save': 'Speichern',
+            'toolbar.load': 'Laden',
+            'snap.indicator': 'Eingerastet!',
+            'panel.objects': 'Objekte',
+            'panel.noSelection': 'Kein Teil ausgewählt',
+            'panel.dimensions': 'Maße (mm)',
+            'panel.position': 'Position (mm)',
+            'panel.rotation': 'Drehung (Grad)',
+            'panel.quickRotate': 'Schnelldrehung',
+            'panel.label': 'Beschriftung',
+            'panel.labelPlaceholder': 'Beschriftung eingeben...',
+            'panel.price': 'Preis',
+            'panel.unitPrice': 'Stückpreis',
+            'panel.priceMode': 'Modus',
+            'panel.priceMode.fixed': 'Fest',
+            'panel.priceMode.perMm': 'Pro mm',
+            'panel.sizeSummary': 'Maßübersicht',
+            'panel.saveAsTemplate': 'Als Vorlage speichern',
+            'panel.costSummary': 'Kostenübersicht',
+            'panel.costTotal': 'Gesamt',
+            'panel.dim.w': 'B',
+            'panel.dim.h': 'H',
+            'panel.dim.d': 'T',
+            'panel.dim.radius': 'Radius',
+            'panel.dim.height': 'Höhe',
+            'panel.dim.topR': 'R oben',
+            'panel.dim.botR': 'R unten',
+            'panel.pos.x': 'X',
+            'panel.pos.y': 'Y',
+            'panel.pos.z': 'Z',
+            'panel.rot.x': 'X',
+            'panel.rot.y': 'Y',
+            'panel.rot.z': 'Z',
+            'panel.objects.none': 'Keine Objekte',
+            'panel.objects.unnamed': 'Unbenannt',
+            'summary.notches': 'Ausschnitte',
+            'summary.dia': 'Ø',
+            'overlap.title': 'Überlappende Paare:',
+            'overlap.none': 'Keine Überlappungen gefunden.',
+            'split.title': 'Teil aufteilen',
+            'split.mode': 'Modus',
+            'split.mode.count': 'Nach Anzahl der Teile',
+            'split.mode.length': 'Nach Teillänge',
+            'split.count': 'Anzahl Teile',
+            'split.length': 'Teillänge (mm)',
+            'split.keepLeftover': 'Rest als zusätzliches Teil behalten',
+            'split.kerf': 'Schnittfuge — Sägeblattdicke (mm)',
+            'split.axis': 'Schnittachse',
+            'split.axis.w': 'B (Breite) — {len} mm',
+            'split.axis.h': 'H (Höhe) — {len} mm',
+            'split.axis.d': 'T (Tiefe) — {len} mm',
+            'split.axis.hLength': 'H (Länge) — {len} mm',
+            'split.cancel': 'Abbrechen',
+            'split.confirm': 'Teilen',
+            'split.error.kerf': 'Schnittfuge muss ≥ 0 mm sein.',
+            'split.error.partLength': 'Teillänge muss > 0 sein.',
+            'split.error.lengthTooLarge': 'Länge zu groß — weniger als 2 Teile passen.',
+            'split.error.count': 'Anzahl Teile muss mindestens 2 sein.',
+            'split.error.kerfTooLarge': 'Schnittfuge zu groß — kein Material übrig.',
+            'split.preview.parts': '{n} × {len} mm',
+            'split.preview.leftoverExtra': ' + 1 × {len} mm (Rest)',
+            'split.preview.kerfLoss': 'Schnittverlust: {loss} mm ({n} {cut})',
+            'split.preview.cut': 'Schnitt',
+            'split.preview.cuts': 'Schnitte',
+            'split.preview.leftoverDiscarded': 'Rest: {len} mm (verworfen)',
+            'split.preview.leftoverTooSmall': 'Rest nach Schnitt zu klein — verworfen ({len} mm).',
+            'split.cannotSplit': 'Wähle ein unverändertes Brett oder einen Dübel zum Teilen.',
+            'split.leftoverSuffix': '(Rest)',
+            'save.projectName': 'Projektname:',
+            'save.defaultName': 'Mein Projekt',
+            'load.invalid': 'Ungültiges Dateiformat.',
+            'load.replace': 'Aktuelles Modell ersetzen?',
+            'load.failed': 'Datei konnte nicht geladen werden: {msg}',
+            'template.name': 'Vorlagenname:',
+            'template.default': 'Standard-{type}',
+            'template.builtIn': 'Integriert',
+            'template.custom': 'Eigene',
+            'duplicate.suffix': 'Kopie',
+            'clearAll.confirm': 'Alle Teile löschen?',
+            'csv.part': 'Teil',
+            'csv.type': 'Typ',
+            'csv.label': 'Beschriftung',
+            'csv.dia': 'Ø',
+            'csv.notches': 'Ausschnitte',
+            'csv.unitPrice': 'Stückpreis',
+            'csv.cost': 'Kosten',
+            'csv.total': 'Gesamt',
+            'type.Board': 'Brett',
+            'type.Dowel': 'Dübel',
+            'type.Wedge': 'Keil',
+            'type.L-Bracket': 'L-Winkel',
+            'type.Tapered Leg': 'Konusbein',
+            'type.Tapered': 'Konus',
+            'lang.label': 'Sprache'
+        }
+    };
+
+    function detectDefaultLang() {
+        var saved = localStorage.getItem(LANG_KEY);
+        if (saved && translations[saved]) return saved;
+        var nav = (navigator.language || 'en').toLowerCase();
+        for (var i = 0; i < SUPPORTED_LANGS.length; i++) {
+            if (nav.indexOf(SUPPORTED_LANGS[i]) === 0) return SUPPORTED_LANGS[i];
+        }
+        return 'en';
+    }
+
+    var currentLang = detectDefaultLang();
+
+    function t(key, params) {
+        var dict = translations[currentLang] || translations.en;
+        var str = dict[key];
+        if (str === undefined) str = translations.en[key];
+        if (str === undefined) return key;
+        if (params) {
+            str = str.replace(/\{(\w+)\}/g, function(_, name) {
+                return params[name] !== undefined ? params[name] : '{' + name + '}';
+            });
+        }
+        return str;
+    }
+
+    function typeName(type) { return t('type.' + type); }
+
+    function applyTranslations() {
+        document.documentElement.lang = currentLang;
+        var nodes = document.querySelectorAll('[data-i18n]');
+        nodes.forEach(function(el) { el.textContent = t(el.getAttribute('data-i18n')); });
+        var placeholders = document.querySelectorAll('[data-i18n-placeholder]');
+        placeholders.forEach(function(el) { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
+        var titles = document.querySelectorAll('[data-i18n-title]');
+        titles.forEach(function(el) { el.title = t(el.getAttribute('data-i18n-title')); });
+    }
+
+    function setLanguage(lang) {
+        if (!translations[lang]) return;
+        currentLang = lang;
+        localStorage.setItem(LANG_KEY, lang);
+        applyTranslations();
+        if (typeof refreshDynamicUI === 'function') refreshDynamicUI();
+    }
 
     // ============================================================
     // CSG BSP-Tree Implementation (Evan Wallace algorithm)
@@ -735,7 +1025,7 @@ window.addEventListener('load', function() {
         mesh.position.y = h / 2;
         mesh.userData = {
             type: 'Board', id: ++pieceCounter,
-            w: w, h: h, d: d, label: 'Board ' + pieceCounter, notches: 0, csgModified: false
+            w: w, h: h, d: d, label: typeName('Board') + ' ' + pieceCounter, notches: 0, csgModified: false
         };
         return mesh;
     }
@@ -749,7 +1039,7 @@ window.addEventListener('load', function() {
         mesh.position.y = h / 2;
         mesh.userData = {
             type: 'Dowel', id: ++pieceCounter,
-            r: r, h: h, label: 'Dowel ' + pieceCounter, notches: 0, csgModified: false
+            r: r, h: h, label: typeName('Dowel') + ' ' + pieceCounter, notches: 0, csgModified: false
         };
         return mesh;
     }
@@ -777,7 +1067,7 @@ window.addEventListener('load', function() {
         mesh.position.y = h / 2;
         mesh.userData = {
             type: 'Wedge', id: ++pieceCounter,
-            w: w, h: h, d: d, label: 'Wedge ' + pieceCounter, notches: 0, csgModified: false
+            w: w, h: h, d: d, label: typeName('Wedge') + ' ' + pieceCounter, notches: 0, csgModified: false
         };
         return mesh;
     }
@@ -808,7 +1098,7 @@ window.addEventListener('load', function() {
         mesh.position.y = h / 2;
         mesh.userData = {
             type: 'L-Bracket', id: ++pieceCounter,
-            w: w, h: h, d: d, label: 'L-Bracket ' + pieceCounter, notches: 0, csgModified: false
+            w: w, h: h, d: d, label: typeName('L-Bracket') + ' ' + pieceCounter, notches: 0, csgModified: false
         };
         return mesh;
     }
@@ -823,7 +1113,7 @@ window.addEventListener('load', function() {
         mesh.userData = {
             type: 'Tapered Leg', id: ++pieceCounter,
             rTop: rTop, rBottom: rBottom, h: h,
-            label: 'Tapered ' + pieceCounter, notches: 0, csgModified: false
+            label: typeName('Tapered') + ' ' + pieceCounter, notches: 0, csgModified: false
         };
         return mesh;
     }
@@ -1021,11 +1311,11 @@ window.addEventListener('load', function() {
         if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
             text = ud.w + ' x ' + ud.h + ' x ' + ud.d + ' mm';
         } else if (ud.type === 'Dowel') {
-            text = 'R' + ud.r + ' x H' + ud.h + ' mm (dia ' + (ud.r * 2) + ')';
+            text = 'R' + ud.r + ' x H' + ud.h + ' mm (' + t('summary.dia') + ' ' + (ud.r * 2) + ')';
         } else if (ud.type === 'Tapered Leg') {
             text = 'R' + ud.rTop + '/' + ud.rBottom + ' x H' + ud.h + ' mm';
         }
-        text += ' | Notches: ' + ud.notches;
+        text += ' | ' + t('summary.notches') + ': ' + ud.notches;
         sizeSummary.textContent = text;
     }
 
@@ -1038,14 +1328,23 @@ window.addEventListener('load', function() {
     function updateObjectList() {
         objectListItems.innerHTML = '';
         if (pieces.length === 0) {
-            objectListItems.innerHTML = '<div style="padding:6px 8px;color:#666;font-size:11px;font-style:italic">No objects</div>';
+            var empty = document.createElement('div');
+            empty.style.cssText = 'padding:6px 8px;color:#666;font-size:11px;font-style:italic';
+            empty.textContent = t('panel.objects.none');
+            objectListItems.appendChild(empty);
             return;
         }
         pieces.forEach(function(mesh) {
             var item = document.createElement('div');
             item.className = 'obj-list-item';
             if (mesh === selectedPiece) item.className += ' selected';
-            item.innerHTML = '<span>' + (mesh.userData.label || 'Unnamed') + '</span><span class="obj-type">' + mesh.userData.type + '</span>';
+            var nameSpan = document.createElement('span');
+            nameSpan.textContent = mesh.userData.label || t('panel.objects.unnamed');
+            var typeSpan = document.createElement('span');
+            typeSpan.className = 'obj-type';
+            typeSpan.textContent = typeName(mesh.userData.type);
+            item.appendChild(nameSpan);
+            item.appendChild(typeSpan);
             item.addEventListener('click', function() {
                 selectPiece(mesh);
             });
@@ -1245,7 +1544,7 @@ window.addEventListener('load', function() {
             html += '<div class="cost-row"><span>' + (ud.label || ud.type) + '</span><span>' + currency + cost.toFixed(2) + '</span></div>';
         });
         costItems.innerHTML = html;
-        costTotal.textContent = 'Total: ' + currency + total.toFixed(2);
+        costTotal.textContent = t('panel.costTotal') + ': ' + currency + total.toFixed(2);
     }
 
     // ============================================================
@@ -1376,7 +1675,7 @@ window.addEventListener('load', function() {
     // ============================================================
 
     function saveModel() {
-        var name = prompt('Project name:', 'My Project');
+        var name = prompt(t('save.projectName'), t('save.defaultName'));
         if (name === null) return;
         var data = {
             version: 1,
@@ -1405,16 +1704,16 @@ window.addEventListener('load', function() {
                 } else if (Array.isArray(data)) {
                     piecesData = data;
                 } else {
-                    alert('Invalid file format.');
+                    alert(t('load.invalid'));
                     return;
                 }
                 if (pieces.length > 0) {
-                    if (!confirm('Replace current model?')) return;
+                    if (!confirm(t('load.replace'))) return;
                 }
                 restoreScene(JSON.stringify(piecesData));
                 updateObjectList();
             } catch (err) {
-                alert('Failed to load file: ' + err.message);
+                alert(t('load.failed', { msg: err.message }));
             }
         };
         reader.readAsText(file);
@@ -1466,7 +1765,7 @@ window.addEventListener('load', function() {
     function saveAsTemplate() {
         if (!selectedPiece) return;
         var ud = selectedPiece.userData;
-        var name = prompt('Template name:', ud.label || ud.type);
+        var name = prompt(t('template.name'), ud.label || typeName(ud.type));
         if (!name) return;
         var tpl = { name: name, type: ud.type, price: ud.price || 0 };
         if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
@@ -1581,14 +1880,14 @@ window.addEventListener('load', function() {
         }
         if (pairs.length > 0) {
             overlapList.style.display = 'block';
-            overlapList.innerHTML = '<strong>Overlapping pairs:</strong><br>' +
+            overlapList.innerHTML = '<strong>' + t('overlap.title') + '</strong><br>' +
                 pairs.map(function(p) {
                     return p[0].userData.label + ' &harr; ' + p[1].userData.label;
                 }).join('<br>');
         } else {
             overlapList.style.display = 'block';
             overlapList.style.color = '#88ff88';
-            overlapList.textContent = 'No overlaps found.';
+            overlapList.textContent = t('overlap.none');
             setTimeout(function() {
                 overlapList.style.display = 'none';
                 overlapList.style.color = '#ff6666';
@@ -1625,7 +1924,7 @@ window.addEventListener('load', function() {
         // Copy userData
         mesh.userData.type = ud.type;
         mesh.userData.id = ++pieceCounter;
-        mesh.userData.label = (ud.label || ud.type) + ' Copy';
+        mesh.userData.label = (ud.label || typeName(ud.type)) + ' ' + t('duplicate.suffix');
         mesh.userData.notches = ud.csgModified ? ud.notches : 0;
         mesh.userData.csgModified = ud.csgModified || false;
         mesh.userData.price = ud.price || 0;
@@ -1660,20 +1959,20 @@ window.addEventListener('load', function() {
         var ud = selectedPiece.userData;
         if (ud.type === 'Board') {
             return [
-                { key: 'w', label: 'W (width) — ' + ud.w + ' mm', len: ud.w },
-                { key: 'h', label: 'H (height) — ' + ud.h + ' mm', len: ud.h },
-                { key: 'd', label: 'D (depth) — ' + ud.d + ' mm', len: ud.d }
+                { key: 'w', label: t('split.axis.w', { len: ud.w }), len: ud.w },
+                { key: 'h', label: t('split.axis.h', { len: ud.h }), len: ud.h },
+                { key: 'd', label: t('split.axis.d', { len: ud.d }), len: ud.d }
             ];
         }
         if (ud.type === 'Dowel') {
-            return [{ key: 'h', label: 'H (length) — ' + ud.h + ' mm', len: ud.h }];
+            return [{ key: 'h', label: t('split.axis.hLength', { len: ud.h }), len: ud.h }];
         }
         return [];
     }
 
     function openSplitModal() {
         if (!canSplit(selectedPiece)) {
-            alert('Select an unmodified Board or Dowel to split.');
+            alert(t('split.cannotSplit'));
             return;
         }
         var axisSel = document.getElementById('split-axis');
@@ -1764,33 +2063,33 @@ window.addEventListener('load', function() {
         var confirmBtn = document.getElementById('split-confirm');
         var p = getSplitParams();
         if (!isFinite(p.kerf) || p.kerf < 0) {
-            preview.textContent = 'Kerf must be ≥ 0 mm.';
+            preview.textContent = t('split.error.kerf');
             preview.classList.add('err');
             confirmBtn.disabled = true;
             return;
         }
         if (p.mode === 'length') {
             if (!isFinite(p.partLen) || p.partLen <= 0) {
-                preview.textContent = 'Part length must be > 0.';
+                preview.textContent = t('split.error.partLength');
                 preview.classList.add('err');
                 confirmBtn.disabled = true;
                 return;
             }
             if (p.n < 2) {
-                preview.textContent = 'Length too large — fits fewer than 2 parts.';
+                preview.textContent = t('split.error.lengthTooLarge');
                 preview.classList.add('err');
                 confirmBtn.disabled = true;
                 return;
             }
         } else {
             if (!isFinite(p.n) || p.n < 2) {
-                preview.textContent = 'Number of parts must be at least 2.';
+                preview.textContent = t('split.error.count');
                 preview.classList.add('err');
                 confirmBtn.disabled = true;
                 return;
             }
             if (!isFinite(p.partLen) || p.partLen <= 0) {
-                preview.textContent = 'Kerf too large — no material left.';
+                preview.textContent = t('split.error.kerfTooLarge');
                 preview.classList.add('err');
                 confirmBtn.disabled = true;
                 return;
@@ -1801,15 +2100,19 @@ window.addEventListener('load', function() {
         var keepLeftover = p.mode === 'length' && p.keepLeftover && p.leftoverPiece > 0.01;
         var cuts = keepLeftover ? p.n : p.n - 1;
         var kerfLoss = cuts * p.kerf;
-        var html = p.n + ' × ' + p.partLen.toFixed(2) + ' mm';
+        var html = t('split.preview.parts', { n: p.n, len: p.partLen.toFixed(2) });
         if (keepLeftover) {
-            html += ' + 1 × ' + p.leftoverPiece.toFixed(2) + ' mm (leftover)';
+            html += t('split.preview.leftoverExtra', { len: p.leftoverPiece.toFixed(2) });
         }
-        html += '<br>Kerf loss: ' + kerfLoss.toFixed(2) + ' mm (' + cuts + ' cut' + (cuts === 1 ? '' : 's') + ')';
+        html += '<br>' + t('split.preview.kerfLoss', {
+            loss: kerfLoss.toFixed(2),
+            n: cuts,
+            cut: cuts === 1 ? t('split.preview.cut') : t('split.preview.cuts')
+        });
         if (p.mode === 'length' && !p.keepLeftover && p.remainder > 0.01) {
-            html += '<br>Leftover: ' + p.remainder.toFixed(2) + ' mm (discarded)';
+            html += '<br>' + t('split.preview.leftoverDiscarded', { len: p.remainder.toFixed(2) });
         } else if (p.mode === 'length' && p.keepLeftover && p.leftoverPiece <= 0.01 && p.remainder > 0.01) {
-            html += '<br>Leftover too small after cut — discarded (' + p.remainder.toFixed(2) + ' mm).';
+            html += '<br>' + t('split.preview.leftoverTooSmall', { len: p.remainder.toFixed(2) });
         }
         preview.innerHTML = html;
     }
@@ -1890,7 +2193,7 @@ window.addEventListener('load', function() {
             // Leftover center = right edge of last piece + kerf + leftoverPiece/2, relative to src center
             var leftoverOffset = -p.total / 2 + p.n * p.partLen + p.n * p.kerf + p.leftoverPiece / 2;
             addSplitMesh(p.leftoverPiece, leftoverOffset,
-                baseLabel + ' ' + totalParts + '/' + totalParts + ' (leftover)');
+                baseLabel + ' ' + totalParts + '/' + totalParts + ' ' + t('split.leftoverSuffix'));
         }
 
         if (created.length > 0) selectPiece(created[0]);
@@ -1915,7 +2218,7 @@ window.addEventListener('load', function() {
 
     function clearAll() {
         if (pieces.length === 0) return;
-        if (!confirm('Clear all pieces?')) return;
+        if (!confirm(t('clearAll.confirm'))) return;
         pushUndo();
         pieces.forEach(function(m) {
             removeLabel(m);
@@ -1935,13 +2238,17 @@ window.addEventListener('load', function() {
 
     function exportCSV() {
         var currency = currencySelect.value;
-        var rows = [['Part', 'Type', 'Label', 'W', 'H', 'D', 'Dia', 'Notches', 'UnitPrice', 'Cost']];
+        var rows = [[
+            t('csv.part'), t('csv.type'), t('csv.label'),
+            t('panel.dim.w'), t('panel.dim.h'), t('panel.dim.d'),
+            t('csv.dia'), t('csv.notches'), t('csv.unitPrice'), t('csv.cost')
+        ]];
         var totalCost = 0;
         pieces.forEach(function(m, i) {
             var ud = m.userData;
             var cost = computePieceCost(m);
             totalCost += cost;
-            var row = [i + 1, ud.type, '"' + (ud.label || '') + '"'];
+            var row = [i + 1, typeName(ud.type), '"' + (ud.label || '') + '"'];
             if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
                 row.push(ud.w, ud.h, ud.d, '', ud.notches);
             } else if (ud.type === 'Dowel') {
@@ -1952,7 +2259,7 @@ window.addEventListener('load', function() {
             row.push(currency + (ud.price || 0).toFixed(2), currency + cost.toFixed(2));
             rows.push(row);
         });
-        rows.push(['', '', '', '', '', '', '', '', 'Total', currency + totalCost.toFixed(2)]);
+        rows.push(['', '', '', '', '', '', '', '', t('csv.total'), currency + totalCost.toFixed(2)]);
         var csv = rows.map(function(r) { return r.join(','); }).join('\n');
         var blob = new Blob([csv], { type: 'text/csv' });
         var url = URL.createObjectURL(blob);
@@ -2175,7 +2482,7 @@ window.addEventListener('load', function() {
         // Default option
         var def = document.createElement('div');
         def.className = 'add-menu-item';
-        def.innerHTML = '<span>Default ' + type + '</span><span class="tpl-dims">' + templateDimsText(getDefaultDims(type)) + '</span>';
+        def.innerHTML = '<span>' + t('template.default', { type: typeName(type) }) + '</span><span class="tpl-dims">' + templateDimsText(getDefaultDims(type)) + '</span>';
         def.addEventListener('click', function(e) {
             e.stopPropagation();
             addPiece(makeDefaultForType(type));
@@ -2193,7 +2500,7 @@ window.addEventListener('load', function() {
             menu.appendChild(sep);
             var lbl = document.createElement('div');
             lbl.className = 'add-menu-label';
-            lbl.textContent = 'Built-in';
+            lbl.textContent = t('template.builtIn');
             menu.appendChild(lbl);
             matching.forEach(function(tpl) {
                 var item = document.createElement('div');
@@ -2214,7 +2521,7 @@ window.addEventListener('load', function() {
             menu.appendChild(sep2);
             var lbl2 = document.createElement('div');
             lbl2.className = 'add-menu-label';
-            lbl2.textContent = 'Custom';
+            lbl2.textContent = t('template.custom');
             menu.appendChild(lbl2);
             custom.forEach(function(tpl, idx) {
                 var item = document.createElement('div');
@@ -2281,13 +2588,13 @@ window.addEventListener('load', function() {
 
     document.getElementById('btn-snap').addEventListener('click', function() {
         snapEnabled = !snapEnabled;
-        this.textContent = snapEnabled ? 'Snap ON' : 'Snap OFF';
+        this.textContent = snapEnabled ? t('toolbar.snap.on') : t('toolbar.snap.off');
         this.classList.toggle('active', snapEnabled);
     });
 
     document.getElementById('btn-labels').addEventListener('click', function() {
         labelsVisible = !labelsVisible;
-        this.textContent = labelsVisible ? 'Labels ON' : 'Labels OFF';
+        this.textContent = labelsVisible ? t('toolbar.labels.on') : t('toolbar.labels.off');
         this.classList.toggle('active', labelsVisible);
         if (labelsVisible) showAllLabels();
         else hideAllLabels();
@@ -2396,9 +2703,39 @@ window.addEventListener('load', function() {
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
     }
+    function refreshDynamicUI() {
+        var snapBtn = document.getElementById('btn-snap');
+        if (snapBtn) snapBtn.textContent = snapEnabled ? t('toolbar.snap.on') : t('toolbar.snap.off');
+        var labelsBtn = document.getElementById('btn-labels');
+        if (labelsBtn) labelsBtn.textContent = labelsVisible ? t('toolbar.labels.on') : t('toolbar.labels.off');
+        updateObjectList();
+        updateSizeSummary();
+        updateCostSummary();
+        buildDropdownMenus();
+        var modal = document.getElementById('split-modal');
+        if (modal && modal.classList.contains('open')) {
+            var axisSel = document.getElementById('split-axis');
+            var prevAxis = axisSel.value;
+            var opts = splitAxisOptionsForSelected();
+            axisSel.innerHTML = '';
+            opts.forEach(function(o) {
+                var opt = document.createElement('option');
+                opt.value = o.key;
+                opt.textContent = o.label;
+                axisSel.appendChild(opt);
+            });
+            if (prevAxis) axisSel.value = prevAxis;
+            updateSplitPreview();
+        }
+    }
+
+    var langSel = document.getElementById('lang-select');
+    langSel.value = currentLang;
+    langSel.addEventListener('change', function() { setLanguage(this.value); });
+
+    applyTranslations();
     animate();
-    updateObjectList();
-    updateCostSummary();
+    refreshDynamicUI();
 
 });
 </script>

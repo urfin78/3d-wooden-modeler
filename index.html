@@ -436,8 +436,8 @@ window.addEventListener('load', function() {
             'toolbar.add.wedge': '+ Keil',
             'toolbar.add.lbracket': '+ L-Winkel',
             'toolbar.add.taperedLeg': '+ Konusbein',
-            'toolbar.snap.on': 'Raster EIN',
-            'toolbar.snap.off': 'Raster AUS',
+            'toolbar.snap.on': 'Einrasten EIN',
+            'toolbar.snap.off': 'Einrasten AUS',
             'toolbar.labels.on': 'Beschriftung EIN',
             'toolbar.labels.off': 'Beschriftung AUS',
             'toolbar.cut': 'Ausschnitt',
@@ -1137,6 +1137,13 @@ window.addEventListener('load', function() {
 
     function addPiece(mesh) {
         pushUndo();
+        if (snapEnabled) {
+            mesh.position.set(
+                snapValue(mesh.position.x),
+                snapValue(mesh.position.y),
+                snapValue(mesh.position.z)
+            );
+        }
         scene.add(mesh);
         pieces.push(mesh);
         if (labelsVisible) createLabel(mesh);

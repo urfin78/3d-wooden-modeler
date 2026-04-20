@@ -1493,6 +1493,66 @@ window.addEventListener('load', function() {
         return Math.round(val / 10) * 10;
     }
 
+    var FACE_SNAP_THRESHOLD = 12;
+
+    // Returns snapped x/z positions by aligning faces of mesh to faces of other pieces.
+    // Falls back to grid snap when no face is within threshold.
+    function faceSnapXZ(mesh, xVal, zVal) {
+        mesh.position.x = xVal;
+        mesh.position.z = zVal;
+        var box = new THREE.Box3().setFromObject(mesh);
+        var rOff = box.max.x - mesh.position.x;
+        var lOff = box.min.x - mesh.position.x;
+        var fOff = box.max.z - mesh.position.z;
+        var bOff = box.min.z - mesh.position.z;
+
+        var bestX = null, bestZ = null;
+        var bestDX = FACE_SNAP_THRESHOLD, bestDZ = FACE_SNAP_THRESHOLD;
+
+        pieces.forEach(function(other) {
+            if (other === mesh) return;
+            var ob = new THREE.Box3().setFromObject(other);
+            var d;
+            d = Math.abs(box.max.x - ob.min.x);
+            if (d < bestDX) { bestDX = d; bestX = ob.min.x - rOff; }
+            d = Math.abs(box.min.x - ob.max.x);
+            if (d < bestDX) { bestDX = d; bestX = ob.max.x - lOff; }
+            d = Math.abs(box.max.z - ob.min.z);
+            if (d < bestDZ) { bestDZ = d; bestZ = ob.min.z - fOff; }
+            d = Math.abs(box.min.z - ob.max.z);
+            if (d < bestDZ) { bestDZ = d; bestZ = ob.max.z - bOff; }
+        });
+
+        return {
+            x: bestX !== null ? bestX : snapValue(xVal),
+            z: bestZ !== null ? bestZ : snapValue(zVal),
+            snapped: bestX !== null || bestZ !== null
+        };
+    }
+
+    // Returns snapped y position by aligning top/bottom faces.
+    function faceSnapY(mesh, yVal) {
+        mesh.position.y = yVal;
+        var box = new THREE.Box3().setFromObject(mesh);
+        var tOff = box.max.y - mesh.position.y;
+        var bOff = box.min.y - mesh.position.y;
+
+        var bestY = null;
+        var bestD = FACE_SNAP_THRESHOLD;
+
+        pieces.forEach(function(other) {
+            if (other === mesh) return;
+            var ob = new THREE.Box3().setFromObject(other);
+            var d;
+            d = Math.abs(box.max.y - ob.min.y);
+            if (d < bestD) { bestD = d; bestY = ob.min.y - tOff; }
+            d = Math.abs(box.min.y - ob.max.y);
+            if (d < bestD) { bestD = d; bestY = ob.max.y - bOff; }
+        });
+
+        return bestY !== null ? { y: bestY, snapped: true } : { y: snapValue(yVal), snapped: false };
+    }
+
     function onPosChange() {
         if (!selectedPiece) return;
         pushUndo();
@@ -2462,9 +2522,9 @@ window.addEventListener('load', function() {
                     // Only update Y
                     var yVal = newPos.y;
                     if (snapEnabled) {
-                        var snapped = snapValue(yVal);
-                        if (snapped !== Math.round(yVal)) flashSnap();
-                        yVal = snapped;
+                        var ys = faceSnapY(dragPiece, yVal);
+                        if (ys.snapped) flashSnap();
+                        yVal = ys.y;
                     }
                     dragPiece.position.y = yVal;
                 } else {
@@ -2472,10 +2532,10 @@ window.addEventListener('load', function() {
                     var xVal = newPos.x;
                     var zVal = newPos.z;
                     if (snapEnabled) {
-                        var sx = snapValue(xVal), sz = snapValue(zVal);
-                        if (sx !== Math.round(xVal) || sz !== Math.round(zVal)) flashSnap();
-                        xVal = sx;
-                        zVal = sz;
+                        var fs = faceSnapXZ(dragPiece, xVal, zVal);
+                        if (fs.snapped) flashSnap();
+                        xVal = fs.x;
+                        zVal = fs.z;
                     }
                     dragPiece.position.x = xVal;
                     dragPiece.position.z = zVal;

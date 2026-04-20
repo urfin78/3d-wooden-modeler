@@ -67,6 +67,17 @@
     .obj-list-item.selected { background: #c8934a; color: #1a1a1a; }
     .obj-list-item .obj-type { color: #888; font-size: 10px; }
     .obj-list-item.selected .obj-type { color: #3a2a0a; }
+    .obj-list-item.grouped { padding-left: 20px; border-left: 2px solid #c8934a; }
+    .obj-list-item.grouped.selected { border-left-color: #8a5a1a; }
+    .obj-group-header {
+        padding: 3px 8px; font-size: 11px; font-weight: bold;
+        background: #2a2010; color: #c8934a;
+        border-bottom: 1px solid #555; border-top: 1px solid #555;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .obj-group-header .group-cost { font-size: 10px; color: #a07030; }
+    .cost-group-header { display: flex; justify-content: space-between; padding: 2px 0 1px; font-size: 11px; font-weight: bold; color: #c8934a; border-top: 1px solid #444; margin-top: 2px; }
+    .cost-row.grouped { padding-left: 12px; color: #888; }
     .rot-btn-row { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
     .rot-btn-row button {
         background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 3px;
@@ -389,6 +400,9 @@ window.addEventListener('load', function() {
             'split.preview.leftoverTooSmall': 'Leftover too small after cut — discarded ({len} mm).',
             'split.cannotSplit': 'Select an unmodified Board or Dowel to split.',
             'split.leftoverSuffix': '(leftover)',
+            'group.parts': 'parts',
+            'group.sourceCost': 'Material cost (1 board)',
+            'csv.sourceGroup': 'Source Group',
             'save.projectName': 'Project name:',
             'save.defaultName': 'My Project',
             'load.invalid': 'Invalid file format.',
@@ -503,6 +517,9 @@ window.addEventListener('load', function() {
             'split.preview.leftoverTooSmall': 'Rest nach Schnitt zu klein — verworfen ({len} mm).',
             'split.cannotSplit': 'Wähle ein unverändertes Brett oder einen Dübel zum Teilen.',
             'split.leftoverSuffix': '(Rest)',
+            'group.parts': 'Teile',
+            'group.sourceCost': 'Materialkosten (1 Brett)',
+            'csv.sourceGroup': 'Quellgruppe',
             'save.projectName': 'Projektname:',
             'save.defaultName': 'Mein Projekt',
             'load.invalid': 'Ungültiges Dateiformat.',
@@ -1334,9 +1351,12 @@ window.addEventListener('load', function() {
             objectListItems.appendChild(empty);
             return;
         }
-        pieces.forEach(function(mesh) {
+        var currency = currencySelect.value;
+        var renderedGroups = new Set();
+
+        function renderPieceItem(mesh, grouped) {
             var item = document.createElement('div');
-            item.className = 'obj-list-item';
+            item.className = 'obj-list-item' + (grouped ? ' grouped' : '');
             if (mesh === selectedPiece) item.className += ' selected';
             var nameSpan = document.createElement('span');
             nameSpan.textContent = mesh.userData.label || t('panel.objects.unnamed');
@@ -1345,10 +1365,31 @@ window.addEventListener('load', function() {
             typeSpan.textContent = typeName(mesh.userData.type);
             item.appendChild(nameSpan);
             item.appendChild(typeSpan);
-            item.addEventListener('click', function() {
-                selectPiece(mesh);
-            });
+            item.addEventListener('click', function() { selectPiece(mesh); });
             objectListItems.appendChild(item);
+        }
+
+        pieces.forEach(function(mesh) {
+            var sid = mesh.userData.sourceId;
+            if (sid) {
+                if (!renderedGroups.has(sid)) {
+                    renderedGroups.add(sid);
+                    var groupPieces = pieces.filter(function(m) { return m.userData.sourceId === sid; });
+                    var header = document.createElement('div');
+                    header.className = 'obj-group-header';
+                    var titleSpan = document.createElement('span');
+                    titleSpan.textContent = (mesh.userData.sourceLabel || typeName(mesh.userData.type)) + ' (' + groupPieces.length + ' ' + t('group.parts') + ')';
+                    var costSpan = document.createElement('span');
+                    costSpan.className = 'group-cost';
+                    costSpan.textContent = currency + (mesh.userData.sourcePrice || 0).toFixed(2);
+                    header.appendChild(titleSpan);
+                    header.appendChild(costSpan);
+                    objectListItems.appendChild(header);
+                    groupPieces.forEach(function(gm) { renderPieceItem(gm, true); });
+                }
+            } else {
+                renderPieceItem(mesh, false);
+            }
         });
     }
 
@@ -1535,13 +1576,33 @@ window.addEventListener('load', function() {
         var costTotal = document.getElementById('cost-total');
         var total = 0;
         var html = '';
+        var renderedGroups = new Set();
+
         pieces.forEach(function(m) {
             var ud = m.userData;
             if (ud.price === undefined) ud.price = 0;
             if (!ud.priceMode) ud.priceMode = 'fixed';
-            var cost = computePieceCost(m);
-            total += cost;
-            html += '<div class="cost-row"><span>' + (ud.label || ud.type) + '</span><span>' + currency + cost.toFixed(2) + '</span></div>';
+
+            if (ud.sourceId) {
+                if (!renderedGroups.has(ud.sourceId)) {
+                    renderedGroups.add(ud.sourceId);
+                    var groupPieces = pieces.filter(function(p) { return p.userData.sourceId === ud.sourceId; });
+                    var groupCost = ud.sourcePrice || 0;
+                    // Per-mm pieces in a group still contribute their individual costs
+                    if (ud.sourcePriceMode === 'per_mm') {
+                        groupCost = groupPieces.reduce(function(sum, p) { return sum + computePieceCost(p); }, 0);
+                    }
+                    total += groupCost;
+                    html += '<div class="cost-group-header"><span>' + (ud.sourceLabel || typeName(ud.type)) + ' (' + groupPieces.length + ' ' + t('group.parts') + ')</span><span>' + currency + groupCost.toFixed(2) + '</span></div>';
+                    groupPieces.forEach(function(gm) {
+                        html += '<div class="cost-row grouped"><span>' + (gm.userData.label || gm.userData.type) + '</span><span>—</span></div>';
+                    });
+                }
+            } else {
+                var cost = computePieceCost(m);
+                total += cost;
+                html += '<div class="cost-row"><span>' + (ud.label || ud.type) + '</span><span>' + currency + cost.toFixed(2) + '</span></div>';
+            }
         });
         costItems.innerHTML = html;
         costTotal.textContent = t('panel.costTotal') + ': ' + currency + total.toFixed(2);
@@ -1574,6 +1635,10 @@ window.addEventListener('load', function() {
                 type: ud.type, id: ud.id, label: ud.label, notches: ud.notches,
                 csgModified: ud.csgModified,
                 price: ud.price || 0, priceMode: ud.priceMode || 'fixed',
+                sourceId: ud.sourceId || null,
+                sourcePrice: ud.sourcePrice || 0,
+                sourcePriceMode: ud.sourcePriceMode || null,
+                sourceLabel: ud.sourceLabel || null,
                 px: mesh.position.x, py: mesh.position.y, pz: mesh.position.z,
                 rx: mesh.rotation.x, ry: mesh.rotation.y, rz: mesh.rotation.z
             };
@@ -1635,6 +1700,10 @@ window.addEventListener('load', function() {
             mesh.userData.csgModified = entry.csgModified;
             mesh.userData.price = entry.price || 0;
             mesh.userData.priceMode = entry.priceMode || 'fixed';
+            mesh.userData.sourceId = entry.sourceId || null;
+            mesh.userData.sourcePrice = entry.sourcePrice || 0;
+            mesh.userData.sourcePriceMode = entry.sourcePriceMode || null;
+            mesh.userData.sourceLabel = entry.sourceLabel || null;
             if (entry.type === 'Board' || entry.type === 'Wedge' || entry.type === 'L-Bracket') {
                 mesh.userData.w = entry.w; mesh.userData.h = entry.h; mesh.userData.d = entry.d;
             } else if (entry.type === 'Dowel') {
@@ -2140,8 +2209,13 @@ window.addEventListener('load', function() {
         var baseLabel = ud.label || ud.type;
         var price = ud.price || 0;
         var priceMode = ud.priceMode || 'fixed';
-        // Split fixed prices across parts (including leftover); per-mm prices stay the same unit rate.
-        var newPrice = priceMode === 'per_mm' ? price : price / totalParts;
+        // For fixed prices: cost stays on the group (sourcePrice), individual pieces get 0.
+        // For per-mm prices: each piece keeps its own rate (material cost is length-proportional).
+        var newPrice = priceMode === 'per_mm' ? price : 0;
+        var sourceId = priceMode === 'fixed' && price > 0 ? 'sg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7) : null;
+        var sourcePrice = priceMode === 'fixed' ? price : 0;
+        var sourcePriceMode = priceMode;
+        var sourceLabel = baseLabel;
 
         // Local direction of the cut axis
         var localDir;
@@ -2178,6 +2252,12 @@ window.addEventListener('load', function() {
             mesh.userData.label = label;
             mesh.userData.price = newPrice;
             mesh.userData.priceMode = priceMode;
+            if (sourceId) {
+                mesh.userData.sourceId = sourceId;
+                mesh.userData.sourcePrice = sourcePrice;
+                mesh.userData.sourcePriceMode = sourcePriceMode;
+                mesh.userData.sourceLabel = sourceLabel;
+            }
             scene.add(mesh);
             pieces.push(mesh);
             if (labelsVisible) createLabel(mesh);
@@ -2241,13 +2321,30 @@ window.addEventListener('load', function() {
         var rows = [[
             t('csv.part'), t('csv.type'), t('csv.label'),
             t('panel.dim.w'), t('panel.dim.h'), t('panel.dim.d'),
-            t('csv.dia'), t('csv.notches'), t('csv.unitPrice'), t('csv.cost')
+            t('csv.dia'), t('csv.notches'), t('csv.sourceGroup'), t('csv.unitPrice'), t('csv.cost')
         ]];
         var totalCost = 0;
+        var countedGroups = new Set();
         pieces.forEach(function(m, i) {
             var ud = m.userData;
-            var cost = computePieceCost(m);
-            totalCost += cost;
+            var cost, groupLabel;
+            if (ud.sourceId) {
+                groupLabel = '"' + (ud.sourceLabel || typeName(ud.type)) + '"';
+                if (!countedGroups.has(ud.sourceId)) {
+                    countedGroups.add(ud.sourceId);
+                    cost = ud.sourcePriceMode === 'per_mm'
+                        ? pieces.filter(function(p) { return p.userData.sourceId === ud.sourceId; })
+                              .reduce(function(s, p) { return s + computePieceCost(p); }, 0)
+                        : (ud.sourcePrice || 0);
+                    totalCost += cost;
+                } else {
+                    cost = 0;
+                }
+            } else {
+                groupLabel = '';
+                cost = computePieceCost(m);
+                totalCost += cost;
+            }
             var row = [i + 1, typeName(ud.type), '"' + (ud.label || '') + '"'];
             if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
                 row.push(ud.w, ud.h, ud.d, '', ud.notches);
@@ -2256,10 +2353,10 @@ window.addEventListener('load', function() {
             } else if (ud.type === 'Tapered Leg') {
                 row.push('', ud.h, '', ud.rTop * 2 + '/' + ud.rBottom * 2, ud.notches);
             }
-            row.push(currency + (ud.price || 0).toFixed(2), currency + cost.toFixed(2));
+            row.push(groupLabel, currency + (ud.price || 0).toFixed(2), currency + cost.toFixed(2));
             rows.push(row);
         });
-        rows.push(['', '', '', '', '', '', '', '', t('csv.total'), currency + totalCost.toFixed(2)]);
+        rows.push(['', '', '', '', '', '', '', '', '', t('csv.total'), currency + totalCost.toFixed(2)]);
         var csv = rows.map(function(r) { return r.join(','); }).join('\n');
         var blob = new Blob([csv], { type: 'text/csv' });
         var url = URL.createObjectURL(blob);

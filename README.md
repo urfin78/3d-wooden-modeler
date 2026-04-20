@@ -13,7 +13,7 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 - **Real-time editing** of dimensions, position, and rotation via the side panel
 - **Drag-to-move** pieces directly in the viewport (Shift+drag for vertical movement)
 - **Duplicate** selected piece via toolbar button or Ctrl+D
-- **Split** a board or dowel — either by number of parts (equal-length) or by target part length (max pieces that fit, with optional leftover kept as extra piece) — with configurable saw kerf (blade thickness) so material lost to each cut is accounted for
+- **Split** a board or dowel — either by number of parts (equal-length) or by target part length (max pieces that fit, with optional leftover kept as extra piece) — with configurable saw kerf (blade thickness) so material lost to each cut is accounted for; split parts are visually grouped in the object list and cost summary (one board purchase = one cost entry)
 - **CSG boolean subtraction** (Cut Joint) to carve joints and holes between pieces
 - **Snap mode** for aligning pieces to a 10mm grid
 - **Labels** displayed as 3D sprites above each piece

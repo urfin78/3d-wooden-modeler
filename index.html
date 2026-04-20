@@ -1137,13 +1137,6 @@ window.addEventListener('load', function() {
 
     function addPiece(mesh) {
         pushUndo();
-        if (snapEnabled) {
-            mesh.position.set(
-                snapValue(mesh.position.x),
-                snapValue(mesh.position.y),
-                snapValue(mesh.position.z)
-            );
-        }
         scene.add(mesh);
         pieces.push(mesh);
         if (labelsVisible) createLabel(mesh);

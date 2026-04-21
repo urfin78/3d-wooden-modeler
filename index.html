@@ -1630,14 +1630,27 @@ window.addEventListener('load', function() {
         if (labelsVisible) updateLabelText(selectedPiece);
     }
 
+    // Fire handler immediately on Enter key, then blur to sync display
+    function bindEnter(inp, handler) {
+        inp.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                handler.call(inp);
+                inp.blur();
+            }
+        });
+    }
+
     [inputW, inputH, inputD, inputR, inputRHH, inputRT, inputRB, inputTH].forEach(function(inp) {
         inp.addEventListener('change', onDimChange);
+        bindEnter(inp, onDimChange);
     });
     [inputPX, inputPY, inputPZ].forEach(function(inp) {
         inp.addEventListener('change', onPosChange);
+        bindEnter(inp, onPosChange);
     });
     [inputRX, inputRY, inputRZ].forEach(function(inp) {
         inp.addEventListener('change', onRotChange);
+        bindEnter(inp, onRotChange);
     });
     inputLabel.addEventListener('input', onLabelChange);
 
@@ -1648,6 +1661,7 @@ window.addEventListener('load', function() {
         updateCostSummary();
     }
     inputPrice.addEventListener('change', onPriceChange);
+    bindEnter(inputPrice, onPriceChange);
     inputPriceMode.addEventListener('change', onPriceChange);
 
     // Currency

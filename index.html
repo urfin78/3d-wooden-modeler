@@ -99,6 +99,9 @@
     .tpl-delete:hover { color: #ff3333; }
     #btn-save-template { display: none; width: 100%; background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 4px 8px; cursor: pointer; font-size: 12px; margin-top: 6px; }
     #btn-save-template:hover { background: #4a4a4a; }
+    #template-io { display: flex; gap: 4px; margin-top: 4px; }
+    #template-io button { flex: 1; background: #3a3a3a; color: #ddd; border: 1px solid #555; border-radius: 3px; padding: 4px 6px; cursor: pointer; font-size: 11px; }
+    #template-io button:hover { background: #4a4a4a; }
     #cost-summary { margin-top: 12px; border-top: 1px solid #555; padding-top: 8px; }
     #cost-items { max-height: 120px; overflow-y: auto; font-size: 11px; background: #1a1a1a; border: 1px solid #555; border-radius: 3px; padding: 4px 6px; margin-bottom: 4px; }
     .cost-row { display: flex; justify-content: space-between; padding: 1px 0; }
@@ -252,6 +255,11 @@
     </div>
 
     <button id="btn-save-template" data-i18n="panel.saveAsTemplate">Save as Template</button>
+    <div id="template-io">
+        <button id="btn-export-templates" data-i18n="toolbar.exportTemplates">Export Templates</button>
+        <button id="btn-import-templates" data-i18n="toolbar.importTemplates">Import Templates</button>
+        <input type="file" id="import-templates-input" accept=".woodtemplates.json,.json" style="display:none">
+    </div>
 
     <div id="overlap-list"></div>
 
@@ -334,6 +342,10 @@ window.addEventListener('load', function() {
             'toolbar.exportCsv': 'Export CSV',
             'toolbar.save': 'Save',
             'toolbar.load': 'Load',
+            'toolbar.exportTemplates': 'Export Templates',
+            'toolbar.importTemplates': 'Import Templates',
+            'template.import.none': 'No templates found in file.',
+            'template.import.added': '{added} of {total} template(s) added ({skipped} already existed).',
             'snap.indicator': 'Snapped!',
             'panel.objects': 'Objects',
             'panel.noSelection': 'No piece selected',
@@ -461,6 +473,10 @@ window.addEventListener('load', function() {
             'toolbar.exportCsv': 'CSV-Export',
             'toolbar.save': 'Speichern',
             'toolbar.load': 'Laden',
+            'toolbar.exportTemplates': 'Vorlagen exportieren',
+            'toolbar.importTemplates': 'Vorlagen importieren',
+            'template.import.none': 'Keine Vorlagen in der Datei gefunden.',
+            'template.import.added': '{added} von {total} Vorlage(n) hinzugefügt ({skipped} bereits vorhanden).',
             'snap.indicator': 'Eingerastet!',
             'panel.objects': 'Objekte',
             'panel.noSelection': 'Kein Teil ausgewählt',
@@ -1903,6 +1919,11 @@ window.addEventListener('load', function() {
         reader.onload = function(e) {
             try {
                 var data = JSON.parse(e.target.result);
+                // Auto-detect template files (array of objects with name+type but no position)
+                if (Array.isArray(data) && data.length > 0 && data[0].name && data[0].type && !data[0].position) {
+                    mergeImportedTemplates(data);
+                    return;
+                }
                 var piecesData;
                 // Support both wrapped format (version 1) and raw array (undo format)
                 if (data.version && data.pieces) {
@@ -1984,14 +2005,56 @@ window.addEventListener('load', function() {
         var custom = loadCustomTemplates();
         custom.push(tpl);
         saveCustomTemplates(custom);
-        renderTemplateList();
+        buildDropdownMenus();
     }
 
     function deleteCustomTemplate(index) {
         var custom = loadCustomTemplates();
         custom.splice(index, 1);
         saveCustomTemplates(custom);
-        renderTemplateList();
+        buildDropdownMenus();
+    }
+
+    function exportTemplates() {
+        var templates = loadCustomTemplates();
+        var blob = new Blob([JSON.stringify(templates, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'templates.woodtemplates.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function mergeImportedTemplates(imported) {
+        if (!Array.isArray(imported) || imported.length === 0) {
+            alert(t('template.import.none'));
+            return;
+        }
+        var existing = loadCustomTemplates();
+        var existingNames = existing.map(function(tpl) { return tpl.name; });
+        var added = 0;
+        imported.forEach(function(tpl) {
+            if (tpl.name && tpl.type && existingNames.indexOf(tpl.name) === -1) {
+                existing.push(tpl);
+                added++;
+            }
+        });
+        saveCustomTemplates(existing);
+        buildDropdownMenus();
+        alert(t('template.import.added', { added: added, total: imported.length, skipped: imported.length - added }));
+    }
+
+    function importTemplates(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                mergeImportedTemplates(JSON.parse(e.target.result));
+            } catch (err) {
+                alert(t('load.failed', { msg: err.message }));
+            }
+        };
+        reader.readAsText(file);
     }
 
     function templateDimsText(tpl) {
@@ -2899,6 +2962,17 @@ window.addEventListener('load', function() {
     document.getElementById('btn-save-template').addEventListener('click', function() {
         saveAsTemplate();
         buildDropdownMenus();
+    });
+
+    document.getElementById('btn-export-templates').addEventListener('click', exportTemplates);
+    document.getElementById('btn-import-templates').addEventListener('click', function() {
+        document.getElementById('import-templates-input').click();
+    });
+    document.getElementById('import-templates-input').addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            importTemplates(e.target.files[0]);
+            e.target.value = '';
+        }
     });
 
     // Keyboard shortcuts

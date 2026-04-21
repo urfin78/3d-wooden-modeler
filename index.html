@@ -412,6 +412,16 @@ window.addEventListener('load', function() {
             'template.default': 'Default {type}',
             'template.builtIn': 'Built-in',
             'template.custom': 'Custom',
+            'tpl.batten': 'Batten 40x20',
+            'tpl.plank': 'Plank 100x20',
+            'tpl.beam': 'Beam 60x40',
+            'tpl.shelfBoard': 'Shelf Board 300x18',
+            'tpl.dowel6': '6mm Dowel Pin',
+            'tpl.dowel8': '8mm Dowel Pin',
+            'tpl.dowelRod10': '10mm Dowel Rod',
+            'tpl.cornerBrace': 'Corner Brace',
+            'tpl.tableLeg': 'Table Leg 720mm',
+            'tpl.doorWedge': 'Door Wedge',
             'duplicate.suffix': 'Copy',
             'clearAll.confirm': 'Clear all pieces?',
             'csv.part': 'Part',
@@ -529,6 +539,16 @@ window.addEventListener('load', function() {
             'template.default': 'Standard-{type}',
             'template.builtIn': 'Integriert',
             'template.custom': 'Eigene',
+            'tpl.batten': 'Latte 40x20',
+            'tpl.plank': 'Planke 100x20',
+            'tpl.beam': 'Balken 60x40',
+            'tpl.shelfBoard': 'Regalbrett 300x18',
+            'tpl.dowel6': '6mm Dübel',
+            'tpl.dowel8': '8mm Dübel',
+            'tpl.dowelRod10': '10mm Dübelstab',
+            'tpl.cornerBrace': 'Eckwinkel',
+            'tpl.tableLeg': 'Tischbein 720mm',
+            'tpl.doorWedge': 'Türkeil',
             'duplicate.suffix': 'Kopie',
             'clearAll.confirm': 'Alle Teile löschen?',
             'csv.part': 'Teil',
@@ -1870,16 +1890,16 @@ window.addEventListener('load', function() {
     // ============================================================
 
     var builtInTemplates = [
-        { name: 'Batten 40x20', type: 'Board', w: 40, h: 20, d: 2000, price: 2.00 },
-        { name: 'Plank 100x20', type: 'Board', w: 100, h: 20, d: 2000, price: 4.00 },
-        { name: 'Beam 60x40', type: 'Board', w: 60, h: 40, d: 2000, price: 5.50 },
-        { name: 'Shelf Board 300x18', type: 'Board', w: 300, h: 18, d: 600, price: 8.00 },
-        { name: '6mm Dowel Pin', type: 'Dowel', r: 3, h: 30, price: 0.20 },
-        { name: '8mm Dowel Pin', type: 'Dowel', r: 4, h: 35, price: 0.25 },
-        { name: '10mm Dowel Rod', type: 'Dowel', r: 5, h: 300, price: 1.50 },
-        { name: 'Corner Brace', type: 'L-Bracket', w: 50, h: 50, d: 20, price: 2.00 },
-        { name: 'Table Leg 720mm', type: 'Tapered Leg', rTop: 20, rBottom: 30, h: 720, price: 12.00 },
-        { name: 'Door Wedge', type: 'Wedge', w: 80, h: 30, d: 40, price: 1.00 }
+        { nameKey: 'tpl.batten',     type: 'Board',       w: 40,  h: 20, d: 2000, price: 2.00 },
+        { nameKey: 'tpl.plank',      type: 'Board',       w: 100, h: 20, d: 2000, price: 4.00 },
+        { nameKey: 'tpl.beam',       type: 'Board',       w: 60,  h: 40, d: 2000, price: 5.50 },
+        { nameKey: 'tpl.shelfBoard', type: 'Board',       w: 300, h: 18, d: 600,  price: 8.00 },
+        { nameKey: 'tpl.dowel6',     type: 'Dowel',       r: 3, h: 30,   price: 0.20 },
+        { nameKey: 'tpl.dowel8',     type: 'Dowel',       r: 4, h: 35,   price: 0.25 },
+        { nameKey: 'tpl.dowelRod10', type: 'Dowel',       r: 5, h: 300,  price: 1.50 },
+        { nameKey: 'tpl.cornerBrace',type: 'L-Bracket',   w: 50, h: 50, d: 20,   price: 2.00 },
+        { nameKey: 'tpl.tableLeg',   type: 'Tapered Leg', rTop: 20, rBottom: 30, h: 720, price: 12.00 },
+        { nameKey: 'tpl.doorWedge',  type: 'Wedge',       w: 80, h: 30, d: 40,   price: 1.00 }
     ];
 
     function loadCustomTemplates() {
@@ -1901,7 +1921,7 @@ window.addEventListener('load', function() {
         else if (tpl.type === 'L-Bracket') mesh = makeLBracket(tpl.w, tpl.h, tpl.d);
         else if (tpl.type === 'Tapered Leg') mesh = makeTaperedLeg(tpl.rTop, tpl.rBottom, tpl.h);
         if (mesh) {
-            mesh.userData.label = tpl.name + ' ' + mesh.userData.id;
+            mesh.userData.label = (tpl.nameKey ? t(tpl.nameKey) : tpl.name) + ' ' + mesh.userData.id;
             mesh.userData.price = tpl.price || 0;
             mesh.userData.priceMode = 'fixed';
             addPiece(mesh);
@@ -2679,7 +2699,7 @@ window.addEventListener('load', function() {
             matching.forEach(function(tpl) {
                 var item = document.createElement('div');
                 item.className = 'add-menu-item';
-                item.innerHTML = '<span>' + tpl.name + '</span><span class="tpl-dims">' + templateDimsText(tpl) + '</span>';
+                item.innerHTML = '<span>' + (tpl.nameKey ? t(tpl.nameKey) : tpl.name) + '</span><span class="tpl-dims">' + templateDimsText(tpl) + '</span>';
                 item.addEventListener('click', function(e) {
                     e.stopPropagation();
                     addFromTemplate(tpl);

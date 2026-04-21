@@ -1513,14 +1513,25 @@ window.addEventListener('load', function() {
             if (other === mesh) return;
             var ob = new THREE.Box3().setFromObject(other);
             var d;
+            // Face-to-face contact (opposite sides touch)
             d = Math.abs(box.max.x - ob.min.x);
             if (d < bestDX) { bestDX = d; bestX = ob.min.x - rOff; }
             d = Math.abs(box.min.x - ob.max.x);
             if (d < bestDX) { bestDX = d; bestX = ob.max.x - lOff; }
+            // Coplanar alignment (same-side edges flush)
+            d = Math.abs(box.max.x - ob.max.x);
+            if (d < bestDX) { bestDX = d; bestX = ob.max.x - rOff; }
+            d = Math.abs(box.min.x - ob.min.x);
+            if (d < bestDX) { bestDX = d; bestX = ob.min.x - lOff; }
+
             d = Math.abs(box.max.z - ob.min.z);
             if (d < bestDZ) { bestDZ = d; bestZ = ob.min.z - fOff; }
             d = Math.abs(box.min.z - ob.max.z);
             if (d < bestDZ) { bestDZ = d; bestZ = ob.max.z - bOff; }
+            d = Math.abs(box.max.z - ob.max.z);
+            if (d < bestDZ) { bestDZ = d; bestZ = ob.max.z - fOff; }
+            d = Math.abs(box.min.z - ob.min.z);
+            if (d < bestDZ) { bestDZ = d; bestZ = ob.min.z - bOff; }
         });
 
         return {
@@ -1544,10 +1555,16 @@ window.addEventListener('load', function() {
             if (other === mesh) return;
             var ob = new THREE.Box3().setFromObject(other);
             var d;
+            // Top/bottom contact
             d = Math.abs(box.max.y - ob.min.y);
             if (d < bestD) { bestD = d; bestY = ob.min.y - tOff; }
             d = Math.abs(box.min.y - ob.max.y);
             if (d < bestD) { bestD = d; bestY = ob.max.y - bOff; }
+            // Coplanar Y alignment (same height edges flush)
+            d = Math.abs(box.max.y - ob.max.y);
+            if (d < bestD) { bestD = d; bestY = ob.max.y - tOff; }
+            d = Math.abs(box.min.y - ob.min.y);
+            if (d < bestD) { bestD = d; bestY = ob.min.y - bOff; }
         });
 
         return bestY !== null ? { y: bestY, snapped: true } : { y: snapValue(yVal), snapped: false };

@@ -1621,7 +1621,18 @@ window.addEventListener('load', function() {
             THREE.MathUtils.degToRad(ry),
             THREE.MathUtils.degToRad(rz)
         );
+        // Re-snap after rotation: bounding box changed, old snap position may no longer be valid
+        if (snapEnabled) {
+            var pos = selectedPiece.position;
+            var snXZ = faceSnapXZ(selectedPiece, pos.x, pos.z);
+            var snY = faceSnapY(selectedPiece, pos.y);
+            selectedPiece.position.set(snXZ.x, snY.y, snXZ.z);
+        }
+        inputPX.value = Math.round(selectedPiece.position.x);
+        inputPY.value = Math.round(selectedPiece.position.y);
+        inputPZ.value = Math.round(selectedPiece.position.z);
         if (labelsVisible) updateLabelPosition(selectedPiece);
+        updateGrid();
     }
 
     function onLabelChange() {

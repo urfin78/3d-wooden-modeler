@@ -1616,18 +1616,31 @@ window.addEventListener('load', function() {
         var rx = parseFloat(inputRX.value) || 0;
         var ry = parseFloat(inputRY.value) || 0;
         var rz = parseFloat(inputRZ.value) || 0;
+
+        // Remember if piece was sitting on the ground before rotation
+        var oldBox = new THREE.Box3().setFromObject(selectedPiece);
+        var wasGrounded = oldBox.min.y < 1;
+
         selectedPiece.rotation.set(
             THREE.MathUtils.degToRad(rx),
             THREE.MathUtils.degToRad(ry),
             THREE.MathUtils.degToRad(rz)
         );
-        // Re-snap after rotation: bounding box changed, old snap position may no longer be valid
+
         if (snapEnabled) {
+            // Re-snap in X/Z; Y handled below via ground adjustment or face snap
             var pos = selectedPiece.position;
             var snXZ = faceSnapXZ(selectedPiece, pos.x, pos.z);
-            var snY = faceSnapY(selectedPiece, pos.y);
-            selectedPiece.position.set(snXZ.x, snY.y, snXZ.z);
+            selectedPiece.position.x = snXZ.x;
+            selectedPiece.position.z = snXZ.z;
         }
+
+        if (wasGrounded) {
+            // Keep the piece sitting on the ground after its bounding box changed
+            var newBox = new THREE.Box3().setFromObject(selectedPiece);
+            selectedPiece.position.y -= newBox.min.y;
+        }
+
         inputPX.value = Math.round(selectedPiece.position.x);
         inputPY.value = Math.round(selectedPiece.position.y);
         inputPZ.value = Math.round(selectedPiece.position.z);

@@ -1420,15 +1420,16 @@ window.addEventListener('load', function() {
     function quickRotate(axis, degrees) {
         if (!selectedPiece) return;
         pushUndo();
+        var oldBox = new THREE.Box3().setFromObject(selectedPiece);
+        var wasGrounded = oldBox.min.y < 1;
         var rad = THREE.MathUtils.degToRad(degrees);
         if (axis === 'x') selectedPiece.rotation.x += rad;
         else if (axis === 'y') selectedPiece.rotation.y += rad;
         else if (axis === 'z') selectedPiece.rotation.z += rad;
-        // Update panel inputs
         inputRX.value = Math.round(THREE.MathUtils.radToDeg(selectedPiece.rotation.x));
         inputRY.value = Math.round(THREE.MathUtils.radToDeg(selectedPiece.rotation.y));
         inputRZ.value = Math.round(THREE.MathUtils.radToDeg(selectedPiece.rotation.z));
-        if (labelsVisible) updateLabelPosition(selectedPiece);
+        applyPostRotation(wasGrounded);
     }
 
     document.getElementById('rot-x-l').addEventListener('click', function() { quickRotate('x', -90); });
@@ -1610,9 +1611,31 @@ window.addEventListener('load', function() {
         updateGrid();
     }
 
+    // Called after any rotation change to re-snap, ground-adjust, and refresh inputs.
+    function applyPostRotation(wasGrounded) {
+        if (snapEnabled) {
+            var pos = selectedPiece.position;
+            var snXZ = faceSnapXZ(selectedPiece, pos.x, pos.z);
+            selectedPiece.position.x = snXZ.x;
+            selectedPiece.position.z = snXZ.z;
+        }
+        if (wasGrounded) {
+            selectedPiece.updateMatrixWorld(true);
+            var newBox = new THREE.Box3().setFromObject(selectedPiece);
+            selectedPiece.position.y -= newBox.min.y;
+        }
+        inputPX.value = Math.round(selectedPiece.position.x);
+        inputPY.value = Math.round(selectedPiece.position.y);
+        inputPZ.value = Math.round(selectedPiece.position.z);
+        if (labelsVisible) updateLabelPosition(selectedPiece);
+        updateGrid();
+    }
+
     function onRotChange() {
         if (!selectedPiece) return;
         pushUndo();
+        var oldBox = new THREE.Box3().setFromObject(selectedPiece);
+        var wasGrounded = oldBox.min.y < 1;
         var rx = parseFloat(inputRX.value) || 0;
         var ry = parseFloat(inputRY.value) || 0;
         var rz = parseFloat(inputRZ.value) || 0;
@@ -1621,7 +1644,7 @@ window.addEventListener('load', function() {
             THREE.MathUtils.degToRad(ry),
             THREE.MathUtils.degToRad(rz)
         );
-        if (labelsVisible) updateLabelPosition(selectedPiece);
+        applyPostRotation(wasGrounded);
     }
 
     function onLabelChange() {
@@ -1630,14 +1653,27 @@ window.addEventListener('load', function() {
         if (labelsVisible) updateLabelText(selectedPiece);
     }
 
+    // Fire handler immediately on Enter key, then blur to sync display
+    function bindEnter(inp, handler) {
+        inp.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                handler.call(inp);
+                inp.blur();
+            }
+        });
+    }
+
     [inputW, inputH, inputD, inputR, inputRHH, inputRT, inputRB, inputTH].forEach(function(inp) {
         inp.addEventListener('change', onDimChange);
+        bindEnter(inp, onDimChange);
     });
     [inputPX, inputPY, inputPZ].forEach(function(inp) {
         inp.addEventListener('change', onPosChange);
+        bindEnter(inp, onPosChange);
     });
     [inputRX, inputRY, inputRZ].forEach(function(inp) {
         inp.addEventListener('change', onRotChange);
+        bindEnter(inp, onRotChange);
     });
     inputLabel.addEventListener('input', onLabelChange);
 
@@ -1648,6 +1684,7 @@ window.addEventListener('load', function() {
         updateCostSummary();
     }
     inputPrice.addEventListener('change', onPriceChange);
+    bindEnter(inputPrice, onPriceChange);
     inputPriceMode.addEventListener('change', onPriceChange);
 
     // Currency

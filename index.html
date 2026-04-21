@@ -1426,9 +1426,9 @@ window.addEventListener('load', function() {
         if (axis === 'x') selectedPiece.rotation.x += rad;
         else if (axis === 'y') selectedPiece.rotation.y += rad;
         else if (axis === 'z') selectedPiece.rotation.z += rad;
-        inputRX.value = Math.round(THREE.MathUtils.radToDeg(selectedPiece.rotation.x));
-        inputRY.value = Math.round(THREE.MathUtils.radToDeg(selectedPiece.rotation.y));
-        inputRZ.value = Math.round(THREE.MathUtils.radToDeg(selectedPiece.rotation.z));
+        inputRX.value = normDeg(Math.round(THREE.MathUtils.radToDeg(selectedPiece.rotation.x)));
+        inputRY.value = normDeg(Math.round(THREE.MathUtils.radToDeg(selectedPiece.rotation.y)));
+        inputRZ.value = normDeg(Math.round(THREE.MathUtils.radToDeg(selectedPiece.rotation.z)));
         applyPostRotation(wasGrounded);
     }
 
@@ -1631,14 +1631,17 @@ window.addEventListener('load', function() {
         updateGrid();
     }
 
+    function normDeg(v) { return ((v % 360) + 360) % 360; }
+
     function onRotChange() {
         if (!selectedPiece) return;
         pushUndo();
         var oldBox = new THREE.Box3().setFromObject(selectedPiece);
         var wasGrounded = oldBox.min.y < 1;
-        var rx = parseFloat(inputRX.value) || 0;
-        var ry = parseFloat(inputRY.value) || 0;
-        var rz = parseFloat(inputRZ.value) || 0;
+        var rx = normDeg(parseFloat(inputRX.value) || 0);
+        var ry = normDeg(parseFloat(inputRY.value) || 0);
+        var rz = normDeg(parseFloat(inputRZ.value) || 0);
+        inputRX.value = rx; inputRY.value = ry; inputRZ.value = rz;
         selectedPiece.rotation.set(
             THREE.MathUtils.degToRad(rx),
             THREE.MathUtils.degToRad(ry),

@@ -412,6 +412,16 @@ window.addEventListener('load', function() {
             'template.default': 'Default {type}',
             'template.builtIn': 'Built-in',
             'template.custom': 'Custom',
+            'tpl.batten': 'Batten 40x20',
+            'tpl.plank': 'Plank 100x20',
+            'tpl.beam': 'Beam 60x40',
+            'tpl.shelfBoard': 'Shelf Board 300x18',
+            'tpl.dowel6': '6mm Dowel Pin',
+            'tpl.dowel8': '8mm Dowel Pin',
+            'tpl.dowelRod10': '10mm Dowel Rod',
+            'tpl.cornerBrace': 'Corner Brace',
+            'tpl.tableLeg': 'Table Leg 720mm',
+            'tpl.doorWedge': 'Door Wedge',
             'duplicate.suffix': 'Copy',
             'clearAll.confirm': 'Clear all pieces?',
             'csv.part': 'Part',
@@ -436,8 +446,8 @@ window.addEventListener('load', function() {
             'toolbar.add.wedge': '+ Keil',
             'toolbar.add.lbracket': '+ L-Winkel',
             'toolbar.add.taperedLeg': '+ Konusbein',
-            'toolbar.snap.on': 'Raster EIN',
-            'toolbar.snap.off': 'Raster AUS',
+            'toolbar.snap.on': 'Einrasten EIN',
+            'toolbar.snap.off': 'Einrasten AUS',
             'toolbar.labels.on': 'Beschriftung EIN',
             'toolbar.labels.off': 'Beschriftung AUS',
             'toolbar.cut': 'Ausschnitt',
@@ -529,6 +539,16 @@ window.addEventListener('load', function() {
             'template.default': 'Standard-{type}',
             'template.builtIn': 'Integriert',
             'template.custom': 'Eigene',
+            'tpl.batten': 'Latte 40x20',
+            'tpl.plank': 'Planke 100x20',
+            'tpl.beam': 'Balken 60x40',
+            'tpl.shelfBoard': 'Regalbrett 300x18',
+            'tpl.dowel6': '6mm Dübel',
+            'tpl.dowel8': '8mm Dübel',
+            'tpl.dowelRod10': '10mm Dübelstab',
+            'tpl.cornerBrace': 'Eckwinkel',
+            'tpl.tableLeg': 'Tischbein 720mm',
+            'tpl.doorWedge': 'Türkeil',
             'duplicate.suffix': 'Kopie',
             'clearAll.confirm': 'Alle Teile löschen?',
             'csv.part': 'Teil',
@@ -1493,6 +1513,83 @@ window.addEventListener('load', function() {
         return Math.round(val / 10) * 10;
     }
 
+    var FACE_SNAP_THRESHOLD = 12;
+
+    // Returns snapped x/z positions by aligning faces of mesh to faces of other pieces.
+    // Falls back to grid snap when no face is within threshold.
+    function faceSnapXZ(mesh, xVal, zVal) {
+        mesh.position.x = xVal;
+        mesh.position.z = zVal;
+        var box = new THREE.Box3().setFromObject(mesh);
+        var rOff = box.max.x - mesh.position.x;
+        var lOff = box.min.x - mesh.position.x;
+        var fOff = box.max.z - mesh.position.z;
+        var bOff = box.min.z - mesh.position.z;
+
+        var bestX = null, bestZ = null;
+        var bestDX = FACE_SNAP_THRESHOLD, bestDZ = FACE_SNAP_THRESHOLD;
+
+        pieces.forEach(function(other) {
+            if (other === mesh) return;
+            var ob = new THREE.Box3().setFromObject(other);
+            var d;
+            // Face-to-face contact (opposite sides touch)
+            d = Math.abs(box.max.x - ob.min.x);
+            if (d < bestDX) { bestDX = d; bestX = ob.min.x - rOff; }
+            d = Math.abs(box.min.x - ob.max.x);
+            if (d < bestDX) { bestDX = d; bestX = ob.max.x - lOff; }
+            // Coplanar alignment (same-side edges flush)
+            d = Math.abs(box.max.x - ob.max.x);
+            if (d < bestDX) { bestDX = d; bestX = ob.max.x - rOff; }
+            d = Math.abs(box.min.x - ob.min.x);
+            if (d < bestDX) { bestDX = d; bestX = ob.min.x - lOff; }
+
+            d = Math.abs(box.max.z - ob.min.z);
+            if (d < bestDZ) { bestDZ = d; bestZ = ob.min.z - fOff; }
+            d = Math.abs(box.min.z - ob.max.z);
+            if (d < bestDZ) { bestDZ = d; bestZ = ob.max.z - bOff; }
+            d = Math.abs(box.max.z - ob.max.z);
+            if (d < bestDZ) { bestDZ = d; bestZ = ob.max.z - fOff; }
+            d = Math.abs(box.min.z - ob.min.z);
+            if (d < bestDZ) { bestDZ = d; bestZ = ob.min.z - bOff; }
+        });
+
+        return {
+            x: bestX !== null ? bestX : snapValue(xVal),
+            z: bestZ !== null ? bestZ : snapValue(zVal),
+            snapped: bestX !== null || bestZ !== null
+        };
+    }
+
+    // Returns snapped y position by aligning top/bottom faces.
+    function faceSnapY(mesh, yVal) {
+        mesh.position.y = yVal;
+        var box = new THREE.Box3().setFromObject(mesh);
+        var tOff = box.max.y - mesh.position.y;
+        var bOff = box.min.y - mesh.position.y;
+
+        var bestY = null;
+        var bestD = FACE_SNAP_THRESHOLD;
+
+        pieces.forEach(function(other) {
+            if (other === mesh) return;
+            var ob = new THREE.Box3().setFromObject(other);
+            var d;
+            // Top/bottom contact
+            d = Math.abs(box.max.y - ob.min.y);
+            if (d < bestD) { bestD = d; bestY = ob.min.y - tOff; }
+            d = Math.abs(box.min.y - ob.max.y);
+            if (d < bestD) { bestD = d; bestY = ob.max.y - bOff; }
+            // Coplanar Y alignment (same height edges flush)
+            d = Math.abs(box.max.y - ob.max.y);
+            if (d < bestD) { bestD = d; bestY = ob.max.y - tOff; }
+            d = Math.abs(box.min.y - ob.min.y);
+            if (d < bestD) { bestD = d; bestY = ob.min.y - bOff; }
+        });
+
+        return bestY !== null ? { y: bestY, snapped: true } : { y: snapValue(yVal), snapped: false };
+    }
+
     function onPosChange() {
         if (!selectedPiece) return;
         pushUndo();
@@ -1793,16 +1890,16 @@ window.addEventListener('load', function() {
     // ============================================================
 
     var builtInTemplates = [
-        { name: 'Batten 40x20', type: 'Board', w: 40, h: 20, d: 2000, price: 2.00 },
-        { name: 'Plank 100x20', type: 'Board', w: 100, h: 20, d: 2000, price: 4.00 },
-        { name: 'Beam 60x40', type: 'Board', w: 60, h: 40, d: 2000, price: 5.50 },
-        { name: 'Shelf Board 300x18', type: 'Board', w: 300, h: 18, d: 600, price: 8.00 },
-        { name: '6mm Dowel Pin', type: 'Dowel', r: 3, h: 30, price: 0.20 },
-        { name: '8mm Dowel Pin', type: 'Dowel', r: 4, h: 35, price: 0.25 },
-        { name: '10mm Dowel Rod', type: 'Dowel', r: 5, h: 300, price: 1.50 },
-        { name: 'Corner Brace', type: 'L-Bracket', w: 50, h: 50, d: 20, price: 2.00 },
-        { name: 'Table Leg 720mm', type: 'Tapered Leg', rTop: 20, rBottom: 30, h: 720, price: 12.00 },
-        { name: 'Door Wedge', type: 'Wedge', w: 80, h: 30, d: 40, price: 1.00 }
+        { nameKey: 'tpl.batten',     type: 'Board',       w: 40,  h: 20, d: 2000, price: 2.00 },
+        { nameKey: 'tpl.plank',      type: 'Board',       w: 100, h: 20, d: 2000, price: 4.00 },
+        { nameKey: 'tpl.beam',       type: 'Board',       w: 60,  h: 40, d: 2000, price: 5.50 },
+        { nameKey: 'tpl.shelfBoard', type: 'Board',       w: 300, h: 18, d: 600,  price: 8.00 },
+        { nameKey: 'tpl.dowel6',     type: 'Dowel',       r: 3, h: 30,   price: 0.20 },
+        { nameKey: 'tpl.dowel8',     type: 'Dowel',       r: 4, h: 35,   price: 0.25 },
+        { nameKey: 'tpl.dowelRod10', type: 'Dowel',       r: 5, h: 300,  price: 1.50 },
+        { nameKey: 'tpl.cornerBrace',type: 'L-Bracket',   w: 50, h: 50, d: 20,   price: 2.00 },
+        { nameKey: 'tpl.tableLeg',   type: 'Tapered Leg', rTop: 20, rBottom: 30, h: 720, price: 12.00 },
+        { nameKey: 'tpl.doorWedge',  type: 'Wedge',       w: 80, h: 30, d: 40,   price: 1.00 }
     ];
 
     function loadCustomTemplates() {
@@ -1824,7 +1921,7 @@ window.addEventListener('load', function() {
         else if (tpl.type === 'L-Bracket') mesh = makeLBracket(tpl.w, tpl.h, tpl.d);
         else if (tpl.type === 'Tapered Leg') mesh = makeTaperedLeg(tpl.rTop, tpl.rBottom, tpl.h);
         if (mesh) {
-            mesh.userData.label = tpl.name + ' ' + mesh.userData.id;
+            mesh.userData.label = (tpl.nameKey ? t(tpl.nameKey) : tpl.name) + ' ' + mesh.userData.id;
             mesh.userData.price = tpl.price || 0;
             mesh.userData.priceMode = 'fixed';
             addPiece(mesh);
@@ -2462,9 +2559,9 @@ window.addEventListener('load', function() {
                     // Only update Y
                     var yVal = newPos.y;
                     if (snapEnabled) {
-                        var snapped = snapValue(yVal);
-                        if (snapped !== Math.round(yVal)) flashSnap();
-                        yVal = snapped;
+                        var ys = faceSnapY(dragPiece, yVal);
+                        if (ys.snapped) flashSnap();
+                        yVal = ys.y;
                     }
                     dragPiece.position.y = yVal;
                 } else {
@@ -2472,10 +2569,10 @@ window.addEventListener('load', function() {
                     var xVal = newPos.x;
                     var zVal = newPos.z;
                     if (snapEnabled) {
-                        var sx = snapValue(xVal), sz = snapValue(zVal);
-                        if (sx !== Math.round(xVal) || sz !== Math.round(zVal)) flashSnap();
-                        xVal = sx;
-                        zVal = sz;
+                        var fs = faceSnapXZ(dragPiece, xVal, zVal);
+                        if (fs.snapped) flashSnap();
+                        xVal = fs.x;
+                        zVal = fs.z;
                     }
                     dragPiece.position.x = xVal;
                     dragPiece.position.z = zVal;
@@ -2602,7 +2699,7 @@ window.addEventListener('load', function() {
             matching.forEach(function(tpl) {
                 var item = document.createElement('div');
                 item.className = 'add-menu-item';
-                item.innerHTML = '<span>' + tpl.name + '</span><span class="tpl-dims">' + templateDimsText(tpl) + '</span>';
+                item.innerHTML = '<span>' + (tpl.nameKey ? t(tpl.nameKey) : tpl.name) + '</span><span class="tpl-dims">' + templateDimsText(tpl) + '</span>';
                 item.addEventListener('click', function(e) {
                     e.stopPropagation();
                     addFromTemplate(tpl);

@@ -1534,6 +1534,7 @@ window.addEventListener('load', function() {
 
     // Returns snapped x/z positions by aligning faces of mesh to faces of other pieces.
     // Falls back to grid snap when no face is within threshold.
+    // For Dowels: additionally snaps the center axis to piece edges and centerlines.
     function faceSnapXZ(mesh, xVal, zVal) {
         mesh.position.x = xVal;
         mesh.position.z = zVal;
@@ -1542,6 +1543,7 @@ window.addEventListener('load', function() {
         var lOff = box.min.x - mesh.position.x;
         var fOff = box.max.z - mesh.position.z;
         var bOff = box.min.z - mesh.position.z;
+        var isDowel = mesh.userData.type === 'Dowel';
 
         var bestX = null, bestZ = null;
         var bestDX = FACE_SNAP_THRESHOLD, bestDZ = FACE_SNAP_THRESHOLD;
@@ -1549,6 +1551,8 @@ window.addEventListener('load', function() {
         pieces.forEach(function(other) {
             if (other === mesh) return;
             var ob = new THREE.Box3().setFromObject(other);
+            var ocx = (ob.min.x + ob.max.x) / 2;
+            var ocz = (ob.min.z + ob.max.z) / 2;
             var d;
             // Face-to-face contact (opposite sides touch)
             d = Math.abs(box.max.x - ob.min.x);
@@ -1569,6 +1573,23 @@ window.addEventListener('load', function() {
             if (d < bestDZ) { bestDZ = d; bestZ = ob.max.z - fOff; }
             d = Math.abs(box.min.z - ob.min.z);
             if (d < bestDZ) { bestDZ = d; bestZ = ob.min.z - bOff; }
+
+            // Dowel center-axis snaps: align dowel axis to piece edges and centerline
+            if (isDowel) {
+                d = Math.abs(mesh.position.x - ob.min.x);
+                if (d < bestDX) { bestDX = d; bestX = ob.min.x; }
+                d = Math.abs(mesh.position.x - ob.max.x);
+                if (d < bestDX) { bestDX = d; bestX = ob.max.x; }
+                d = Math.abs(mesh.position.x - ocx);
+                if (d < bestDX) { bestDX = d; bestX = ocx; }
+
+                d = Math.abs(mesh.position.z - ob.min.z);
+                if (d < bestDZ) { bestDZ = d; bestZ = ob.min.z; }
+                d = Math.abs(mesh.position.z - ob.max.z);
+                if (d < bestDZ) { bestDZ = d; bestZ = ob.max.z; }
+                d = Math.abs(mesh.position.z - ocz);
+                if (d < bestDZ) { bestDZ = d; bestZ = ocz; }
+            }
         });
 
         return {
@@ -1579,11 +1600,13 @@ window.addEventListener('load', function() {
     }
 
     // Returns snapped y position by aligning top/bottom faces.
+    // For Dowels: additionally snaps the center (position.y) to piece faces for half-insertion.
     function faceSnapY(mesh, yVal) {
         mesh.position.y = yVal;
         var box = new THREE.Box3().setFromObject(mesh);
         var tOff = box.max.y - mesh.position.y;
         var bOff = box.min.y - mesh.position.y;
+        var isDowel = mesh.userData.type === 'Dowel';
 
         var bestY = null;
         var bestD = FACE_SNAP_THRESHOLD;
@@ -1602,6 +1625,13 @@ window.addEventListener('load', function() {
             if (d < bestD) { bestD = d; bestY = ob.max.y - tOff; }
             d = Math.abs(box.min.y - ob.min.y);
             if (d < bestD) { bestD = d; bestY = ob.min.y - bOff; }
+            // Dowel center snaps to piece face: center at top = 50% insertion into that piece
+            if (isDowel) {
+                d = Math.abs(mesh.position.y - ob.max.y);
+                if (d < bestD) { bestD = d; bestY = ob.max.y; }
+                d = Math.abs(mesh.position.y - ob.min.y);
+                if (d < bestD) { bestD = d; bestY = ob.min.y; }
+            }
         });
 
         return bestY !== null ? { y: bestY, snapped: true } : { y: snapValue(yVal), snapped: false };

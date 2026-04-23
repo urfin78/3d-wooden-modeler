@@ -141,6 +141,7 @@
     <div class="separator"></div>
     <button id="btn-snap">Snap OFF</button>
     <button id="btn-labels">Labels OFF</button>
+    <button id="btn-xray">X-Ray OFF</button>
     <div class="separator"></div>
     <button id="btn-cut" data-i18n="toolbar.cut">Cut Joint</button>
     <button id="btn-split" data-i18n="toolbar.split">Split</button>
@@ -331,6 +332,8 @@ window.addEventListener('load', function() {
             'toolbar.snap.off': 'Snap OFF',
             'toolbar.labels.on': 'Labels ON',
             'toolbar.labels.off': 'Labels OFF',
+            'toolbar.xray.on': 'X-Ray ON',
+            'toolbar.xray.off': 'X-Ray OFF',
             'toolbar.cut': 'Cut Joint',
             'toolbar.split': 'Split',
             'toolbar.overlaps': 'Show Overlaps',
@@ -462,6 +465,8 @@ window.addEventListener('load', function() {
             'toolbar.snap.off': 'Einrasten AUS',
             'toolbar.labels.on': 'Beschriftung EIN',
             'toolbar.labels.off': 'Beschriftung AUS',
+            'toolbar.xray.on': 'Röntgen EIN',
+            'toolbar.xray.off': 'Röntgen AUS',
             'toolbar.cut': 'Ausschnitt',
             'toolbar.split': 'Teilen',
             'toolbar.overlaps': 'Überlappungen',
@@ -1046,6 +1051,8 @@ window.addEventListener('load', function() {
     var selectedPiece = null;
     var snapEnabled = false;
     var labelsVisible = false;
+    var xrayMode = false;
+    var XRAY_OPACITY = 0.4;
     var cutMode = false;
     var cutTarget = null;
     var overlapMode = false;
@@ -1171,11 +1178,20 @@ window.addEventListener('load', function() {
         return mesh;
     }
 
+    function applyXray(mesh) {
+        var isSelected = xrayMode && mesh === selectedPiece;
+        mesh.material.transparent = xrayMode && !isSelected;
+        mesh.material.opacity = (xrayMode && !isSelected) ? XRAY_OPACITY : 1.0;
+        // Disable depth writes so transparent pieces don't occlude objects inside them
+        mesh.material.depthWrite = !xrayMode || isSelected;
+    }
+
     function addPiece(mesh) {
         pushUndo();
         scene.add(mesh);
         pieces.push(mesh);
         if (labelsVisible) createLabel(mesh);
+        applyXray(mesh);
         selectPiece(mesh);
         updateGrid();
     }
@@ -1289,6 +1305,7 @@ window.addEventListener('load', function() {
             selectedPiece.material.color.setHex(WOOD_COLOR);
         }
         selectedPiece = mesh;
+        if (xrayMode) pieces.forEach(applyXray);
         if (!mesh) {
             noSelection.style.display = 'block';
             dimFields.style.display = 'none';
@@ -1897,6 +1914,7 @@ window.addEventListener('load', function() {
             scene.add(mesh);
             pieces.push(mesh);
             if (labelsVisible) createLabel(mesh);
+            applyXray(mesh);
         });
         selectPiece(null);
         updateGrid();
@@ -2491,6 +2509,7 @@ window.addEventListener('load', function() {
             scene.add(mesh);
             pieces.push(mesh);
             if (labelsVisible) createLabel(mesh);
+            applyXray(mesh);
             created.push(mesh);
         }
 
@@ -2927,6 +2946,13 @@ window.addEventListener('load', function() {
         else hideAllLabels();
     });
 
+    document.getElementById('btn-xray').addEventListener('click', function() {
+        xrayMode = !xrayMode;
+        this.textContent = xrayMode ? t('toolbar.xray.on') : t('toolbar.xray.off');
+        this.classList.toggle('active', xrayMode);
+        pieces.forEach(applyXray);
+    });
+
     document.getElementById('btn-cut').addEventListener('click', function() {
         if (cutMode) exitCutMode();
         else enterCutMode();
@@ -3046,6 +3072,8 @@ window.addEventListener('load', function() {
         if (snapBtn) snapBtn.textContent = snapEnabled ? t('toolbar.snap.on') : t('toolbar.snap.off');
         var labelsBtn = document.getElementById('btn-labels');
         if (labelsBtn) labelsBtn.textContent = labelsVisible ? t('toolbar.labels.on') : t('toolbar.labels.off');
+        var xrayBtn = document.getElementById('btn-xray');
+        if (xrayBtn) xrayBtn.textContent = xrayMode ? t('toolbar.xray.on') : t('toolbar.xray.off');
         updateObjectList();
         updateSizeSummary();
         updateCostSummary();

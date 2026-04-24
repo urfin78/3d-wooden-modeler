@@ -40,6 +40,12 @@ Everything runs inside a `window.addEventListener('load', ...)` closure in `inde
 
 13. **Overlap Detection** — Bounding-box intersection checks between all piece pairs.
 
+    **X-Ray Mode** — `xrayMode` toggle makes all non-selected pieces translucent (`opacity = XRAY_OPACITY`, `depthWrite = false`) so pieces hidden inside others (e.g. dowels in boards) become visible. The currently selected piece stays fully opaque. `applyXray(mesh)` is called whenever a mesh enters the scene (addPiece, restoreScene, split) or when selection changes.
+
+    **Grouping** — `THREE.Group` is used as the container (no reimplementation). Toolbar Group/Ungroup buttons. Multi-select via Ctrl+click (builds `multiSelected` Set); `createGroup()` centers a new Group, reparents the selected pieces as children, and assigns `userData.groupId` to each. `ungroup()` reparents children back to the scene preserving world transforms. Clicking any piece in a group selects the whole group; dragging moves the group as a unit. Snap (`faceSnapXZ`/`faceSnapY`) excludes the dragged group's own children and force-updates descendant matrices so Box3 checks are correct. Snap indicator only flashes on the no-snap → snap transition. `splitSelected` and `duplicateSelected` use world transforms so operations on grouped pieces keep positions correct; split parts re-attach to the same group. `serializeScene`/`restoreScene` persist `groups[]` (gId + transform) alongside `groupId` on each piece; `restoreMesh` always sets `userData.type` so CSG-modified pieces survive load/save cycles.
+
+    **Template Export/Import** — Custom templates (in `localStorage`) can be exported to a `.woodtemplates.json` file and imported back; used for sharing template libraries between installations.
+
 14. **Cost Calculator** — Per-piece `userData.price` and `userData.priceMode` (fixed/per_mm). `updateCostSummary()` renders live totals in sidebar; grouped (split) pieces show their source board cost once under a group header. `exportCSV()` includes a `sourceGroup` column. Currency persisted in `localStorage`.
 
 15. **Mouse/Keyboard Interaction** — Raycasting for piece selection, drag-move (with snap support), keyboard shortcuts. Delete key is suppressed when an input is focused.

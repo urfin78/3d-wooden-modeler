@@ -15,12 +15,14 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 - **Duplicate** selected piece via toolbar button or Ctrl+D
 - **Split** a board or dowel — either by number of parts (equal-length) or by target part length (max pieces that fit, with optional leftover kept as extra piece) — with configurable saw kerf (blade thickness) so material lost to each cut is accounted for; split parts are visually grouped in the object list and cost summary (one board purchase = one cost entry)
 - **CSG boolean subtraction** (Cut Joint) to carve joints and holes between pieces
-- **Snap mode** for aligning pieces to a 10mm grid
+- **Snap mode** with face-to-face contact, coplanar edge alignment, and dowel center-axis snapping; falls back to a 10mm grid
+- **X-Ray mode** to see through pieces and locate objects inside others (e.g. dowels)
+- **Grouping** — Ctrl+click to multi-select, then Group/Ungroup from the toolbar; groups move and snap as a unit and persist in save files
 - **Labels** displayed as 3D sprites above each piece
 - **Overlap detection** to highlight intersecting pieces
 - **Undo/Redo** support (Ctrl+Z / Ctrl+Shift+Z)
 - **Auto-resizing grid** that adapts to the size of your model
-- **Template library** with built-in metric woodworking parts and custom templates (stored in localStorage), integrated into toolbar dropdowns
+- **Template library** with built-in metric woodworking parts and custom templates (stored in localStorage), integrated into toolbar dropdowns; custom templates can be exported/imported as JSON
 - **Save/Load** models as `.woodmodel.json` files for persistent projects
 - **Cost calculator** with per-piece pricing (fixed or per-mm), currency selector, and live cost summary
 - **CSV export** of a cut list with dimensions, types, notch counts, and costs

@@ -153,6 +153,8 @@
     <div class="separator"></div>
     <button id="btn-cut" data-i18n="toolbar.cut">Cut Joint</button>
     <button id="btn-split" data-i18n="toolbar.split">Split</button>
+    <button id="btn-ruler" data-i18n="toolbar.ruler">Ruler</button>
+    <button id="btn-clear-rulers" data-i18n="toolbar.clearRulers">Clear Rulers</button>
     <button id="btn-overlaps" data-i18n="toolbar.overlaps">Show Overlaps</button>
     <div class="separator"></div>
     <button id="btn-undo" data-i18n="toolbar.undo">Undo</button>
@@ -176,6 +178,7 @@
 </div>
 
 <div id="snap-indicator" data-i18n="snap.indicator">Snapped!</div>
+<div id="ruler-hint" style="position:fixed; top:56px; left:50%; transform:translateX(-50%); background:#3a7adc; color:#fff; padding:4px 12px; border-radius:4px; font-size:12px; font-weight:bold; display:none; z-index:200;"></div>
 
 <div id="side-panel">
     <div id="object-list">
@@ -356,7 +359,13 @@ window.addEventListener('load', function() {
             'toolbar.xray.off': 'X-Ray OFF',
             'toolbar.cut': 'Cut Joint',
             'toolbar.split': 'Split',
+            'toolbar.ruler': 'Ruler',
+            'toolbar.clearRulers': 'Clear Rulers',
             'toolbar.overlaps': 'Show Overlaps',
+            'ruler.hint.first': 'Ruler: click first point on a piece (Shift = angle snap)',
+            'ruler.hint.second': 'Ruler: click second point (Shift = angle snap, Esc to cancel)',
+            'ruler.angle': 'Angle snap: {angle}',
+            'ruler.deleteConfirm': 'Delete this ruler?',
             'toolbar.undo': 'Undo',
             'toolbar.redo': 'Redo',
             'toolbar.duplicate': 'Duplicate',
@@ -494,7 +503,13 @@ window.addEventListener('load', function() {
             'toolbar.xray.off': 'Röntgen AUS',
             'toolbar.cut': 'Ausschnitt',
             'toolbar.split': 'Teilen',
+            'toolbar.ruler': 'Lineal',
+            'toolbar.clearRulers': 'Lineale löschen',
             'toolbar.overlaps': 'Überlappungen',
+            'ruler.hint.first': 'Lineal: ersten Punkt anklicken (Shift = Winkelraster)',
+            'ruler.hint.second': 'Lineal: zweiten Punkt anklicken (Shift = Winkelraster, Esc abbrechen)',
+            'ruler.angle': 'Winkelraster: {angle}',
+            'ruler.deleteConfirm': 'Dieses Lineal löschen?',
             'toolbar.undo': 'Rückgängig',
             'toolbar.redo': 'Wiederholen',
             'toolbar.duplicate': 'Duplizieren',
@@ -1085,6 +1100,9 @@ window.addEventListener('load', function() {
     var XRAY_OPACITY = 0.4;
     var cutMode = false;
     var cutTarget = null;
+    var rulerMode = false;
+    var rulerFirstPoint = null;
+    var rulers = [];
     var overlapMode = false;
     var overlapHighlighted = [];
     var groups = [];
@@ -2081,7 +2099,10 @@ window.addEventListener('load', function() {
             return { gId: g.userData.gId, px: g.position.x, py: g.position.y, pz: g.position.z,
                 rx: g.rotation.x, ry: g.rotation.y, rz: g.rotation.z };
         });
-        return JSON.stringify({ pieces: piecesState, groups: groupsState });
+        var rulersState = rulers.map(function(r) {
+            return { p1: [r.p1.x, r.p1.y, r.p1.z], p2: [r.p2.x, r.p2.y, r.p2.z] };
+        });
+        return JSON.stringify({ pieces: piecesState, groups: groupsState, rulers: rulersState });
     }
 
     function restoreScene(json) {
@@ -2104,6 +2125,7 @@ window.addEventListener('load', function() {
         // Support old format (plain array) and new format ({pieces, groups})
         var piecesData = Array.isArray(state) ? state : (state.pieces || []);
         var groupsData = Array.isArray(state) ? [] : (state.groups || []);
+        var rulersData = Array.isArray(state) ? [] : (state.rulers || []);
 
         function restoreMesh(entry) {
             var mesh;
@@ -2176,6 +2198,8 @@ window.addEventListener('load', function() {
             if (!isNaN(n) && n > groupCounter) groupCounter = n;
         });
 
+        rebuildRulersFromData(rulersData);
+
         selectPiece(null);
         updateGrid();
     }
@@ -2209,11 +2233,12 @@ window.addEventListener('load', function() {
         if (name === null) return;
         var sceneData = JSON.parse(serializeScene());
         var data = {
-            version: 2,
+            version: 3,
             name: name,
             created: new Date().toISOString(),
             pieces: sceneData.pieces,
-            groups: sceneData.groups || []
+            groups: sceneData.groups || [],
+            rulers: sceneData.rulers || []
         };
         var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         var url = URL.createObjectURL(blob);
@@ -2236,8 +2261,8 @@ window.addEventListener('load', function() {
                 }
                 var scenePayload;
                 if (data.version >= 2 && data.pieces) {
-                    // New format with groups
-                    scenePayload = { pieces: data.pieces, groups: data.groups || [] };
+                    // v2: groups; v3: + rulers
+                    scenePayload = { pieces: data.pieces, groups: data.groups || [], rulers: data.rulers || [] };
                 } else if (data.version === 1 && data.pieces) {
                     // Old format without groups
                     scenePayload = { pieces: data.pieces, groups: [] };
@@ -2423,6 +2448,444 @@ window.addEventListener('load', function() {
             tool.material.color.setHex(WOOD_COLOR);
         }
         exitCutMode();
+    }
+
+    // ============================================================
+    // Ruler
+    // ============================================================
+
+    var rulerHintEl = document.getElementById('ruler-hint');
+
+    function updateRulerHint(angleLabel) {
+        if (!rulerMode) { rulerHintEl.style.display = 'none'; return; }
+        rulerHintEl.style.display = 'block';
+        var base = rulerFirstPoint ? t('ruler.hint.second') : t('ruler.hint.first');
+        if (angleLabel) {
+            rulerHintEl.textContent = base + ' — ' + t('ruler.angle', { angle: angleLabel });
+        } else {
+            rulerHintEl.textContent = base;
+        }
+    }
+
+    function enterRulerMode() {
+        rulerMode = true;
+        rulerFirstPoint = null;
+        document.getElementById('btn-ruler').classList.add('active');
+        if (cutMode) exitCutMode();
+        updateRulerHint();
+    }
+
+    function exitRulerMode() {
+        rulerMode = false;
+        rulerFirstPoint = null;
+        document.getElementById('btn-ruler').classList.remove('active');
+        updateRulerHint();
+        hideRulerPreview();
+    }
+
+    function createRulerLabelSprite(text) {
+        var lines = text.split('\n');
+        var canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 128;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'rgba(20,40,80,0.85)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#3a7adc';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        var lh = canvas.height / (lines.length + 1);
+        ctx.font = 'bold 22px Arial';
+        ctx.fillText(lines[0], canvas.width / 2, lh);
+        ctx.font = '16px Arial';
+        for (var i = 1; i < lines.length; i++) {
+            ctx.fillText(lines[i], canvas.width / 2, lh * (i + 1));
+        }
+        var tex = new THREE.CanvasTexture(canvas);
+        var mat = new THREE.SpriteMaterial({ map: tex, depthTest: false });
+        var sprite = new THREE.Sprite(mat);
+        sprite.scale.set(100, 50, 1);
+        return sprite;
+    }
+
+    function addRuler(p1, p2) {
+        var dx = p2.x - p1.x, dy = p2.y - p1.y, dz = p2.z - p1.z;
+        var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        var labelText = Math.round(dist) + ' mm\n' +
+            'X ' + Math.round(Math.abs(dx)) +
+            '  Y ' + Math.round(Math.abs(dy)) +
+            '  Z ' + Math.round(Math.abs(dz));
+        var geo = new THREE.BufferGeometry().setFromPoints([p1.clone(), p2.clone()]);
+        var mat = new THREE.LineBasicMaterial({ color: 0x3a7adc, depthTest: false, transparent: true });
+        var line = new THREE.Line(geo, mat);
+        line.renderOrder = 999;
+        scene.add(line);
+        var sprite = createRulerLabelSprite(labelText);
+        sprite.position.set((p1.x + p2.x) / 2, (p1.y + p2.y) / 2 + 8, (p1.z + p2.z) / 2);
+        scene.add(sprite);
+        rulers.push({ p1: p1.clone(), p2: p2.clone(), line: line, sprite: sprite });
+    }
+
+    function clearRulers() {
+        rulers.forEach(function(r) {
+            scene.remove(r.line);
+            r.line.geometry.dispose();
+            r.line.material.dispose();
+            scene.remove(r.sprite);
+            if (r.sprite.material.map) r.sprite.material.map.dispose();
+            r.sprite.material.dispose();
+        });
+        rulers = [];
+    }
+
+    function removeRulerAt(index) {
+        if (index < 0 || index >= rulers.length) return;
+        var r = rulers[index];
+        scene.remove(r.line);
+        r.line.geometry.dispose();
+        r.line.material.dispose();
+        scene.remove(r.sprite);
+        if (r.sprite.material.map) r.sprite.material.map.dispose();
+        r.sprite.material.dispose();
+        rulers.splice(index, 1);
+    }
+
+    function pickRulerSpriteAt(e) {
+        getMouseNDC(e);
+        raycaster.setFromCamera(mouse, camera);
+        var sprites = rulers.map(function(r) { return r.sprite; });
+        if (sprites.length === 0) return -1;
+        var hits = raycaster.intersectObjects(sprites, false);
+        if (hits.length === 0) return -1;
+        var hitSprite = hits[0].object;
+        for (var i = 0; i < rulers.length; i++) {
+            if (rulers[i].sprite === hitSprite) return i;
+        }
+        return -1;
+    }
+
+    function rebuildRulersFromData(data) {
+        clearRulers();
+        if (!data) return;
+        data.forEach(function(r) {
+            addRuler(new THREE.Vector3(r.p1[0], r.p1[1], r.p1[2]),
+                     new THREE.Vector3(r.p2[0], r.p2[1], r.p2[2]));
+        });
+    }
+
+    // Snap indicator + preview line (created lazily, kept in scene, toggled visible)
+    var rulerSnapIndicator = null;
+    var rulerPreviewLine = null;
+
+    var SNAP_CORNER_COLOR = 0xffe040;
+    var SNAP_EDGE_COLOR = 0x40e0ff;
+    var SNAP_PIXEL_TOL_CORNER = 18;
+    var SNAP_PIXEL_TOL_EDGE = 12;
+
+    function ensureRulerSnapIndicator() {
+        if (rulerSnapIndicator) return;
+        var geo = new THREE.SphereGeometry(1, 16, 12);
+        var mat = new THREE.MeshBasicMaterial({ color: SNAP_CORNER_COLOR, depthTest: false, transparent: true, opacity: 0.95 });
+        rulerSnapIndicator = new THREE.Mesh(geo, mat);
+        rulerSnapIndicator.renderOrder = 1000;
+        rulerSnapIndicator.visible = false;
+        scene.add(rulerSnapIndicator);
+    }
+
+    function ensureRulerPreviewLine() {
+        if (rulerPreviewLine) return;
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute([0,0,0, 0,0,0], 3));
+        var mat = new THREE.LineDashedMaterial({ color: 0x3a7adc, depthTest: false, transparent: true, opacity: 0.7, dashSize: 8, gapSize: 4 });
+        rulerPreviewLine = new THREE.Line(geo, mat);
+        rulerPreviewLine.renderOrder = 999;
+        rulerPreviewLine.visible = false;
+        scene.add(rulerPreviewLine);
+    }
+
+    function hideRulerPreview() {
+        if (rulerSnapIndicator) rulerSnapIndicator.visible = false;
+        if (rulerPreviewLine) rulerPreviewLine.visible = false;
+    }
+
+    // Project a world-space point to screen pixels (relative to canvas).
+    var _projVec = new THREE.Vector3();
+    function worldToScreen(point) {
+        _projVec.copy(point).project(camera);
+        var rect = renderer.domElement.getBoundingClientRect();
+        return {
+            x: (_projVec.x * 0.5 + 0.5) * rect.width,
+            y: (-_projVec.y * 0.5 + 0.5) * rect.height,
+            behind: _projVec.z > 1 || _projVec.z < -1
+        };
+    }
+
+    // Build BBox corners + 12 edges (corner-pair indices) for a mesh.
+    function bboxCornersAndEdges(mesh) {
+        var box = new THREE.Box3().setFromObject(mesh);
+        if (box.isEmpty()) return null;
+        var min = box.min, max = box.max;
+        var c = [
+            new THREE.Vector3(min.x, min.y, min.z),
+            new THREE.Vector3(max.x, min.y, min.z),
+            new THREE.Vector3(min.x, max.y, min.z),
+            new THREE.Vector3(max.x, max.y, min.z),
+            new THREE.Vector3(min.x, min.y, max.z),
+            new THREE.Vector3(max.x, min.y, max.z),
+            new THREE.Vector3(min.x, max.y, max.z),
+            new THREE.Vector3(max.x, max.y, max.z)
+        ];
+        var edges = [
+            [0,1],[2,3],[4,5],[6,7],
+            [0,2],[1,3],[4,6],[5,7],
+            [0,4],[1,5],[2,6],[3,7]
+        ];
+        return { corners: c, edges: edges };
+    }
+
+    // Distance from point (px,py) to segment (ax,ay)-(bx,by) in 2D, plus param t in [0,1].
+    function pointToSegment2D(px, py, ax, ay, bx, by) {
+        var dx = bx - ax, dy = by - ay;
+        var len2 = dx * dx + dy * dy;
+        var t = len2 > 0 ? ((px - ax) * dx + (py - ay) * dy) / len2 : 0;
+        if (t < 0) t = 0; else if (t > 1) t = 1;
+        var qx = ax + t * dx, qy = ay + t * dy;
+        var ex = px - qx, ey = py - qy;
+        return { dist: Math.sqrt(ex * ex + ey * ey), t: t };
+    }
+
+    // Closest points between two infinite 3D lines:
+    //   line A: pA + s * dA   (camera ray)
+    //   line B: pB + r * dB   (edge line)
+    // Returns { s, r, pointA, pointB } where pointA is on line A, pointB on line B.
+    function closestPointsTwoLines(pA, dA, pB, dB) {
+        var w0 = new THREE.Vector3().subVectors(pA, pB);
+        var a = dA.dot(dA);
+        var b = dA.dot(dB);
+        var c = dB.dot(dB);
+        var d = dA.dot(w0);
+        var e = dB.dot(w0);
+        var denom = a * c - b * b;
+        var s, r;
+        if (Math.abs(denom) < 1e-9) {
+            s = 0;
+            r = (b > c ? d / b : e / c);
+        } else {
+            s = (b * e - c * d) / denom;
+            r = (a * e - b * d) / denom;
+        }
+        var pointA = pA.clone().addScaledVector(dA, s);
+        var pointB = pB.clone().addScaledVector(dB, r);
+        return { s: s, r: r, pointA: pointA, pointB: pointB };
+    }
+
+    // Find best snap target across ALL visible pieces. Camera-ray based:
+    //   • Corner snap: pixel distance from cursor to projected corner.
+    //   • Edge snap: pixel distance to projected edge segment; the resulting 3D point is the
+    //     closest point on the edge line to the camera ray (clamped to the segment), so the
+    //     point sits visually under the cursor regardless of perspective.
+    function findSnapTarget(mouseClientX, mouseClientY) {
+        var rect = renderer.domElement.getBoundingClientRect();
+        var mx = mouseClientX - rect.left;
+        var my = mouseClientY - rect.top;
+
+        var rayOrigin = raycaster.ray.origin;
+        var rayDir = raycaster.ray.direction;
+
+        var bestCornerPt = null, bestCornerD = Infinity;
+        var bestEdgePt = null, bestEdgeD = Infinity;
+
+        var meshes = pieces.filter(function(m) { return m.visible; });
+        for (var mi = 0; mi < meshes.length; mi++) {
+            var ce = bboxCornersAndEdges(meshes[mi]);
+            if (!ce) continue;
+            var sc = ce.corners.map(function(p) { return worldToScreen(p); });
+
+            // Corners
+            for (var i = 0; i < sc.length; i++) {
+                if (sc[i].behind) continue;
+                var dx = sc[i].x - mx, dy = sc[i].y - my;
+                var d = Math.sqrt(dx * dx + dy * dy);
+                if (d < bestCornerD) {
+                    bestCornerD = d;
+                    bestCornerPt = ce.corners[i].clone();
+                }
+            }
+
+            // Edges
+            for (var j = 0; j < ce.edges.length; j++) {
+                var ai = ce.edges[j][0], bi = ce.edges[j][1];
+                var a = sc[ai], b = sc[bi];
+                if (a.behind || b.behind) continue;
+                var seg = pointToSegment2D(mx, my, a.x, a.y, b.x, b.y);
+                if (seg.dist < bestEdgeD) {
+                    var wa = ce.corners[ai], wb = ce.corners[bi];
+                    var edgeDir = new THREE.Vector3().subVectors(wb, wa);
+                    var edgeLen = edgeDir.length();
+                    if (edgeLen < 1e-6) continue;
+                    edgeDir.multiplyScalar(1 / edgeLen);
+                    var cp = closestPointsTwoLines(rayOrigin, rayDir, wa, edgeDir);
+                    var rClamped = Math.max(0, Math.min(edgeLen, cp.r));
+                    var ptOnEdge = wa.clone().addScaledVector(edgeDir, rClamped);
+                    bestEdgeD = seg.dist;
+                    bestEdgePt = ptOnEdge;
+                }
+            }
+        }
+
+        if (bestCornerPt && bestCornerD <= SNAP_PIXEL_TOL_CORNER) {
+            return { point: bestCornerPt, kind: 'corner' };
+        }
+        if (bestEdgePt && bestEdgeD <= SNAP_PIXEL_TOL_EDGE) {
+            return { point: bestEdgePt, kind: 'edge' };
+        }
+        return null;
+    }
+
+    // Angle-snap: given start point and free end point, return direction snapped to nearest
+    // axis (X/Y/Z) or 45° diagonal in XY/XZ/YZ planes. Distance preserved.
+    var ANGLE_SNAP_DIRS = (function() {
+        var dirs = [];
+        var axes = [
+            { v: [1,0,0], label: 'X' },
+            { v: [0,1,0], label: 'Y' },
+            { v: [0,0,1], label: 'Z' }
+        ];
+        axes.forEach(function(a) {
+            dirs.push({ v: new THREE.Vector3(a.v[0], a.v[1], a.v[2]), label: a.label, kind: 'axis' });
+        });
+        // 45° diagonals in three planes
+        var diags = [
+            { a: [1,1,0],  label: 'XY 45°' },
+            { a: [1,-1,0], label: 'XY -45°' },
+            { a: [1,0,1],  label: 'XZ 45°' },
+            { a: [1,0,-1], label: 'XZ -45°' },
+            { a: [0,1,1],  label: 'YZ 45°' },
+            { a: [0,1,-1], label: 'YZ -45°' }
+        ];
+        diags.forEach(function(d) {
+            var v = new THREE.Vector3(d.a[0], d.a[1], d.a[2]).normalize();
+            dirs.push({ v: v, label: d.label, kind: 'diag' });
+        });
+        return dirs;
+    })();
+
+    function snapAngle(start, end) {
+        var delta = new THREE.Vector3().subVectors(end, start);
+        var len = delta.length();
+        if (len < 1e-6) return { point: end.clone(), label: '0°' };
+        var dir = delta.clone().multiplyScalar(1 / len);
+        var bestDot = -Infinity, bestDir = null, bestSign = 1, bestLabel = '';
+        for (var i = 0; i < ANGLE_SNAP_DIRS.length; i++) {
+            var d = ANGLE_SNAP_DIRS[i];
+            var dot = dir.dot(d.v);
+            var ad = Math.abs(dot);
+            if (ad > bestDot) {
+                bestDot = ad;
+                bestDir = d.v;
+                bestSign = dot >= 0 ? 1 : -1;
+                bestLabel = d.label;
+            }
+        }
+        var snappedDir = bestDir.clone().multiplyScalar(bestSign);
+        var snappedEnd = start.clone().addScaledVector(snappedDir, len);
+        return { point: snappedEnd, label: bestLabel };
+    }
+
+    // Resolve current mouse → { point, snapped:'corner'|'edge'|null } or null if nothing usable.
+    // Snap is computed against ALL visible pieces (so a nearby edge of any piece wins even when
+    // the cursor is over a different piece or in empty space). Falls back to the surface hit
+    // point of the piece directly under the cursor.
+    function resolveRulerPoint(e) {
+        getMouseNDC(e);
+        raycaster.setFromCamera(mouse, camera);
+        var snap = findSnapTarget(e.clientX, e.clientY);
+        if (snap) return { point: snap.point.clone(), snapped: snap.kind };
+        var meshes = pieces.filter(function(m) { return m.visible; });
+        var hits = raycaster.intersectObjects(meshes, false);
+        if (hits.length === 0) return null;
+        return { point: hits[0].point.clone(), snapped: null };
+    }
+
+    // Scale snap-indicator sphere to a roughly constant screen size.
+    function updateSnapIndicatorScale(point) {
+        var dist = camera.position.distanceTo(point);
+        var s = Math.max(2, dist * 0.012);
+        rulerSnapIndicator.scale.set(s, s, s);
+    }
+
+    var ANGLE_PREVIEW_COLOR = 0xff40d0;
+    var DEFAULT_PREVIEW_COLOR = 0x3a7adc;
+
+    // Compute the point used for the second click: applies angle-snap if shift is held.
+    function applyAngleSnapIfNeeded(e, geometryPoint) {
+        if (!rulerFirstPoint) return { point: geometryPoint, angleLabel: null };
+        if (!e.shiftKey) return { point: geometryPoint, angleLabel: null };
+        var s = snapAngle(rulerFirstPoint, geometryPoint);
+        return { point: s.point, angleLabel: s.label };
+    }
+
+    function setPreviewLine(p1, p2, color) {
+        var arr = rulerPreviewLine.geometry.attributes.position.array;
+        arr[0] = p1.x; arr[1] = p1.y; arr[2] = p1.z;
+        arr[3] = p2.x; arr[4] = p2.y; arr[5] = p2.z;
+        rulerPreviewLine.geometry.attributes.position.needsUpdate = true;
+        rulerPreviewLine.geometry.computeBoundingSphere();
+        rulerPreviewLine.computeLineDistances();
+        rulerPreviewLine.material.color.setHex(color);
+        rulerPreviewLine.visible = true;
+    }
+
+    function updateRulerHover(e) {
+        if (!rulerMode) return;
+        ensureRulerSnapIndicator();
+        ensureRulerPreviewLine();
+        var resolved = resolveRulerPoint(e);
+        if (!resolved) {
+            hideRulerPreview();
+            updateRulerHint();
+            return;
+        }
+        // Geometry snap indicator (corner/edge) is shown at the raw geometry point.
+        if (resolved.snapped) {
+            rulerSnapIndicator.visible = true;
+            rulerSnapIndicator.position.copy(resolved.point);
+            rulerSnapIndicator.material.color.setHex(
+                resolved.snapped === 'corner' ? SNAP_CORNER_COLOR : SNAP_EDGE_COLOR
+            );
+            updateSnapIndicatorScale(resolved.point);
+        } else {
+            rulerSnapIndicator.visible = false;
+        }
+        if (rulerFirstPoint) {
+            var snapped = applyAngleSnapIfNeeded(e, resolved.point);
+            var color = snapped.angleLabel ? ANGLE_PREVIEW_COLOR : DEFAULT_PREVIEW_COLOR;
+            setPreviewLine(rulerFirstPoint, snapped.point, color);
+            updateRulerHint(snapped.angleLabel);
+        } else {
+            rulerPreviewLine.visible = false;
+            updateRulerHint(null);
+        }
+    }
+
+    function handleRulerClick(e) {
+        var resolved = resolveRulerPoint(e);
+        if (!resolved) return;
+        var pt = resolved.point;
+        if (!rulerFirstPoint) {
+            rulerFirstPoint = pt;
+            updateRulerHint();
+        } else {
+            var snapped = applyAngleSnapIfNeeded(e, pt);
+            pushUndo();
+            addRuler(rulerFirstPoint, snapped.point);
+            rulerFirstPoint = null;
+            updateRulerHint();
+            hideRulerPreview();
+        }
     }
 
     // ============================================================
@@ -2844,9 +3307,10 @@ window.addEventListener('load', function() {
     }
 
     function clearAll() {
-        if (pieces.length === 0 && groups.length === 0) return;
+        if (pieces.length === 0 && groups.length === 0 && rulers.length === 0) return;
         if (!confirm(t('clearAll.confirm'))) return;
         pushUndo();
+        clearRulers();
         pieces.forEach(function(m) {
             removeLabel(m);
             if (m.parent) m.parent.remove(m);
@@ -2948,8 +3412,9 @@ window.addEventListener('load', function() {
         isDragging = false;
         dragStarted = false;
 
-        // Don't start object drag in cut mode
+        // Don't start object drag in cut or ruler mode
         if (cutMode) return;
+        if (rulerMode) return;
 
         // Ctrl+click is reserved for multi-select (handled in click handler).
         // Skip drag/select setup so the click can toggle selection cleanly.
@@ -3072,12 +3537,16 @@ window.addEventListener('load', function() {
         }
 
         // Hover cursor: show grab cursor when hovering over a piece
-        if (!dragMode && e.buttons === 0 && !cutMode) {
+        if (!dragMode && e.buttons === 0 && !cutMode && !rulerMode) {
             getMouseNDC(e);
             raycaster.setFromCamera(mouse, camera);
             var meshes = pieces.filter(function(m) { return m.visible; });
             var hits = raycaster.intersectObjects(meshes, false);
             renderer.domElement.style.cursor = hits.length > 0 ? 'grab' : '';
+        }
+        if (rulerMode) {
+            renderer.domElement.style.cursor = 'crosshair';
+            updateRulerHover(e);
         }
     });
 
@@ -3109,6 +3578,23 @@ window.addEventListener('load', function() {
 
         var meshes = pieces.filter(function(m) { return m.visible; });
         var intersects = raycaster.intersectObjects(meshes, false);
+
+        if (rulerMode) {
+            handleRulerClick(e);
+            return;
+        }
+
+        // Click on a ruler label (outside ruler mode) → delete that ruler
+        if (rulers.length > 0) {
+            var rIdx = pickRulerSpriteAt(e);
+            if (rIdx !== -1) {
+                if (window.confirm(t('ruler.deleteConfirm'))) {
+                    pushUndo();
+                    removeRulerAt(rIdx);
+                }
+                return;
+            }
+        }
 
         if (cutMode) {
             if (intersects.length > 0) {
@@ -3304,6 +3790,17 @@ window.addEventListener('load', function() {
         else enterCutMode();
     });
 
+    document.getElementById('btn-ruler').addEventListener('click', function() {
+        if (rulerMode) exitRulerMode();
+        else enterRulerMode();
+    });
+
+    document.getElementById('btn-clear-rulers').addEventListener('click', function() {
+        if (rulers.length === 0) return;
+        pushUndo();
+        clearRulers();
+    });
+
     document.getElementById('btn-split').addEventListener('click', openSplitModal);
     document.getElementById('split-cancel').addEventListener('click', closeSplitModal);
     document.getElementById('split-confirm').addEventListener('click', function() {
@@ -3407,6 +3904,18 @@ window.addEventListener('load', function() {
             duplicateSelected();
         } else if (e.key === 'Delete' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
             deleteSelected();
+        } else if (e.key === 'Escape') {
+            if (rulerMode) {
+                if (rulerFirstPoint) {
+                    rulerFirstPoint = null;
+                    updateRulerHint();
+                    hideRulerPreview();
+                } else {
+                    exitRulerMode();
+                }
+            } else if (cutMode) {
+                exitCutMode();
+            }
         }
     });
 
@@ -3439,6 +3948,7 @@ window.addEventListener('load', function() {
         if (xrayBtn) xrayBtn.textContent = xrayMode ? t('toolbar.xray.on') : t('toolbar.xray.off');
         var groupBtn = document.getElementById('btn-group');
         if (groupBtn) groupBtn.textContent = t('toolbar.group');
+        updateRulerHint();
         updateGroupButton();
         updateObjectList();
         updateSizeSummary();

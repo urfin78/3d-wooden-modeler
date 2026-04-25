@@ -41,6 +41,10 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 8. **Save** your model and **Load** it later to continue working
 9. Export your cut list as CSV when done
 
+### Example model
+
+Load [`examples/stool.woodmodel.json`](examples/stool.woodmodel.json) via **Load** to see a small four-legged stool with a realistic joint layout: four tapered legs, four aprons running between the legs at the top to stiffen the frame, eight horizontal dowels joining each apron end to its leg, and four vertical dowels fixing the seat to the leg tops. Exercises Boards, Tapered Legs, Dowels, grouping (one leg + its seat dowel share `g1`), a source group (the four aprons share one stock board), mixed per-mm and fixed pricing, labels, and a ruler measuring the seat height. Use **X-Ray** to see the dowels embedded inside the legs and aprons.
+
 ## Tech Stack
 
 - [Three.js](https://threejs.org/) r128 (loaded via CDN)

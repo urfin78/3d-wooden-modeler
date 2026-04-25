@@ -20,6 +20,7 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 - **Grouping** — Ctrl+click to multi-select, then Group/Ungroup from the toolbar; groups move and snap as a unit and persist in save files
 - **Labels** displayed as 3D sprites above each piece
 - **Overlap detection** to highlight intersecting pieces
+- **Ruler** — two-click measurement on piece surfaces, with a persistent line and label showing total distance and per-axis components (|dx|, |dy|, |dz|); ESC cancels, "Clear Rulers" removes all measurements, and clicking a ruler's label outside ruler mode deletes that single ruler (with confirmation, undoable)
 - **Undo/Redo** support (Ctrl+Z / Ctrl+Shift+Z)
 - **Auto-resizing grid** that adapts to the size of your model
 - **Template library** with built-in metric woodworking parts and custom templates (stored in localStorage), integrated into toolbar dropdowns; custom templates can be exported/imported as JSON

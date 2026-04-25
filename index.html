@@ -2233,11 +2233,12 @@ window.addEventListener('load', function() {
         if (name === null) return;
         var sceneData = JSON.parse(serializeScene());
         var data = {
-            version: 2,
+            version: 3,
             name: name,
             created: new Date().toISOString(),
             pieces: sceneData.pieces,
-            groups: sceneData.groups || []
+            groups: sceneData.groups || [],
+            rulers: sceneData.rulers || []
         };
         var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         var url = URL.createObjectURL(blob);
@@ -2260,8 +2261,8 @@ window.addEventListener('load', function() {
                 }
                 var scenePayload;
                 if (data.version >= 2 && data.pieces) {
-                    // New format with groups
-                    scenePayload = { pieces: data.pieces, groups: data.groups || [] };
+                    // v2: groups; v3: + rulers
+                    scenePayload = { pieces: data.pieces, groups: data.groups || [], rulers: data.rulers || [] };
                 } else if (data.version === 1 && data.pieces) {
                     // Old format without groups
                     scenePayload = { pieces: data.pieces, groups: [] };

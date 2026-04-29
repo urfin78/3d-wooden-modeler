@@ -65,6 +65,7 @@ Everything runs inside a `window.addEventListener('load', ...)` closure in `inde
 - When changing piece dimensions, always call `rebuildGeometry()` to recreate the mesh geometry.
 - Call `updateGrid()` after any operation that changes piece positions or dimensions.
 - User-facing strings must go through `t()` / `typeName()`, never hardcoded. When adding a new string, add the key to every language in `translations`.
+- **When changing the save/load format** (adding fields, bumping `version`, changing piece types), update `woodmodel.schema.json`. **When changing the template format**, update `woodtemplates.schema.json`. Both files live in the repo root and serve as the canonical reference for the serialized formats.
 
 ## Git Repo Conventions
 - **Always run `git fetch --all --prune` before branching, merging, or starting non-trivial work.** The remote may have commits or branches that aren't local yet — branching from a stale `main` once caused a Pages deploy step to silently disappear during a merge.

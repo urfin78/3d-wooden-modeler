@@ -181,13 +181,6 @@
         padding: 6px 10px; cursor: pointer; font-size: 12px; margin-top: 8px;
     }
     #btn-save-template:hover { background: var(--surface-2); }
-    #template-io { display: flex; gap: 4px; margin-top: 6px; }
-    #template-io button {
-        flex: 1; background: var(--surface); color: var(--text);
-        border: 1px solid var(--border); border-radius: var(--radius-sm);
-        padding: 5px 6px; cursor: pointer; font-size: 11px;
-    }
-    #template-io button:hover { background: var(--surface-2); }
     #cost-summary {
         margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px;
     }
@@ -207,17 +200,11 @@
         border: 1px solid var(--border); border-radius: var(--radius-sm);
         padding: 5px 4px; font-size: 12px;
     }
-    #currency-select {
+    #currency-select, #lang-select {
         background: var(--surface); color: var(--text);
         border: 1px solid var(--border); border-radius: var(--radius-sm);
-        padding: 2px 6px; font-size: 11px; float: right;
+        padding: 6px 8px; font-size: 12px; cursor: pointer;
     }
-    #lang-select {
-        background: transparent; color: var(--text);
-        border: 1px solid var(--border); border-radius: var(--radius-sm);
-        padding: 5px 8px; font-size: 12px; cursor: pointer;
-    }
-    #lang-select:hover { background: var(--surface-2); }
     .modal-overlay {
         position: fixed; inset: 0; background: rgba(20,15,10,.35);
         z-index: 1000; display: none; align-items: center; justify-content: center;
@@ -283,6 +270,93 @@
         background: var(--info-soft); color: var(--info);
         border-bottom: 1px solid var(--border); border-top: 1px solid var(--border);
     }
+    /* Icon buttons */
+    .icon-btn {
+        background: transparent !important; color: var(--text);
+        border: 1px solid transparent; border-radius: var(--radius-sm);
+        padding: 6px !important; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 32px; height: 32px; transition: background .12s, color .12s, border-color .12s;
+    }
+    .icon-btn:hover { background: var(--surface-2) !important; }
+    .icon-btn.active {
+        background: var(--accent-soft) !important; color: var(--accent);
+        border-color: var(--accent-soft);
+    }
+    .icon-btn svg { display: block; }
+
+    /* Generic dropdown menu (Tools / File / Settings) */
+    .menu-dropdown { position: relative; display: inline-block; }
+    .menu-dropdown > button {
+        background: transparent; color: var(--text);
+        border: 1px solid transparent; border-radius: var(--radius-sm);
+        padding: 6px 11px; cursor: pointer; white-space: nowrap;
+        font-size: 12px; font-weight: 500;
+    }
+    .menu-dropdown > button:not(.no-caret)::after {
+        content: ' \25BE'; font-size: 9px; color: var(--text-muted);
+    }
+    .menu-dropdown > button:hover { background: var(--surface-2); }
+    .menu-panel {
+        display: none; position: fixed; min-width: 200px;
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: var(--radius); z-index: 300; padding: 5px 0;
+        box-shadow: var(--shadow-lg);
+    }
+    .menu-panel-wide { padding: 12px 14px; min-width: 220px; }
+    .menu-panel-wide select {
+        width: 100%; background: var(--surface); color: var(--text);
+        border: 1px solid var(--border); border-radius: var(--radius-sm);
+        padding: 6px 8px; font-size: 12px; margin-bottom: 4px;
+    }
+    .menu-dropdown.open .menu-panel { display: block; }
+    .menu-item {
+        padding: 7px 14px; cursor: pointer; font-size: 12px; color: var(--text);
+        user-select: none;
+    }
+    .menu-item:hover { background: var(--surface-2); }
+    .menu-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+    .menu-item.danger { color: var(--danger); }
+    .menu-item.danger:hover { background: #fdf2f0; }
+    .menu-item.disabled { color: var(--text-faint); cursor: not-allowed; pointer-events: none; }
+    .menu-sep { height: 1px; background: var(--border); margin: 5px 8px; }
+    .menu-section-label {
+        padding: 6px 0 4px; font-size: 10px; color: var(--text-faint);
+        text-transform: uppercase; letter-spacing: .05em; font-weight: 600;
+    }
+
+    /* Add mega menu — type sections */
+    .add-mega-section {
+        padding: 6px 0 4px;
+    }
+    .add-mega-section-label {
+        padding: 4px 12px 2px; font-size: 10px; color: var(--accent);
+        text-transform: uppercase; letter-spacing: .05em; font-weight: 700;
+    }
+
+    .toolbar-spacer { flex: 1; }
+
+    /* Floating Action Bar (selection actions) */
+    #action-bar {
+        position: fixed; top: 60px; right: 316px; z-index: 95;
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: var(--radius); box-shadow: var(--shadow-md);
+        display: none; padding: 4px; gap: 2px;
+    }
+    #action-bar.visible { display: inline-flex; }
+    #action-bar button {
+        background: transparent; color: var(--text);
+        border: 1px solid transparent; border-radius: var(--radius-sm);
+        padding: 6px; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 30px; height: 30px;
+    }
+    #action-bar button:hover { background: var(--surface-2); }
+    #action-bar button:disabled { color: var(--text-faint); cursor: not-allowed; }
+    #action-bar button:disabled:hover { background: transparent; }
+    #action-bar .action-bar-sep { width: 1px; background: var(--border); margin: 4px 2px; }
+    #action-bar button.danger:hover { background: #fdf2f0; color: var(--danger); }
+
     /* Scrollbars — subtle */
     ::-webkit-scrollbar { width: 10px; height: 10px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -293,40 +367,103 @@
 <body>
 
 <div id="toolbar">
-    <div class="add-dropdown" data-type="Board"><button data-i18n="toolbar.add.board">+ Board</button><div class="add-menu"></div></div>
-    <div class="add-dropdown" data-type="Dowel"><button data-i18n="toolbar.add.dowel">+ Dowel</button><div class="add-menu"></div></div>
-    <div class="add-dropdown" data-type="Wedge"><button data-i18n="toolbar.add.wedge">+ Wedge</button><div class="add-menu"></div></div>
-    <div class="add-dropdown" data-type="L-Bracket"><button data-i18n="toolbar.add.lbracket">+ L-Bracket</button><div class="add-menu"></div></div>
-    <div class="add-dropdown" data-type="Tapered Leg"><button data-i18n="toolbar.add.taperedLeg">+ Tapered Leg</button><div class="add-menu"></div></div>
+    <!-- Left: Add -->
+    <div class="add-dropdown" id="add-dropdown" data-mega="1">
+        <button data-i18n="toolbar.add">+ Add</button>
+        <div class="add-menu"></div>
+    </div>
+
     <div class="separator"></div>
-    <button id="btn-snap">Snap OFF</button>
-    <button id="btn-labels">Labels OFF</button>
-    <button id="btn-xray">X-Ray OFF</button>
+
+    <!-- Center: Mode toggles (icons) -->
+    <button class="icon-btn" id="btn-snap" data-i18n-title="toolbar.snap" title="Snap">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="5" cy="15" r="1.5"/><circle cx="15" cy="15" r="1.5"/><path d="M5 5 L15 15 M15 5 L5 15"/></svg>
+    </button>
+    <button class="icon-btn" id="btn-labels" data-i18n-title="toolbar.labels" title="Labels">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h11l4 6-4 6H3z"/><circle cx="7" cy="10" r="1" fill="currentColor"/></svg>
+    </button>
+    <button class="icon-btn" id="btn-xray" data-i18n-title="toolbar.xray" title="X-Ray">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="3"/><path d="M2 10c2-4 5-6 8-6s6 2 8 6c-2 4-5 6-8 6s-6-2-8-6z"/></svg>
+    </button>
+    <button class="icon-btn" id="btn-ruler" data-i18n-title="toolbar.ruler" title="Ruler">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13l11-11 5 5L7 18z"/><path d="M5 10l1.5 1.5 M8 7l2 2 M11 4l1.5 1.5"/></svg>
+    </button>
+
     <div class="separator"></div>
-    <button id="btn-cut" data-i18n="toolbar.cut">Cut Joint</button>
-    <button id="btn-split" data-i18n="toolbar.split">Split</button>
-    <button id="btn-ruler" data-i18n="toolbar.ruler">Ruler</button>
-    <button id="btn-clear-rulers" data-i18n="toolbar.clearRulers">Clear Rulers</button>
-    <button id="btn-overlaps" data-i18n="toolbar.overlaps">Show Overlaps</button>
+
+    <!-- Tools menu (less frequent actions) -->
+    <div class="menu-dropdown" id="tools-dropdown">
+        <button data-i18n="toolbar.tools">Tools</button>
+        <div class="menu-panel">
+            <div class="menu-item" id="menu-cut" data-i18n="toolbar.cut">Cut Joint</div>
+            <div class="menu-item" id="menu-split" data-i18n="toolbar.split">Split</div>
+            <div class="menu-item" id="menu-overlaps" data-i18n="toolbar.overlaps">Show Overlaps</div>
+            <div class="menu-item" id="menu-clear-rulers" data-i18n="toolbar.clearRulers">Clear Rulers</div>
+            <div class="menu-sep"></div>
+            <div class="menu-item danger" id="menu-clear" data-i18n="toolbar.clearAll">Clear All</div>
+        </div>
+    </div>
+
+    <div class="toolbar-spacer"></div>
+
+    <!-- Undo/Redo -->
+    <button class="icon-btn" id="btn-undo" data-i18n-title="toolbar.undo" title="Undo">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6L3 10l4 4"/><path d="M3 10h9a5 5 0 015 5v0"/></svg>
+    </button>
+    <button class="icon-btn" id="btn-redo" data-i18n-title="toolbar.redo" title="Redo">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6l4 4-4 4"/><path d="M17 10H8a5 5 0 00-5 5v0"/></svg>
+    </button>
+
     <div class="separator"></div>
-    <button id="btn-undo" data-i18n="toolbar.undo">Undo</button>
-    <button id="btn-redo" data-i18n="toolbar.redo">Redo</button>
-    <div class="separator"></div>
-    <button id="btn-duplicate" data-i18n="toolbar.duplicate">Duplicate</button>
-    <button id="btn-group" data-i18n="toolbar.group" disabled>Group</button>
-    <button id="btn-delete" data-i18n="toolbar.delete">Delete</button>
-    <button id="btn-clear" data-i18n="toolbar.clearAll">Clear All</button>
-    <div class="separator"></div>
-    <button id="btn-export" data-i18n="toolbar.exportCsv">Export CSV</button>
-    <div class="separator"></div>
-    <button id="btn-save" data-i18n="toolbar.save">Save</button>
-    <button id="btn-load" data-i18n="toolbar.load">Load</button>
+
+    <!-- File menu -->
+    <div class="menu-dropdown" id="file-dropdown">
+        <button data-i18n="toolbar.file">File</button>
+        <div class="menu-panel">
+            <div class="menu-item" id="menu-save" data-i18n="toolbar.save">Save</div>
+            <div class="menu-item" id="menu-load" data-i18n="toolbar.load">Load</div>
+            <div class="menu-sep"></div>
+            <div class="menu-item" id="menu-export-csv" data-i18n="toolbar.exportCsv">Export CSV</div>
+            <div class="menu-item" id="menu-export-templates" data-i18n="toolbar.exportTemplates">Export Templates</div>
+            <div class="menu-item" id="menu-import-templates" data-i18n="toolbar.importTemplates">Import Templates</div>
+        </div>
+    </div>
     <input type="file" id="load-file-input" accept=".woodmodel.json,.json" style="display:none">
-    <div class="separator"></div>
-    <select id="lang-select" data-i18n-title="lang.label">
-        <option value="en">EN</option>
-        <option value="de">DE</option>
-    </select>
+    <input type="file" id="import-templates-input" accept=".woodtemplates.json,.json" style="display:none">
+
+    <!-- Settings -->
+    <div class="menu-dropdown" id="settings-dropdown">
+        <button class="icon-btn no-caret" id="btn-settings" data-i18n-title="toolbar.settings" title="Settings">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51h0a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <div class="menu-panel menu-panel-wide">
+            <div class="menu-section-label" data-i18n="settings.language">Language</div>
+            <select id="lang-select" data-i18n-title="lang.label">
+                <option value="en">English</option>
+                <option value="de">Deutsch</option>
+            </select>
+            <div class="menu-section-label" data-i18n="settings.currency">Currency</div>
+            <select id="currency-select">
+                <option value="$">$ (USD)</option>
+                <option value="€">€ (EUR)</option>
+                <option value="£">£ (GBP)</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Contextual action bar (visible when a piece/group is selected) -->
+<div id="action-bar">
+    <button id="btn-duplicate" data-i18n-title="toolbar.duplicate" title="Duplicate">
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="11" height="11" rx="1.5"/><path d="M3 13V4.5A1.5 1.5 0 014.5 3H13"/></svg>
+    </button>
+    <button id="btn-group" data-i18n-title="toolbar.group" title="Group" disabled>
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="2.5" width="6" height="6" rx="1"/><rect x="11.5" y="2.5" width="6" height="6" rx="1"/><rect x="2.5" y="11.5" width="6" height="6" rx="1"/><rect x="11.5" y="11.5" width="6" height="6" rx="1"/></svg>
+    </button>
+    <div class="action-bar-sep"></div>
+    <button id="btn-delete" class="danger" data-i18n-title="toolbar.delete" title="Delete">
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12M8 6V4h4v2M6 6l1 11h6l1-11"/></svg>
+    </button>
 </div>
 
 <div id="snap-indicator" data-i18n="snap.indicator">Snapped!</div>
@@ -431,16 +568,11 @@
     </div>
 
     <button id="btn-save-template" data-i18n="panel.saveAsTemplate">Save as Template</button>
-    <div id="template-io">
-        <button id="btn-export-templates" data-i18n="toolbar.exportTemplates">Export Templates</button>
-        <button id="btn-import-templates" data-i18n="toolbar.importTemplates">Import Templates</button>
-        <input type="file" id="import-templates-input" accept=".woodtemplates.json,.json" style="display:none">
-    </div>
 
     <div id="overlap-list"></div>
 
     <div id="cost-summary">
-        <h3><span data-i18n="panel.costSummary">Cost Summary</span> <select id="currency-select"><option value="$">$</option><option value="€">€</option><option value="£">£</option></select></h3>
+        <h3 data-i18n="panel.costSummary">Cost Summary</h3>
         <div id="cost-items"></div>
         <div id="cost-total">Total: 0</div>
     </div>
@@ -498,6 +630,16 @@ window.addEventListener('load', function() {
 
     var translations = {
         en: {
+            'toolbar.add': '+ Add',
+            'toolbar.tools': 'Tools',
+            'toolbar.file': 'File',
+            'toolbar.settings': 'Settings',
+            'toolbar.snap': 'Snap',
+            'toolbar.labels': 'Labels',
+            'toolbar.xray': 'X-Ray',
+            'settings.language': 'Language',
+            'settings.currency': 'Currency',
+            'cut.hint': 'Cut: pick target piece, then tool piece',
             'toolbar.add.board': '+ Board',
             'toolbar.add.dowel': '+ Dowel',
             'toolbar.add.wedge': '+ Wedge',
@@ -642,6 +784,16 @@ window.addEventListener('load', function() {
             'lang.label': 'Language'
         },
         de: {
+            'toolbar.add': '+ Hinzufügen',
+            'toolbar.tools': 'Werkzeuge',
+            'toolbar.file': 'Datei',
+            'toolbar.settings': 'Einstellungen',
+            'toolbar.snap': 'Einrasten',
+            'toolbar.labels': 'Beschriftung',
+            'toolbar.xray': 'Röntgen',
+            'settings.language': 'Sprache',
+            'settings.currency': 'Währung',
+            'cut.hint': 'Schneiden: erst Ziel, dann Werkzeug anklicken',
             'toolbar.add.board': '+ Brett',
             'toolbar.add.dowel': '+ Dübel',
             'toolbar.add.wedge': '+ Keil',
@@ -1421,6 +1573,14 @@ window.addEventListener('load', function() {
     function updateGroupButton() {
         var btn = document.getElementById('btn-group');
         if (btn) btn.disabled = multiSelected.size < 2;
+        updateActionBar();
+    }
+
+    function updateActionBar() {
+        var bar = document.getElementById('action-bar');
+        if (!bar) return;
+        var anySelected = !!(selectedPiece || selectedGroup) || multiSelected.size > 0;
+        bar.classList.toggle('visible', anySelected);
     }
 
     function selectGroup(group) {
@@ -1470,6 +1630,7 @@ window.addEventListener('load', function() {
         selectedGroup = null;
         document.getElementById('group-panel').style.display = 'none';
         if (xrayMode) pieces.forEach(applyXray);
+        updateActionBar();
     }
 
     function toggleMultiSelect(mesh) {
@@ -1676,6 +1837,7 @@ window.addEventListener('load', function() {
             selectedPiece.material.color.setHex(WOOD_COLOR);
         }
         selectedPiece = mesh;
+        updateActionBar();
         if (xrayMode) pieces.forEach(applyXray);
         if (!mesh) {
             noSelection.style.display = 'block';
@@ -2566,10 +2728,27 @@ window.addEventListener('load', function() {
     // Cut Joint (CSG)
     // ============================================================
 
+    function showModeBanner(text) {
+        var b = document.getElementById('mode-banner');
+        if (!b) {
+            b = document.createElement('div');
+            b.id = 'mode-banner';
+            b.style.cssText = 'position:fixed; top:60px; left:50%; transform:translateX(-50%); background:var(--info); color:#fff; padding:5px 14px; border-radius:999px; font-size:12px; font-weight:600; z-index:200; box-shadow:var(--shadow-md);';
+            document.body.appendChild(b);
+        }
+        b.textContent = text;
+        b.style.display = 'block';
+    }
+    function hideModeBanner() {
+        var b = document.getElementById('mode-banner');
+        if (b) b.style.display = 'none';
+    }
+
     function enterCutMode() {
         cutMode = true;
         cutTarget = null;
-        document.getElementById('btn-cut').classList.add('active');
+        document.getElementById('menu-cut').classList.add('active');
+        showModeBanner(t('cut.hint') || 'Cut: pick target, then tool');
         // Deselect current
         if (selectedPiece) {
             selectedPiece.material.color.setHex(WOOD_COLOR);
@@ -2583,7 +2762,8 @@ window.addEventListener('load', function() {
             cutTarget.material.color.setHex(WOOD_COLOR);
             cutTarget = null;
         }
-        document.getElementById('btn-cut').classList.remove('active');
+        document.getElementById('menu-cut').classList.remove('active');
+        hideModeBanner();
     }
 
     function performCut(target, tool) {
@@ -3793,9 +3973,10 @@ window.addEventListener('load', function() {
     // Toolbar Button Handlers
     // ============================================================
 
-    // Add-piece dropdowns
+    var ADD_TYPES = ['Board', 'Dowel', 'Wedge', 'L-Bracket', 'Tapered Leg'];
+
     function closeAllDropdowns() {
-        var drops = document.querySelectorAll('.add-dropdown');
+        var drops = document.querySelectorAll('.add-dropdown.open, .menu-dropdown.open');
         for (var i = 0; i < drops.length; i++) drops[i].classList.remove('open');
     }
 
@@ -3807,78 +3988,6 @@ window.addEventListener('load', function() {
         if (type === 'Tapered Leg') return makeTaperedLeg();
     }
 
-    function buildDropdownMenu(dropdown) {
-        var type = dropdown.getAttribute('data-type');
-        var menu = dropdown.querySelector('.add-menu');
-        menu.innerHTML = '';
-
-        // Default option
-        var def = document.createElement('div');
-        def.className = 'add-menu-item';
-        def.innerHTML = '<span>' + t('template.default', { type: typeName(type) }) + '</span><span class="tpl-dims">' + templateDimsText(getDefaultDims(type)) + '</span>';
-        def.addEventListener('click', function(e) {
-            e.stopPropagation();
-            addPiece(makeDefaultForType(type));
-            closeAllDropdowns();
-        });
-        menu.appendChild(def);
-
-        // Built-in templates for this type
-        var matching = builtInTemplates.filter(function(t) { return t.type === type; });
-        var custom = loadCustomTemplates().filter(function(t) { return t.type === type; });
-
-        if (matching.length > 0) {
-            var sep = document.createElement('div');
-            sep.className = 'add-menu-sep';
-            menu.appendChild(sep);
-            var lbl = document.createElement('div');
-            lbl.className = 'add-menu-label';
-            lbl.textContent = t('template.builtIn');
-            menu.appendChild(lbl);
-            matching.forEach(function(tpl) {
-                var item = document.createElement('div');
-                item.className = 'add-menu-item';
-                item.innerHTML = '<span>' + (tpl.nameKey ? t(tpl.nameKey) : tpl.name) + '</span><span class="tpl-dims">' + templateDimsText(tpl) + '</span>';
-                item.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    addFromTemplate(tpl);
-                    closeAllDropdowns();
-                });
-                menu.appendChild(item);
-            });
-        }
-
-        if (custom.length > 0) {
-            var sep2 = document.createElement('div');
-            sep2.className = 'add-menu-sep';
-            menu.appendChild(sep2);
-            var lbl2 = document.createElement('div');
-            lbl2.className = 'add-menu-label';
-            lbl2.textContent = t('template.custom');
-            menu.appendChild(lbl2);
-            custom.forEach(function(tpl, idx) {
-                var item = document.createElement('div');
-                item.className = 'add-menu-item';
-                var origIdx = loadCustomTemplates().indexOf(tpl);
-                item.innerHTML = '<span>' + tpl.name + '</span><span class="tpl-dims">' + templateDimsText(tpl) + '</span>';
-                var del = document.createElement('button');
-                del.className = 'tpl-delete';
-                del.textContent = '\u00D7';
-                del.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    deleteCustomTemplate(idx);
-                    buildDropdownMenus();
-                });
-                item.appendChild(del);
-                item.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    addFromTemplate(tpl);
-                    closeAllDropdowns();
-                });
-                menu.appendChild(item);
-            });
-        }
-    }
 
     function getDefaultDims(type) {
         if (type === 'Board') return { type: 'Board', w: 100, h: 20, d: 50 };
@@ -3889,45 +3998,122 @@ window.addEventListener('load', function() {
         return {};
     }
 
-    function buildDropdownMenus() {
-        var drops = document.querySelectorAll('.add-dropdown');
-        for (var i = 0; i < drops.length; i++) buildDropdownMenu(drops[i]);
-    }
+    // Backwards-compat alias used by template save/import flows
+    function buildDropdownMenus() { buildAddMegaMenu(); }
 
-    // Toggle dropdown on button click
-    var dropdowns = document.querySelectorAll('.add-dropdown');
-    for (var di = 0; di < dropdowns.length; di++) {
-        (function(dd) {
-            dd.querySelector('button').addEventListener('click', function(e) {
+    function makeAddMenuItem(label, dims, onClick, deleteHandler) {
+        var item = document.createElement('div');
+        item.className = 'add-menu-item';
+        item.innerHTML = '<span>' + label + '</span><span class="tpl-dims">' + (dims || '') + '</span>';
+        item.addEventListener('click', function(e) {
+            e.stopPropagation();
+            onClick();
+            closeAllDropdowns();
+        });
+        if (deleteHandler) {
+            var del = document.createElement('button');
+            del.className = 'tpl-delete';
+            del.textContent = '×';
+            del.addEventListener('click', function(e) {
                 e.stopPropagation();
-                var wasOpen = dd.classList.contains('open');
-                closeAllDropdowns();
-                if (!wasOpen) {
-                    buildDropdownMenu(dd);
-                    dd.classList.add('open');
-                    // Position the fixed menu below the button
-                    var btn = dd.querySelector('button');
-                    var rect = btn.getBoundingClientRect();
-                    var menu = dd.querySelector('.add-menu');
-                    menu.style.top = rect.bottom + 2 + 'px';
-                    menu.style.left = rect.left + 'px';
-                }
+                deleteHandler();
             });
-        })(dropdowns[di]);
+            item.appendChild(del);
+        }
+        return item;
     }
 
-    // Close dropdowns when clicking elsewhere
+    function buildAddMegaMenu() {
+        var menu = document.querySelector('#add-dropdown .add-menu');
+        if (!menu) return;
+        menu.innerHTML = '';
+        var customAll = loadCustomTemplates();
+
+        ADD_TYPES.forEach(function(type, ti) {
+            if (ti > 0) {
+                var sep = document.createElement('div');
+                sep.className = 'add-menu-sep';
+                menu.appendChild(sep);
+            }
+            var section = document.createElement('div');
+            section.className = 'add-mega-section';
+            var lbl = document.createElement('div');
+            lbl.className = 'add-mega-section-label';
+            lbl.textContent = typeName(type);
+            section.appendChild(lbl);
+
+            section.appendChild(makeAddMenuItem(
+                t('template.default', { type: typeName(type) }),
+                templateDimsText(getDefaultDims(type)),
+                function() { addPiece(makeDefaultForType(type)); }
+            ));
+
+            builtInTemplates.filter(function(tpl) { return tpl.type === type; }).forEach(function(tpl) {
+                section.appendChild(makeAddMenuItem(
+                    (tpl.nameKey ? t(tpl.nameKey) : tpl.name),
+                    templateDimsText(tpl),
+                    function() { addFromTemplate(tpl); }
+                ));
+            });
+
+            customAll.forEach(function(tpl, idx) {
+                if (tpl.type !== type) return;
+                section.appendChild(makeAddMenuItem(
+                    tpl.name,
+                    templateDimsText(tpl),
+                    function() { addFromTemplate(tpl); },
+                    function() { deleteCustomTemplate(idx); buildAddMegaMenu(); }
+                ));
+            });
+
+            menu.appendChild(section);
+        });
+    }
+
+    function positionMenu(dd, menu) {
+        var btn = dd.querySelector('button');
+        var rect = btn.getBoundingClientRect();
+        menu.style.top = (rect.bottom + 4) + 'px';
+        menu.style.left = '0px';
+        var menuRect = menu.getBoundingClientRect();
+        var menuWidth = menuRect.width || 220;
+        if (rect.left + menuWidth > window.innerWidth - 8) {
+            menu.style.left = Math.max(8, (rect.right - menuWidth)) + 'px';
+        } else {
+            menu.style.left = rect.left + 'px';
+        }
+    }
+
+    function wireDropdown(dd, onOpen) {
+        if (!dd) return;
+        var btn = dd.querySelector('button');
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var wasOpen = dd.classList.contains('open');
+            closeAllDropdowns();
+            if (!wasOpen) {
+                if (onOpen) onOpen();
+                dd.classList.add('open');
+                var menu = dd.querySelector('.add-menu, .menu-panel');
+                positionMenu(dd, menu);
+            }
+        });
+    }
+    wireDropdown(document.getElementById('add-dropdown'), buildAddMegaMenu);
+    wireDropdown(document.getElementById('tools-dropdown'));
+    wireDropdown(document.getElementById('file-dropdown'));
+    wireDropdown(document.getElementById('settings-dropdown'));
+
     document.addEventListener('click', closeAllDropdowns);
 
+    // Mode toggles (icons only)
     document.getElementById('btn-snap').addEventListener('click', function() {
         snapEnabled = !snapEnabled;
-        this.textContent = snapEnabled ? t('toolbar.snap.on') : t('toolbar.snap.off');
         this.classList.toggle('active', snapEnabled);
     });
 
     document.getElementById('btn-labels').addEventListener('click', function() {
         labelsVisible = !labelsVisible;
-        this.textContent = labelsVisible ? t('toolbar.labels.on') : t('toolbar.labels.off');
         this.classList.toggle('active', labelsVisible);
         if (labelsVisible) showAllLabels();
         else hideAllLabels();
@@ -3935,14 +4121,8 @@ window.addEventListener('load', function() {
 
     document.getElementById('btn-xray').addEventListener('click', function() {
         xrayMode = !xrayMode;
-        this.textContent = xrayMode ? t('toolbar.xray.on') : t('toolbar.xray.off');
         this.classList.toggle('active', xrayMode);
         pieces.forEach(applyXray);
-    });
-
-    document.getElementById('btn-cut').addEventListener('click', function() {
-        if (cutMode) exitCutMode();
-        else enterCutMode();
     });
 
     document.getElementById('btn-ruler').addEventListener('click', function() {
@@ -3950,13 +4130,32 @@ window.addEventListener('load', function() {
         else enterRulerMode();
     });
 
-    document.getElementById('btn-clear-rulers').addEventListener('click', function() {
+    // Tools menu items
+    document.getElementById('menu-cut').addEventListener('click', function() {
+        if (cutMode) exitCutMode();
+        else enterCutMode();
+    });
+    document.getElementById('menu-split').addEventListener('click', openSplitModal);
+    document.getElementById('menu-overlaps').addEventListener('click', function() {
+        var item = this;
+        if (overlapMode) {
+            overlapMode = false;
+            item.classList.remove('active');
+            clearOverlaps();
+        } else {
+            overlapMode = true;
+            item.classList.add('active');
+            showOverlaps();
+        }
+    });
+    document.getElementById('menu-clear-rulers').addEventListener('click', function() {
         if (rulers.length === 0) return;
         pushUndo();
         clearRulers();
     });
+    document.getElementById('menu-clear').addEventListener('click', clearAll);
 
-    document.getElementById('btn-split').addEventListener('click', openSplitModal);
+    // Split modal handlers
     document.getElementById('split-cancel').addEventListener('click', closeSplitModal);
     document.getElementById('split-confirm').addEventListener('click', function() {
         splitSelected();
@@ -3983,18 +4182,6 @@ window.addEventListener('load', function() {
         });
     })();
 
-    document.getElementById('btn-overlaps').addEventListener('click', function() {
-        if (overlapMode) {
-            overlapMode = false;
-            this.classList.remove('active');
-            clearOverlaps();
-        } else {
-            overlapMode = true;
-            this.classList.add('active');
-            showOverlaps();
-        }
-    });
-
     document.getElementById('btn-undo').addEventListener('click', undo);
     document.getElementById('btn-redo').addEventListener('click', redo);
     document.getElementById('btn-duplicate').addEventListener('click', duplicateSelected);
@@ -4016,13 +4203,17 @@ window.addEventListener('load', function() {
         inp.addEventListener('change', onGroupPosChange);
         bindEnter(inp, onGroupPosChange);
     });
-    document.getElementById('btn-clear').addEventListener('click', clearAll);
-    document.getElementById('btn-export').addEventListener('click', exportCSV);
-
-    document.getElementById('btn-save').addEventListener('click', saveModel);
-    document.getElementById('btn-load').addEventListener('click', function() {
+    // File menu items
+    document.getElementById('menu-save').addEventListener('click', saveModel);
+    document.getElementById('menu-load').addEventListener('click', function() {
         document.getElementById('load-file-input').click();
     });
+    document.getElementById('menu-export-csv').addEventListener('click', exportCSV);
+    document.getElementById('menu-export-templates').addEventListener('click', exportTemplates);
+    document.getElementById('menu-import-templates').addEventListener('click', function() {
+        document.getElementById('import-templates-input').click();
+    });
+
     document.getElementById('load-file-input').addEventListener('change', function(e) {
         if (e.target.files.length > 0) {
             loadModel(e.target.files[0]);
@@ -4033,11 +4224,6 @@ window.addEventListener('load', function() {
     document.getElementById('btn-save-template').addEventListener('click', function() {
         saveAsTemplate();
         buildDropdownMenus();
-    });
-
-    document.getElementById('btn-export-templates').addEventListener('click', exportTemplates);
-    document.getElementById('btn-import-templates').addEventListener('click', function() {
-        document.getElementById('import-templates-input').click();
     });
     document.getElementById('import-templates-input').addEventListener('change', function(e) {
         if (e.target.files.length > 0) {
@@ -4095,14 +4281,7 @@ window.addEventListener('load', function() {
         renderer.render(scene, camera);
     }
     function refreshDynamicUI() {
-        var snapBtn = document.getElementById('btn-snap');
-        if (snapBtn) snapBtn.textContent = snapEnabled ? t('toolbar.snap.on') : t('toolbar.snap.off');
-        var labelsBtn = document.getElementById('btn-labels');
-        if (labelsBtn) labelsBtn.textContent = labelsVisible ? t('toolbar.labels.on') : t('toolbar.labels.off');
-        var xrayBtn = document.getElementById('btn-xray');
-        if (xrayBtn) xrayBtn.textContent = xrayMode ? t('toolbar.xray.on') : t('toolbar.xray.off');
-        var groupBtn = document.getElementById('btn-group');
-        if (groupBtn) groupBtn.textContent = t('toolbar.group');
+        // Icon-only toggles read their state via .active class — no text update needed.
         updateRulerHint();
         updateGroupButton();
         updateObjectList();

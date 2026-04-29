@@ -1,0 +1,227 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "woodmodel.schema.json",
+  "title": "3D Wooden Modeler — Model File (.woodmodel.json)",
+  "description": "Saved scene produced by saveModel(). Current version: 3. Backwards-compatible loaders handle v1 (no groups), v2 (groups, no rulers) and v3 (groups + rulers).",
+  "type": "object",
+  "required": ["version", "name", "created", "pieces"],
+  "properties": {
+
+    "version": {
+      "description": "Format version. 1 = pieces only; 2 = + groups; 3 = + rulers.",
+      "type": "integer",
+      "enum": [1, 2, 3]
+    },
+
+    "name": {
+      "description": "User-supplied project name (prompted on Save).",
+      "type": "string"
+    },
+
+    "created": {
+      "description": "ISO 8601 timestamp of when the file was saved.",
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "pieces": {
+      "description": "Ordered list of all scene pieces. Groups are reconstructed from groupId references in a second pass.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "id", "px", "py", "pz", "rx", "ry", "rz"],
+        "properties": {
+
+          "type": {
+            "description": "Fixed English identifier for the piece shape. Never translated; used as a discriminator for dimension fields.",
+            "type": "string",
+            "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg"]
+          },
+
+          "id": {
+            "description": "Stable numeric auto-increment ID assigned by addPiece() (pieceCounter). Unique within a saved file but not across files.",
+            "type": "integer"
+          },
+
+          "label": {
+            "description": "User-editable display name shown as a 3D sprite and in the object list. Null or empty string when not set.",
+            "type": ["string", "null"]
+          },
+
+          "notches": {
+            "description": "Count of CSG Cut Joint operations applied to this piece. Purely informational (used in CSV export).",
+            "type": "integer",
+            "minimum": 0
+          },
+
+          "csgModified": {
+            "description": "True when the piece geometry was altered by at least one Cut Joint. When true, geoPositions and geoNormals must be present and the shape-specific dimension fields are no longer used to rebuild geometry.",
+            "type": "boolean"
+          },
+
+          "price": {
+            "description": "Per-piece price. Interpretation depends on priceMode. 0 for split-part members that belong to a source group (cost counted once via sourcePrice).",
+            "type": "number",
+            "minimum": 0
+          },
+
+          "priceMode": {
+            "description": "'fixed' = price is the total cost for this piece. 'per_mm' = price × relevant dimension (length along the split axis for Boards/Dowels) gives the cost.",
+            "type": "string",
+            "enum": ["fixed", "per_mm"]
+          },
+
+          "sourceId": {
+            "description": "Shared UUID assigned to all parts produced from the same Split operation ('source group'). Null when not a split part.",
+            "type": ["string", "null"]
+          },
+
+          "sourcePrice": {
+            "description": "Original price of the unsplit board/dowel. Used to display the group cost once in the cost summary and CSV. 0 when not a split part.",
+            "type": "number",
+            "minimum": 0
+          },
+
+          "sourcePriceMode": {
+            "description": "priceMode of the original unsplit piece. Null when not a split part.",
+            "type": ["string", "null"],
+            "enum": ["fixed", "per_mm", null]
+          },
+
+          "sourceLabel": {
+            "description": "Label of the original unsplit piece. Null when not a split part.",
+            "type": ["string", "null"]
+          },
+
+          "groupId": {
+            "description": "gId of the THREE.Group this piece belongs to (e.g. 'grp_1'). Null for ungrouped pieces.",
+            "type": ["string", "null"]
+          },
+
+          "px": { "description": "World-space X position in mm.", "type": "number" },
+          "py": { "description": "World-space Y position in mm.", "type": "number" },
+          "pz": { "description": "World-space Z position in mm.", "type": "number" },
+
+          "rx": { "description": "X rotation in radians (Euler XYZ order).", "type": "number" },
+          "ry": { "description": "Y rotation in radians (Euler XYZ order).", "type": "number" },
+          "rz": { "description": "Z rotation in radians (Euler XYZ order).", "type": "number" },
+
+          "w": {
+            "description": "Width in mm. Required for Board, Wedge, L-Bracket.",
+            "type": "number", "exclusiveMinimum": 0
+          },
+          "h": {
+            "description": "Height in mm. Required for Board, Wedge, L-Bracket, Dowel, Tapered Leg.",
+            "type": "number", "exclusiveMinimum": 0
+          },
+          "d": {
+            "description": "Depth in mm. Required for Board, Wedge, L-Bracket.",
+            "type": "number", "exclusiveMinimum": 0
+          },
+          "r": {
+            "description": "Radius in mm. Required for Dowel.",
+            "type": "number", "exclusiveMinimum": 0
+          },
+          "rTop": {
+            "description": "Top radius in mm. Required for Tapered Leg.",
+            "type": "number", "exclusiveMinimum": 0
+          },
+          "rBottom": {
+            "description": "Bottom radius in mm. Required for Tapered Leg.",
+            "type": "number", "exclusiveMinimum": 0
+          },
+
+          "geoPositions": {
+            "description": "Flat array of vertex XYZ coordinates for CSG-modified geometry (BufferGeometry position attribute). Present only when csgModified is true.",
+            "type": "array",
+            "items": { "type": "number" }
+          },
+          "geoNormals": {
+            "description": "Flat array of vertex normal XYZ values for CSG-modified geometry (BufferGeometry normal attribute). Same length as geoPositions. Present only when csgModified is true.",
+            "type": "array",
+            "items": { "type": "number" }
+          }
+        }
+      }
+    },
+
+    "groups": {
+      "description": "THREE.Group containers. Empty array in v1 files. Pieces reference their group via groupId.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["gId", "px", "py", "pz", "rx", "ry", "rz"],
+        "properties": {
+          "gId": {
+            "description": "Unique group identifier, format 'grp_<n>' where n is a monotonic integer (groupCounter).",
+            "type": "string",
+            "pattern": "^grp_[0-9]+$"
+          },
+          "px": { "description": "Group X position in mm.", "type": "number" },
+          "py": { "description": "Group Y position in mm.", "type": "number" },
+          "pz": { "description": "Group Z position in mm.", "type": "number" },
+          "rx": { "description": "Group X rotation in radians (Euler XYZ).", "type": "number" },
+          "ry": { "description": "Group Y rotation in radians (Euler XYZ).", "type": "number" },
+          "rz": { "description": "Group Z rotation in radians (Euler XYZ).", "type": "number" }
+        }
+      }
+    },
+
+    "rulers": {
+      "description": "Persistent measurement lines. Empty array in v1/v2 files.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["p1", "p2"],
+        "properties": {
+          "p1": {
+            "description": "Start point [x, y, z] in world-space mm.",
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "p2": {
+            "description": "End point [x, y, z] in world-space mm.",
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3
+          }
+        }
+      }
+    }
+
+  },
+
+  "examples": [
+    {
+      "version": 3,
+      "name": "Simple shelf",
+      "created": "2026-04-29T12:00:00.000Z",
+      "pieces": [
+        {
+          "type": "Board",
+          "id": 1,
+          "label": "Shelf board",
+          "notches": 0,
+          "csgModified": false,
+          "price": 12.50,
+          "priceMode": "fixed",
+          "sourceId": null,
+          "sourcePrice": 0,
+          "sourcePriceMode": null,
+          "sourceLabel": null,
+          "groupId": null,
+          "px": 0, "py": 10, "pz": 0,
+          "rx": 0, "ry": 0, "rz": 0,
+          "w": 600, "h": 20, "d": 200
+        }
+      ],
+      "groups": [],
+      "rulers": [
+        { "p1": [0, 20, 0], "p2": [600, 20, 0] }
+      ]
+    }
+  ]
+}

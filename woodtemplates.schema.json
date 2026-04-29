@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "woodtemplates.schema.json",
+  "title": "3D Wooden Modeler — Template Library File (.woodtemplates.json)",
+  "description": "Exported custom template library produced by exportTemplates(). An array of template objects; the same format is stored in localStorage under 'woodmodeler_templates'. Built-in templates follow the same shape but also carry a nameKey for i18n translation.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["name", "type"],
+    "properties": {
+
+      "name": {
+        "description": "Display name of the template. Shown in the + Add mega-dropdown and used as the deduplication key on import (existing templates with the same name are skipped).",
+        "type": "string",
+        "minLength": 1
+      },
+
+      "nameKey": {
+        "description": "Optional i18n translation key (e.g. 'template.builtIn.board2x4'). Present on built-in templates; absent on user-created ones. When present, the translated string overrides 'name' in the UI.",
+        "type": "string"
+      },
+
+      "type": {
+        "description": "Piece shape. Must match one of the fixed English identifiers used in the app.",
+        "type": "string",
+        "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg"]
+      },
+
+      "price": {
+        "description": "Default price applied when adding a piece from this template (fixed mode). Optional; defaults to 0.",
+        "type": "number",
+        "minimum": 0
+      },
+
+      "w": {
+        "description": "Width in mm. Required for Board, Wedge, L-Bracket.",
+        "type": "number", "exclusiveMinimum": 0
+      },
+      "h": {
+        "description": "Height in mm. Required for Board, Wedge, L-Bracket, Dowel, Tapered Leg.",
+        "type": "number", "exclusiveMinimum": 0
+      },
+      "d": {
+        "description": "Depth in mm. Required for Board, Wedge, L-Bracket.",
+        "type": "number", "exclusiveMinimum": 0
+      },
+      "r": {
+        "description": "Radius in mm. Required for Dowel.",
+        "type": "number", "exclusiveMinimum": 0
+      },
+      "rTop": {
+        "description": "Top radius in mm. Required for Tapered Leg.",
+        "type": "number", "exclusiveMinimum": 0
+      },
+      "rBottom": {
+        "description": "Bottom radius in mm. Required for Tapered Leg.",
+        "type": "number", "exclusiveMinimum": 0
+      }
+    },
+
+    "allOf": [
+      {
+        "if": { "properties": { "type": { "const": "Board" } } },
+        "then": { "required": ["w", "h", "d"] }
+      },
+      {
+        "if": { "properties": { "type": { "const": "Wedge" } } },
+        "then": { "required": ["w", "h", "d"] }
+      },
+      {
+        "if": { "properties": { "type": { "const": "L-Bracket" } } },
+        "then": { "required": ["w", "h", "d"] }
+      },
+      {
+        "if": { "properties": { "type": { "const": "Dowel" } } },
+        "then": { "required": ["r", "h"] }
+      },
+      {
+        "if": { "properties": { "type": { "const": "Tapered Leg" } } },
+        "then": { "required": ["rTop", "rBottom", "h"] }
+      }
+    ]
+  },
+
+  "examples": [
+    [
+      {
+        "name": "Shelf board 600×20×200",
+        "type": "Board",
+        "price": 12.50,
+        "w": 600, "h": 20, "d": 200
+      },
+      {
+        "name": "8mm dowel 60mm",
+        "type": "Dowel",
+        "price": 0.50,
+        "r": 4, "h": 60
+      },
+      {
+        "name": "Tapered table leg",
+        "type": "Tapered Leg",
+        "price": 8.00,
+        "rTop": 15, "rBottom": 25, "h": 720
+      }
+    ]
+  ]
+}

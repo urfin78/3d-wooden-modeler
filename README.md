@@ -9,7 +9,7 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 ## Features
 
 - **5 shape types**: Board, Dowel, Wedge, L-Bracket, and Tapered Leg
-- **Interactive 3D viewport** with orbit controls (pan, rotate, zoom)
+- **Interactive 3D viewport** with orbit controls (pan, rotate, zoom); double-click a piece to set the orbit pivot, double-click empty space to recenter on the whole model, or press `F` to focus the current selection
 - **Real-time editing** of dimensions, position, and rotation via the side panel
 - **Drag-to-move** pieces directly in the viewport (Shift+drag for vertical movement)
 - **Duplicate** selected piece via the floating action bar or Ctrl+D

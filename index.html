@@ -515,6 +515,21 @@
                 <div><label data-i18n="panel.dim.d">D</label><input type="number" id="dim-fd" step="1" min="1"></div>
             </div>
         </div>
+        <div id="dim-frame" style="display:none">
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.wOuter">W</label><input type="number" id="dim-fr-w" step="1" min="1"></div>
+                <div><label data-i18n="panel.dim.hOuter">H</label><input type="number" id="dim-fr-h" step="1" min="1"></div>
+                <div><label data-i18n="panel.dim.dOuter">D</label><input type="number" id="dim-fr-d" step="1" min="1"></div>
+            </div>
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.frameThickness">Frame</label><input type="number" id="dim-fr-ft" step="1" min="0"></div>
+                <div><label data-i18n="panel.dim.barThickness">Bar</label><input type="number" id="dim-fr-bt" step="1" min="0"></div>
+            </div>
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.gridX">Cols</label><input type="number" id="dim-fr-gx" step="1" min="1"></div>
+                <div><label data-i18n="panel.dim.gridY">Rows</label><input type="number" id="dim-fr-gy" step="1" min="1"></div>
+            </div>
+        </div>
         <div id="dim-pyramid" style="display:none">
             <div class="input-row">
                 <div><label data-i18n="panel.dim.wTop">W Top</label><input type="number" id="dim-pwtop" step="1" min="0"></div>
@@ -818,6 +833,16 @@ window.addEventListener('load', function() {
             'panel.dim.dBot': 'D Bot',
             'panel.dim.angleStart': 'Start °',
             'panel.dim.angleEnd': 'End °',
+            'panel.dim.wOuter': 'W',
+            'panel.dim.hOuter': 'H',
+            'panel.dim.dOuter': 'D',
+            'panel.dim.frameThickness': 'Frame',
+            'panel.dim.barThickness': 'Bar',
+            'panel.dim.gridX': 'Cols',
+            'panel.dim.gridY': 'Rows',
+            'type.Frame': 'Frame',
+            'tpl.windowFrame': 'Window 600×400 3×2',
+            'tpl.shoji': 'Shoji 900×1800 3×6',
             'tpl.frustumBoard': 'Frustum Board 60/100',
             'tpl.pyramidRoof': 'Pyramid Roof 100/40',
             'tpl.pyramid': 'Pyramid 100→0',
@@ -983,6 +1008,16 @@ window.addEventListener('load', function() {
             'panel.dim.dBot': 'T unten',
             'panel.dim.angleStart': 'Start °',
             'panel.dim.angleEnd': 'Ende °',
+            'panel.dim.wOuter': 'B',
+            'panel.dim.hOuter': 'H',
+            'panel.dim.dOuter': 'T',
+            'panel.dim.frameThickness': 'Rahmen',
+            'panel.dim.barThickness': 'Sprosse',
+            'panel.dim.gridX': 'Spalten',
+            'panel.dim.gridY': 'Zeilen',
+            'type.Frame': 'Rahmen',
+            'tpl.windowFrame': 'Fenster 600×400 3×2',
+            'tpl.shoji': 'Shoji 900×1800 3×6',
             'tpl.frustumBoard': 'Trapez-Brett 60/100',
             'tpl.pyramidRoof': 'Pyramidendach 100/40',
             'tpl.pyramid': 'Pyramide 100→0',
@@ -1675,6 +1710,105 @@ window.addEventListener('load', function() {
         return geo;
     }
 
+    // Frame: rectangular outer frame with optional grid bars (window-frame / lattice).
+    // Outer size wOuter × hOuter × dOuter. The frame border has uniform thickness frameThickness
+    // on all four sides (eats into the outer rectangle). The interior is divided into gridX × gridY
+    // panels by interior bars of thickness barThickness; gridX=1, gridY=1 means no bars.
+    // Geometry is built from up to 4 + (gridX-1) + (gridY-1) boxes merged into a single BufferGeometry.
+    function frameGeometry(wOuter, hOuter, dOuter, frameThickness, barThickness, gridX, gridY) {
+        var ft = Math.max(0, Math.min(frameThickness, Math.min(wOuter, hOuter) / 2 - 0.5));
+        var bt = Math.max(0, barThickness);
+        var inW = wOuter - 2 * ft;
+        var inH = hOuter - 2 * ft;
+        var boxes = [];
+        // Outer frame: top, bottom, left, right (top/bottom span full width; left/right between them)
+        if (ft > 0) {
+            boxes.push({ x: 0,                       y:  hOuter / 2 - ft / 2, z: 0, w: wOuter, h: ft, d: dOuter });
+            boxes.push({ x: 0,                       y: -hOuter / 2 + ft / 2, z: 0, w: wOuter, h: ft, d: dOuter });
+            boxes.push({ x: -wOuter / 2 + ft / 2,    y: 0,                    z: 0, w: ft, h: inH, d: dOuter });
+            boxes.push({ x:  wOuter / 2 - ft / 2,    y: 0,                    z: 0, w: ft, h: inH, d: dOuter });
+        } else {
+            // No frame border — still emit a single box so we have valid geometry; bars are decorative.
+            boxes.push({ x: 0, y: 0, z: 0, w: 0.1, h: 0.1, d: dOuter });
+        }
+        // Interior vertical bars (gridX - 1 dividers) span the inner height.
+        if (bt > 0 && gridX > 1 && inW > 0 && inH > 0) {
+            for (var i = 1; i < gridX; i++) {
+                var bx = -inW / 2 + (inW / gridX) * i;
+                boxes.push({ x: bx, y: 0, z: 0, w: bt, h: inH, d: dOuter });
+            }
+        }
+        // Interior horizontal bars (gridY - 1 dividers).
+        if (bt > 0 && gridY > 1 && inW > 0 && inH > 0) {
+            for (var j = 1; j < gridY; j++) {
+                var by = -inH / 2 + (inH / gridY) * j;
+                boxes.push({ x: 0, y: by, z: 0, w: inW, h: bt, d: dOuter });
+            }
+        }
+        // Build positions/normals/indices by stitching BoxGeometries together.
+        var posArrays = [], normArrays = [], idxArrays = [];
+        var vertOffset = 0;
+        boxes.forEach(function(b) {
+            var g = new THREE.BoxGeometry(b.w, b.h, b.d);
+            g.translate(b.x, b.y, b.z);
+            posArrays.push(g.attributes.position.array);
+            normArrays.push(g.attributes.normal.array);
+            var src = g.index ? g.index.array : null;
+            var vCount = g.attributes.position.count;
+            if (src) {
+                var dst = new (src.constructor)(src.length);
+                for (var k = 0; k < src.length; k++) dst[k] = src[k] + vertOffset;
+                idxArrays.push(dst);
+            } else {
+                // BoxGeometry is non-indexed in some three versions — emit sequential indices.
+                var dst2 = new Uint32Array(vCount);
+                for (var k2 = 0; k2 < vCount; k2++) dst2[k2] = vertOffset + k2;
+                idxArrays.push(dst2);
+            }
+            vertOffset += vCount;
+            g.dispose();
+        });
+        function concatTyped(arrays, Ctor) {
+            var total = 0;
+            arrays.forEach(function(a) { total += a.length; });
+            var out = new Ctor(total);
+            var off = 0;
+            arrays.forEach(function(a) { out.set(a, off); off += a.length; });
+            return out;
+        }
+        var positions = concatTyped(posArrays, Float32Array);
+        var normals = concatTyped(normArrays, Float32Array);
+        var indices = concatTyped(idxArrays, Uint32Array);
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geo.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+        geo.setIndex(new THREE.BufferAttribute(indices, 1));
+        return geo;
+    }
+
+    function makeFrame(wOuter, hOuter, dOuter, frameThickness, barThickness, gridX, gridY) {
+        wOuter = wOuter || 400;
+        hOuter = hOuter || 300;
+        dOuter = dOuter || 20;
+        frameThickness = (frameThickness === undefined) ? 25 : frameThickness;
+        barThickness = (barThickness === undefined) ? 12 : barThickness;
+        gridX = gridX || 3;
+        gridY = gridY || 2;
+        var geo = frameGeometry(wOuter, hOuter, dOuter, frameThickness, barThickness, gridX, gridY);
+        var mesh = new THREE.Mesh(geo, createWoodMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.position.y = hOuter / 2;
+        mesh.userData = {
+            type: 'Frame', id: ++pieceCounter,
+            wOuter: wOuter, hOuter: hOuter, dOuter: dOuter,
+            frameThickness: frameThickness, barThickness: barThickness,
+            gridX: gridX, gridY: gridY,
+            label: typeName('Frame') + ' ' + pieceCounter, notches: 0, csgModified: false
+        };
+        return mesh;
+    }
+
     function makePyramidFrustum(wTop, dTop, wBottom, dBottom, h) {
         wTop = (wTop !== undefined) ? wTop : 40;
         dTop = (dTop !== undefined) ? dTop : 40;
@@ -1987,6 +2121,7 @@ window.addEventListener('load', function() {
     var dimFrustum = document.getElementById('dim-frustum');
     var dimPyramid = document.getElementById('dim-pyramid');
     var dimBoardAngles = document.getElementById('dim-board-angles');
+    var dimFrame = document.getElementById('dim-frame');
     var dimTapered = document.getElementById('dim-tapered');
 
     var inputW = document.getElementById('dim-w');
@@ -2008,6 +2143,13 @@ window.addEventListener('load', function() {
     var inputPH = document.getElementById('dim-ph');
     var inputAngleStart = document.getElementById('dim-angle-start');
     var inputAngleEnd = document.getElementById('dim-angle-end');
+    var inputFrW = document.getElementById('dim-fr-w');
+    var inputFrH = document.getElementById('dim-fr-h');
+    var inputFrD = document.getElementById('dim-fr-d');
+    var inputFrFT = document.getElementById('dim-fr-ft');
+    var inputFrBT = document.getElementById('dim-fr-bt');
+    var inputFrGX = document.getElementById('dim-fr-gx');
+    var inputFrGY = document.getElementById('dim-fr-gy');
 
     var inputPX = document.getElementById('pos-x');
     var inputPY = document.getElementById('pos-y');
@@ -2079,6 +2221,7 @@ window.addEventListener('load', function() {
         dimFrustum.style.display = 'none';
         dimPyramid.style.display = 'none';
         dimBoardAngles.style.display = 'none';
+        dimFrame.style.display = 'none';
 
         if (type === 'Board' || type === 'Wedge' || type === 'L-Bracket') {
             dimWHD.style.display = 'block';
@@ -2112,6 +2255,15 @@ window.addEventListener('load', function() {
             inputPWBot.value = ud.wBottom;
             inputPDBot.value = ud.dBottom;
             inputPH.value = ud.h;
+        } else if (type === 'Frame') {
+            dimFrame.style.display = 'block';
+            inputFrW.value = ud.wOuter;
+            inputFrH.value = ud.hOuter;
+            inputFrD.value = ud.dOuter;
+            inputFrFT.value = ud.frameThickness;
+            inputFrBT.value = ud.barThickness;
+            inputFrGX.value = ud.gridX;
+            inputFrGY.value = ud.gridY;
         }
 
         inputPX.value = Math.round(mesh.position.x);
@@ -2145,6 +2297,8 @@ window.addEventListener('load', function() {
             text = ud.wTop + '/' + ud.wBottom + ' x ' + ud.h + ' x ' + ud.d + ' mm';
         } else if (ud.type === 'Pyramid Frustum') {
             text = ud.wTop + 'x' + ud.dTop + ' / ' + ud.wBottom + 'x' + ud.dBottom + ' x H' + ud.h + ' mm';
+        } else if (ud.type === 'Frame') {
+            text = ud.wOuter + ' x ' + ud.hOuter + ' x ' + ud.dOuter + ' mm — ' + ud.gridX + 'x' + ud.gridY;
         }
         text += ' | ' + t('summary.notches') + ': ' + ud.notches;
         sizeSummary.textContent = text;
@@ -2275,6 +2429,8 @@ window.addEventListener('load', function() {
             newGeo = frustumBoardGeometry(ud.wTop, ud.wBottom, ud.h, ud.d);
         } else if (ud.type === 'Pyramid Frustum') {
             newGeo = pyramidFrustumGeometry(ud.wTop, ud.dTop, ud.wBottom, ud.dBottom, ud.h);
+        } else if (ud.type === 'Frame') {
+            newGeo = frameGeometry(ud.wOuter, ud.hOuter, ud.dOuter, ud.frameThickness, ud.barThickness, ud.gridX, ud.gridY);
         }
         if (newGeo) {
             mesh.geometry = newGeo;
@@ -2317,6 +2473,14 @@ window.addEventListener('load', function() {
             ud.wBottom = Math.max(0, parseFloat(inputPWBot.value) || 0);
             ud.dBottom = Math.max(0, parseFloat(inputPDBot.value) || 0);
             ud.h = Math.max(1, parseFloat(inputPH.value) || 1);
+        } else if (ud.type === 'Frame') {
+            ud.wOuter = Math.max(1, parseFloat(inputFrW.value) || 1);
+            ud.hOuter = Math.max(1, parseFloat(inputFrH.value) || 1);
+            ud.dOuter = Math.max(1, parseFloat(inputFrD.value) || 1);
+            ud.frameThickness = Math.max(0, parseFloat(inputFrFT.value) || 0);
+            ud.barThickness = Math.max(0, parseFloat(inputFrBT.value) || 0);
+            ud.gridX = Math.max(1, parseInt(inputFrGX.value) || 1);
+            ud.gridY = Math.max(1, parseInt(inputFrGY.value) || 1);
         }
         rebuildGeometry(selectedPiece);
         updateSizeSummary();
@@ -2524,7 +2688,7 @@ window.addEventListener('load', function() {
         });
     }
 
-    [inputW, inputH, inputD, inputR, inputRHH, inputRT, inputRB, inputTH, inputWTop, inputWBot, inputFH, inputFD, inputPWTop, inputPDTop, inputPWBot, inputPDBot, inputPH, inputAngleStart, inputAngleEnd].forEach(function(inp) {
+    [inputW, inputH, inputD, inputR, inputRHH, inputRT, inputRB, inputTH, inputWTop, inputWBot, inputFH, inputFD, inputPWTop, inputPDTop, inputPWBot, inputPDBot, inputPH, inputAngleStart, inputAngleEnd, inputFrW, inputFrH, inputFrD, inputFrFT, inputFrBT, inputFrGX, inputFrGY].forEach(function(inp) {
         inp.addEventListener('change', onDimChange);
         bindEnter(inp, onDimChange);
     });
@@ -2659,6 +2823,10 @@ window.addEventListener('load', function() {
             } else if (ud.type === 'Pyramid Frustum') {
                 entry.wTop = ud.wTop; entry.dTop = ud.dTop;
                 entry.wBottom = ud.wBottom; entry.dBottom = ud.dBottom; entry.h = ud.h;
+            } else if (ud.type === 'Frame') {
+                entry.wOuter = ud.wOuter; entry.hOuter = ud.hOuter; entry.dOuter = ud.dOuter;
+                entry.frameThickness = ud.frameThickness; entry.barThickness = ud.barThickness;
+                entry.gridX = ud.gridX; entry.gridY = ud.gridY;
             }
             if (ud.csgModified) {
                 if (Array.isArray(ud.csgOps) && ud.csgOps.length > 0) {
@@ -2712,6 +2880,7 @@ window.addEventListener('load', function() {
             if (spec.type === 'Tapered Leg') return makeTaperedLeg(spec.rTop, spec.rBottom, spec.h);
             if (spec.type === 'Frustum Board') return makeFrustumBoard(spec.wTop, spec.wBottom, spec.h, spec.d);
             if (spec.type === 'Pyramid Frustum') return makePyramidFrustum(spec.wTop, spec.dTop, spec.wBottom, spec.dBottom, spec.h);
+            if (spec.type === 'Frame') return makeFrame(spec.wOuter, spec.hOuter, spec.dOuter, spec.frameThickness, spec.barThickness, spec.gridX, spec.gridY);
             return null;
         }
 
@@ -2734,6 +2903,7 @@ window.addEventListener('load', function() {
                 else if (entry.type === 'Tapered Leg') mesh = makeTaperedLeg(entry.rTop, entry.rBottom, entry.h);
                 else if (entry.type === 'Frustum Board') mesh = makeFrustumBoard(entry.wTop, entry.wBottom, entry.h, entry.d);
                 else if (entry.type === 'Pyramid Frustum') mesh = makePyramidFrustum(entry.wTop, entry.dTop, entry.wBottom, entry.dBottom, entry.h);
+                else if (entry.type === 'Frame') mesh = makeFrame(entry.wOuter, entry.hOuter, entry.dOuter, entry.frameThickness, entry.barThickness, entry.gridX, entry.gridY);
                 pieceCounter--;
             }
             mesh.position.set(entry.px, entry.py, entry.pz);
@@ -2766,6 +2936,10 @@ window.addEventListener('load', function() {
             } else if (entry.type === 'Pyramid Frustum') {
                 mesh.userData.wTop = entry.wTop; mesh.userData.dTop = entry.dTop;
                 mesh.userData.wBottom = entry.wBottom; mesh.userData.dBottom = entry.dBottom; mesh.userData.h = entry.h;
+            } else if (entry.type === 'Frame') {
+                mesh.userData.wOuter = entry.wOuter; mesh.userData.hOuter = entry.hOuter; mesh.userData.dOuter = entry.dOuter;
+                mesh.userData.frameThickness = entry.frameThickness; mesh.userData.barThickness = entry.barThickness;
+                mesh.userData.gridX = entry.gridX; mesh.userData.gridY = entry.gridY;
             }
             return mesh;
         }
@@ -2931,7 +3105,9 @@ window.addEventListener('load', function() {
         { nameKey: 'tpl.doorWedge',  type: 'Wedge',       w: 80, h: 30, d: 40,   price: 1.00 },
         { nameKey: 'tpl.frustumBoard', type: 'Frustum Board', wTop: 60, wBottom: 100, h: 80, d: 40, price: 3.00 },
         { nameKey: 'tpl.pyramidRoof', type: 'Pyramid Frustum', wTop: 40, dTop: 40, wBottom: 100, dBottom: 100, h: 60, price: 5.00 },
-        { nameKey: 'tpl.pyramid',     type: 'Pyramid Frustum', wTop: 0,  dTop: 0,  wBottom: 100, dBottom: 100, h: 80, price: 4.00 }
+        { nameKey: 'tpl.pyramid',     type: 'Pyramid Frustum', wTop: 0,  dTop: 0,  wBottom: 100, dBottom: 100, h: 80, price: 4.00 },
+        { nameKey: 'tpl.windowFrame', type: 'Frame', wOuter: 600,  hOuter: 400,  dOuter: 30, frameThickness: 30, barThickness: 12, gridX: 3, gridY: 2, price: 18.00 },
+        { nameKey: 'tpl.shoji',       type: 'Frame', wOuter: 900,  hOuter: 1800, dOuter: 30, frameThickness: 35, barThickness: 10, gridX: 3, gridY: 6, price: 45.00 }
     ];
 
     function loadCustomTemplates() {
@@ -2954,6 +3130,7 @@ window.addEventListener('load', function() {
         else if (tpl.type === 'Tapered Leg') mesh = makeTaperedLeg(tpl.rTop, tpl.rBottom, tpl.h);
         else if (tpl.type === 'Frustum Board') mesh = makeFrustumBoard(tpl.wTop, tpl.wBottom, tpl.h, tpl.d);
         else if (tpl.type === 'Pyramid Frustum') mesh = makePyramidFrustum(tpl.wTop, tpl.dTop, tpl.wBottom, tpl.dBottom, tpl.h);
+        else if (tpl.type === 'Frame') mesh = makeFrame(tpl.wOuter, tpl.hOuter, tpl.dOuter, tpl.frameThickness, tpl.barThickness, tpl.gridX, tpl.gridY);
         if (mesh) {
             mesh.userData.label = (tpl.nameKey ? t(tpl.nameKey) : tpl.name) + ' ' + mesh.userData.id;
             mesh.userData.price = tpl.price || 0;
@@ -2983,6 +3160,10 @@ window.addEventListener('load', function() {
         } else if (ud.type === 'Pyramid Frustum') {
             tpl.wTop = ud.wTop; tpl.dTop = ud.dTop;
             tpl.wBottom = ud.wBottom; tpl.dBottom = ud.dBottom; tpl.h = ud.h;
+        } else if (ud.type === 'Frame') {
+            tpl.wOuter = ud.wOuter; tpl.hOuter = ud.hOuter; tpl.dOuter = ud.dOuter;
+            tpl.frameThickness = ud.frameThickness; tpl.barThickness = ud.barThickness;
+            tpl.gridX = ud.gridX; tpl.gridY = ud.gridY;
         }
         var custom = loadCustomTemplates();
         custom.push(tpl);
@@ -3050,6 +3231,8 @@ window.addEventListener('load', function() {
             return tpl.wTop + '/' + tpl.wBottom + ' x ' + tpl.h + ' x ' + tpl.d;
         } else if (tpl.type === 'Pyramid Frustum') {
             return tpl.wTop + 'x' + tpl.dTop + '/' + tpl.wBottom + 'x' + tpl.dBottom + ' H' + tpl.h;
+        } else if (tpl.type === 'Frame') {
+            return tpl.wOuter + 'x' + tpl.hOuter + 'x' + tpl.dOuter + ' ' + tpl.gridX + 'x' + tpl.gridY;
         }
         return '';
     }
@@ -3125,6 +3308,10 @@ window.addEventListener('load', function() {
         } else if (ud.type === 'Pyramid Frustum') {
             spec.wTop = ud.wTop; spec.dTop = ud.dTop;
             spec.wBottom = ud.wBottom; spec.dBottom = ud.dBottom; spec.h = ud.h;
+        } else if (ud.type === 'Frame') {
+            spec.wOuter = ud.wOuter; spec.hOuter = ud.hOuter; spec.dOuter = ud.dOuter;
+            spec.frameThickness = ud.frameThickness; spec.barThickness = ud.barThickness;
+            spec.gridX = ud.gridX; spec.gridY = ud.gridY;
         }
         return spec;
     }
@@ -4080,6 +4267,8 @@ window.addEventListener('load', function() {
                 row.push(ud.wTop + '/' + ud.wBottom, ud.h, ud.d, '', ud.notches);
             } else if (ud.type === 'Pyramid Frustum') {
                 row.push(ud.wTop + '/' + ud.wBottom, ud.h, ud.dTop + '/' + ud.dBottom, '', ud.notches);
+            } else if (ud.type === 'Frame') {
+                row.push(ud.wOuter, ud.hOuter, ud.dOuter, ud.gridX + 'x' + ud.gridY, ud.notches);
             }
             row.push(groupLabel, currency + (ud.price || 0).toFixed(2), currency + cost.toFixed(2));
             rows.push(row);
@@ -4350,7 +4539,7 @@ window.addEventListener('load', function() {
     // Toolbar Button Handlers
     // ============================================================
 
-    var ADD_TYPES = ['Board', 'Frustum Board', 'Pyramid Frustum', 'Dowel', 'Wedge', 'L-Bracket', 'Tapered Leg'];
+    var ADD_TYPES = ['Board', 'Frustum Board', 'Pyramid Frustum', 'Frame', 'Dowel', 'Wedge', 'L-Bracket', 'Tapered Leg'];
 
     function closeAllDropdowns() {
         var drops = document.querySelectorAll('.add-dropdown.open, .menu-dropdown.open');
@@ -4365,6 +4554,7 @@ window.addEventListener('load', function() {
         if (type === 'Tapered Leg') return makeTaperedLeg();
         if (type === 'Frustum Board') return makeFrustumBoard();
         if (type === 'Pyramid Frustum') return makePyramidFrustum();
+        if (type === 'Frame') return makeFrame();
     }
 
 
@@ -4376,6 +4566,7 @@ window.addEventListener('load', function() {
         if (type === 'Tapered Leg') return { type: 'Tapered Leg', rTop: 15, rBottom: 25, h: 200 };
         if (type === 'Frustum Board') return { type: 'Frustum Board', wTop: 60, wBottom: 100, h: 80, d: 40 };
         if (type === 'Pyramid Frustum') return { type: 'Pyramid Frustum', wTop: 40, dTop: 40, wBottom: 100, dBottom: 100, h: 80 };
+        if (type === 'Frame') return { type: 'Frame', wOuter: 400, hOuter: 300, dOuter: 20, frameThickness: 25, barThickness: 12, gridX: 3, gridY: 2 };
         return {};
     }
 

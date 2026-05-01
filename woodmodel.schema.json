@@ -146,6 +146,14 @@
             "description": "Bottom depth (along z) in mm. Required for Pyramid Frustum (may be 0).",
             "type": "number", "minimum": 0
           },
+          "angleStart": {
+            "description": "Optional miter angle in degrees at the -x end face of a Board, measured between the end face and the +x axis when looking down +z. 90° = perpendicular cut (default; field omitted on save when 90). Range (0, 180).",
+            "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 180
+          },
+          "angleEnd": {
+            "description": "Optional miter angle in degrees at the +x end face of a Board (mirror of angleStart). 90° = perpendicular cut (default; field omitted on save when 90). Range (0, 180).",
+            "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 180
+          },
 
           "geoPositions": {
             "description": "Legacy: flat array of vertex XYZ coordinates for CSG-modified geometry (BufferGeometry position attribute). Used for files saved before declarative csgOps existed. New saves use csgOps instead.",
@@ -194,7 +202,9 @@
                     "wTop": { "type": "number", "minimum": 0 },
                     "wBottom": { "type": "number", "minimum": 0 },
                     "dTop": { "type": "number", "minimum": 0 },
-                    "dBottom": { "type": "number", "minimum": 0 }
+                    "dBottom": { "type": "number", "minimum": 0 },
+                    "angleStart": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 180 },
+                    "angleEnd": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 180 }
                   }
                 }
               }

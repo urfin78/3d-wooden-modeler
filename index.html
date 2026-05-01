@@ -1553,18 +1553,25 @@ window.addEventListener('load', function() {
             -xbH, yB, -zH,   xbH, yB, -zH,   xbH, yB, zH,   -xbH, yB, zH, // bottom
             -xtH, yT, -zH,   xtH, yT, -zH,   xtH, yT, zH,   -xtH, yT, zH  // top
         ]);
-        // 12 triangles (2 per face × 6 faces): bottom, top, front(+z), back(-z), right(+x), left(-x)
+        // 12 triangles (2 per face × 6 faces). Winding chosen so that
+        // (v1-v0) × (v2-v0) points outward — verified per face.
+        // Verts: 0=(-,B,-), 1=(+,B,-), 2=(+,B,+), 3=(-,B,+); 4..7 same xz at y=+h/2.
         var idx = [
-            0,2,1, 0,3,2,   // bottom (normal -y)
-            4,5,6, 4,6,7,   // top    (normal +y)
-            3,6,2, 3,7,6,   // front  (+z)
-            0,1,5, 0,5,4,   // back   (-z)
-            1,2,6, 1,6,5,   // right  (+x)
-            0,4,7, 0,7,3    // left   (-x)
+            0,1,2, 0,2,3,   // bottom (-y)
+            4,7,6, 4,6,5,   // top    (+y)
+            3,2,6, 3,6,7,   // front  (+z): 3=(-,B,+),2=(+,B,+),6=(+,T,+),7=(-,T,+)
+            1,0,4, 1,4,5,   // back   (-z): 1=(+,B,-),0=(-,B,-),4=(-,T,-),5=(+,T,-)
+            2,1,5, 2,5,6,   // right  (+x)
+            0,3,7, 0,7,4    // left   (-x)
         ];
         var geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
         geo.setIndex(idx);
+        // Convert to non-indexed before computing normals so each face gets its own
+        // vertex normals (flat shading) — matches BoxGeometry's look. With shared
+        // vertices the averaged normals make faces appear darker/smoother than the
+        // surrounding Boards, which use BoxGeometry (already flat-shaded).
+        geo = geo.toNonIndexed();
         geo.computeVertexNormals();
         return geo;
     }

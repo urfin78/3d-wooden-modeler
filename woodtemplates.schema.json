@@ -23,7 +23,7 @@
       "type": {
         "description": "Piece shape. Must match one of the fixed English identifiers used in the app.",
         "type": "string",
-        "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg", "Frustum Board"]
+        "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg", "Frustum Board", "Pyramid Frustum"]
       },
 
       "price": {
@@ -57,11 +57,19 @@
         "type": "number", "exclusiveMinimum": 0
       },
       "wTop": {
-        "description": "Top width in mm. Required for Frustum Board.",
+        "description": "Top width (along x) in mm. Required for Frustum Board and Pyramid Frustum.",
         "type": "number", "minimum": 0
       },
       "wBottom": {
-        "description": "Bottom width in mm. Required for Frustum Board.",
+        "description": "Bottom width (along x) in mm. Required for Frustum Board and Pyramid Frustum.",
+        "type": "number", "minimum": 0
+      },
+      "dTop": {
+        "description": "Top depth (along z) in mm. Required for Pyramid Frustum.",
+        "type": "number", "minimum": 0
+      },
+      "dBottom": {
+        "description": "Bottom depth (along z) in mm. Required for Pyramid Frustum.",
         "type": "number", "minimum": 0
       }
     },
@@ -90,6 +98,10 @@
       {
         "if": { "properties": { "type": { "const": "Frustum Board" } } },
         "then": { "required": ["wTop", "wBottom", "h", "d"] }
+      },
+      {
+        "if": { "properties": { "type": { "const": "Pyramid Frustum" } } },
+        "then": { "required": ["wTop", "dTop", "wBottom", "dBottom", "h"] }
       }
     ]
   },

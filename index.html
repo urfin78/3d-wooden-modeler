@@ -509,6 +509,19 @@
                 <div><label data-i18n="panel.dim.d">D</label><input type="number" id="dim-fd" step="1" min="1"></div>
             </div>
         </div>
+        <div id="dim-pyramid" style="display:none">
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.wTop">W Top</label><input type="number" id="dim-pwtop" step="1" min="0"></div>
+                <div><label data-i18n="panel.dim.dTop">D Top</label><input type="number" id="dim-pdtop" step="1" min="0"></div>
+            </div>
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.wBot">W Bot</label><input type="number" id="dim-pwbot" step="1" min="0"></div>
+                <div><label data-i18n="panel.dim.dBot">D Bot</label><input type="number" id="dim-pdbot" step="1" min="0"></div>
+            </div>
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.height">Height</label><input type="number" id="dim-ph" step="1" min="1"></div>
+            </div>
+        </div>
     </div>
 
     <div id="pos-fields">
@@ -792,9 +805,14 @@ window.addEventListener('load', function() {
             'type.Tapered Leg': 'Tapered Leg',
             'type.Tapered': 'Tapered',
             'type.Frustum Board': 'Frustum Board',
+            'type.Pyramid Frustum': 'Pyramid Frustum',
             'panel.dim.wTop': 'W Top',
             'panel.dim.wBot': 'W Bot',
+            'panel.dim.dTop': 'D Top',
+            'panel.dim.dBot': 'D Bot',
             'tpl.frustumBoard': 'Frustum Board 60/100',
+            'tpl.pyramidRoof': 'Pyramid Roof 100/40',
+            'tpl.pyramid': 'Pyramid 100→0',
             'lang.label': 'Language'
         },
         de: {
@@ -950,9 +968,14 @@ window.addEventListener('load', function() {
             'type.Tapered Leg': 'Konusbein',
             'type.Tapered': 'Konus',
             'type.Frustum Board': 'Trapez-Brett',
+            'type.Pyramid Frustum': 'Pyramidenstumpf',
             'panel.dim.wTop': 'B oben',
             'panel.dim.wBot': 'B unten',
+            'panel.dim.dTop': 'T oben',
+            'panel.dim.dBot': 'T unten',
             'tpl.frustumBoard': 'Trapez-Brett 60/100',
+            'tpl.pyramidRoof': 'Pyramidendach 100/40',
+            'tpl.pyramid': 'Pyramide 100→0',
             'lang.label': 'Sprache'
         }
     };
@@ -1574,6 +1597,52 @@ window.addEventListener('load', function() {
         return geo;
     }
 
+    // Pyramid Frustum: 4-sided frustum centered on x=0, z=0; both top and bottom faces are axis-aligned rectangles.
+    // wTop=dTop=0 collapses the top to a point (true pyramid). wBottom=dBottom=0 collapses the bottom.
+    function pyramidFrustumGeometry(wTop, dTop, wBottom, dBottom, h) {
+        var xtH = wTop / 2,    ztH = dTop / 2;
+        var xbH = wBottom / 2, zbH = dBottom / 2;
+        var yT = h / 2,        yB = -h / 2;
+        var verts = new Float32Array([
+            -xbH, yB, -zbH,   xbH, yB, -zbH,   xbH, yB, zbH,   -xbH, yB, zbH,
+            -xtH, yT, -ztH,   xtH, yT, -ztH,   xtH, yT, ztH,   -xtH, yT, ztH
+        ]);
+        var idx = [
+            0,2,1, 0,3,2,
+            4,5,6, 4,6,7,
+            3,6,2, 3,7,6,
+            0,1,5, 0,5,4,
+            1,2,6, 1,6,5,
+            0,4,7, 0,7,3
+        ];
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+        geo.setIndex(idx);
+        // Flat shading via toNonIndexed() — see frustumBoardGeometry for the rationale.
+        geo = geo.toNonIndexed();
+        geo.computeVertexNormals();
+        return geo;
+    }
+
+    function makePyramidFrustum(wTop, dTop, wBottom, dBottom, h) {
+        wTop = (wTop !== undefined) ? wTop : 40;
+        dTop = (dTop !== undefined) ? dTop : 40;
+        wBottom = (wBottom !== undefined) ? wBottom : 100;
+        dBottom = (dBottom !== undefined) ? dBottom : 100;
+        h = h || 80;
+        var geo = pyramidFrustumGeometry(wTop, dTop, wBottom, dBottom, h);
+        var mesh = new THREE.Mesh(geo, createWoodMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.position.y = h / 2;
+        mesh.userData = {
+            type: 'Pyramid Frustum', id: ++pieceCounter,
+            wTop: wTop, dTop: dTop, wBottom: wBottom, dBottom: dBottom, h: h,
+            label: typeName('Pyramid Frustum') + ' ' + pieceCounter, notches: 0, csgModified: false
+        };
+        return mesh;
+    }
+
     function makeFrustumBoard(wTop, wBottom, h, d) {
         wTop = (wTop !== undefined) ? wTop : 60;
         wBottom = (wBottom !== undefined) ? wBottom : 100;
@@ -1865,6 +1934,7 @@ window.addEventListener('load', function() {
     var dimWHD = document.getElementById('dim-whd');
     var dimRH = document.getElementById('dim-rh');
     var dimFrustum = document.getElementById('dim-frustum');
+    var dimPyramid = document.getElementById('dim-pyramid');
     var dimTapered = document.getElementById('dim-tapered');
 
     var inputW = document.getElementById('dim-w');
@@ -1879,6 +1949,11 @@ window.addEventListener('load', function() {
     var inputWBot = document.getElementById('dim-wbot');
     var inputFH = document.getElementById('dim-fh');
     var inputFD = document.getElementById('dim-fd');
+    var inputPWTop = document.getElementById('dim-pwtop');
+    var inputPDTop = document.getElementById('dim-pdtop');
+    var inputPWBot = document.getElementById('dim-pwbot');
+    var inputPDBot = document.getElementById('dim-pdbot');
+    var inputPH = document.getElementById('dim-ph');
 
     var inputPX = document.getElementById('pos-x');
     var inputPY = document.getElementById('pos-y');
@@ -1948,6 +2023,7 @@ window.addEventListener('load', function() {
         dimRH.style.display = 'none';
         dimTapered.style.display = 'none';
         dimFrustum.style.display = 'none';
+        dimPyramid.style.display = 'none';
 
         if (type === 'Board' || type === 'Wedge' || type === 'L-Bracket') {
             dimWHD.style.display = 'block';
@@ -1969,6 +2045,13 @@ window.addEventListener('load', function() {
             inputWBot.value = ud.wBottom;
             inputFH.value = ud.h;
             inputFD.value = ud.d;
+        } else if (type === 'Pyramid Frustum') {
+            dimPyramid.style.display = 'block';
+            inputPWTop.value = ud.wTop;
+            inputPDTop.value = ud.dTop;
+            inputPWBot.value = ud.wBottom;
+            inputPDBot.value = ud.dBottom;
+            inputPH.value = ud.h;
         }
 
         inputPX.value = Math.round(mesh.position.x);
@@ -2000,6 +2083,8 @@ window.addEventListener('load', function() {
             text = 'R' + ud.rTop + '/' + ud.rBottom + ' x H' + ud.h + ' mm';
         } else if (ud.type === 'Frustum Board') {
             text = ud.wTop + '/' + ud.wBottom + ' x ' + ud.h + ' x ' + ud.d + ' mm';
+        } else if (ud.type === 'Pyramid Frustum') {
+            text = ud.wTop + 'x' + ud.dTop + ' / ' + ud.wBottom + 'x' + ud.dBottom + ' x H' + ud.h + ' mm';
         }
         text += ' | ' + t('summary.notches') + ': ' + ud.notches;
         sizeSummary.textContent = text;
@@ -2128,6 +2213,8 @@ window.addEventListener('load', function() {
             newGeo = new THREE.CylinderGeometry(ud.rTop, ud.rBottom, ud.h, 32);
         } else if (ud.type === 'Frustum Board') {
             newGeo = frustumBoardGeometry(ud.wTop, ud.wBottom, ud.h, ud.d);
+        } else if (ud.type === 'Pyramid Frustum') {
+            newGeo = pyramidFrustumGeometry(ud.wTop, ud.dTop, ud.wBottom, ud.dBottom, ud.h);
         }
         if (newGeo) {
             mesh.geometry = newGeo;
@@ -2160,6 +2247,12 @@ window.addEventListener('load', function() {
             ud.wBottom = Math.max(0, parseFloat(inputWBot.value) || 0);
             ud.h = Math.max(1, parseFloat(inputFH.value) || 1);
             ud.d = Math.max(1, parseFloat(inputFD.value) || 1);
+        } else if (ud.type === 'Pyramid Frustum') {
+            ud.wTop = Math.max(0, parseFloat(inputPWTop.value) || 0);
+            ud.dTop = Math.max(0, parseFloat(inputPDTop.value) || 0);
+            ud.wBottom = Math.max(0, parseFloat(inputPWBot.value) || 0);
+            ud.dBottom = Math.max(0, parseFloat(inputPDBot.value) || 0);
+            ud.h = Math.max(1, parseFloat(inputPH.value) || 1);
         }
         rebuildGeometry(selectedPiece);
         updateSizeSummary();
@@ -2367,7 +2460,7 @@ window.addEventListener('load', function() {
         });
     }
 
-    [inputW, inputH, inputD, inputR, inputRHH, inputRT, inputRB, inputTH, inputWTop, inputWBot, inputFH, inputFD].forEach(function(inp) {
+    [inputW, inputH, inputD, inputR, inputRHH, inputRT, inputRB, inputTH, inputWTop, inputWBot, inputFH, inputFD, inputPWTop, inputPDTop, inputPWBot, inputPDBot, inputPH].forEach(function(inp) {
         inp.addEventListener('change', onDimChange);
         bindEnter(inp, onDimChange);
     });
@@ -2495,6 +2588,9 @@ window.addEventListener('load', function() {
                 entry.rTop = ud.rTop; entry.rBottom = ud.rBottom; entry.h = ud.h;
             } else if (ud.type === 'Frustum Board') {
                 entry.wTop = ud.wTop; entry.wBottom = ud.wBottom; entry.h = ud.h; entry.d = ud.d;
+            } else if (ud.type === 'Pyramid Frustum') {
+                entry.wTop = ud.wTop; entry.dTop = ud.dTop;
+                entry.wBottom = ud.wBottom; entry.dBottom = ud.dBottom; entry.h = ud.h;
             }
             if (ud.csgModified) {
                 if (Array.isArray(ud.csgOps) && ud.csgOps.length > 0) {
@@ -2547,6 +2643,7 @@ window.addEventListener('load', function() {
             if (spec.type === 'L-Bracket') return makeLBracket(spec.w, spec.h, spec.d);
             if (spec.type === 'Tapered Leg') return makeTaperedLeg(spec.rTop, spec.rBottom, spec.h);
             if (spec.type === 'Frustum Board') return makeFrustumBoard(spec.wTop, spec.wBottom, spec.h, spec.d);
+            if (spec.type === 'Pyramid Frustum') return makePyramidFrustum(spec.wTop, spec.dTop, spec.wBottom, spec.dBottom, spec.h);
             return null;
         }
 
@@ -2568,6 +2665,7 @@ window.addEventListener('load', function() {
                 else if (entry.type === 'L-Bracket') mesh = makeLBracket(entry.w, entry.h, entry.d);
                 else if (entry.type === 'Tapered Leg') mesh = makeTaperedLeg(entry.rTop, entry.rBottom, entry.h);
                 else if (entry.type === 'Frustum Board') mesh = makeFrustumBoard(entry.wTop, entry.wBottom, entry.h, entry.d);
+                else if (entry.type === 'Pyramid Frustum') mesh = makePyramidFrustum(entry.wTop, entry.dTop, entry.wBottom, entry.dBottom, entry.h);
                 pieceCounter--;
             }
             mesh.position.set(entry.px, entry.py, entry.pz);
@@ -2593,6 +2691,9 @@ window.addEventListener('load', function() {
                 mesh.userData.rTop = entry.rTop; mesh.userData.rBottom = entry.rBottom; mesh.userData.h = entry.h;
             } else if (entry.type === 'Frustum Board') {
                 mesh.userData.wTop = entry.wTop; mesh.userData.wBottom = entry.wBottom; mesh.userData.h = entry.h; mesh.userData.d = entry.d;
+            } else if (entry.type === 'Pyramid Frustum') {
+                mesh.userData.wTop = entry.wTop; mesh.userData.dTop = entry.dTop;
+                mesh.userData.wBottom = entry.wBottom; mesh.userData.dBottom = entry.dBottom; mesh.userData.h = entry.h;
             }
             return mesh;
         }
@@ -2756,7 +2857,9 @@ window.addEventListener('load', function() {
         { nameKey: 'tpl.cornerBrace',type: 'L-Bracket',   w: 50, h: 50, d: 20,   price: 2.00 },
         { nameKey: 'tpl.tableLeg',   type: 'Tapered Leg', rTop: 20, rBottom: 30, h: 720, price: 12.00 },
         { nameKey: 'tpl.doorWedge',  type: 'Wedge',       w: 80, h: 30, d: 40,   price: 1.00 },
-        { nameKey: 'tpl.frustumBoard', type: 'Frustum Board', wTop: 60, wBottom: 100, h: 80, d: 40, price: 3.00 }
+        { nameKey: 'tpl.frustumBoard', type: 'Frustum Board', wTop: 60, wBottom: 100, h: 80, d: 40, price: 3.00 },
+        { nameKey: 'tpl.pyramidRoof', type: 'Pyramid Frustum', wTop: 40, dTop: 40, wBottom: 100, dBottom: 100, h: 60, price: 5.00 },
+        { nameKey: 'tpl.pyramid',     type: 'Pyramid Frustum', wTop: 0,  dTop: 0,  wBottom: 100, dBottom: 100, h: 80, price: 4.00 }
     ];
 
     function loadCustomTemplates() {
@@ -2778,6 +2881,7 @@ window.addEventListener('load', function() {
         else if (tpl.type === 'L-Bracket') mesh = makeLBracket(tpl.w, tpl.h, tpl.d);
         else if (tpl.type === 'Tapered Leg') mesh = makeTaperedLeg(tpl.rTop, tpl.rBottom, tpl.h);
         else if (tpl.type === 'Frustum Board') mesh = makeFrustumBoard(tpl.wTop, tpl.wBottom, tpl.h, tpl.d);
+        else if (tpl.type === 'Pyramid Frustum') mesh = makePyramidFrustum(tpl.wTop, tpl.dTop, tpl.wBottom, tpl.dBottom, tpl.h);
         if (mesh) {
             mesh.userData.label = (tpl.nameKey ? t(tpl.nameKey) : tpl.name) + ' ' + mesh.userData.id;
             mesh.userData.price = tpl.price || 0;
@@ -2800,6 +2904,9 @@ window.addEventListener('load', function() {
             tpl.rTop = ud.rTop; tpl.rBottom = ud.rBottom; tpl.h = ud.h;
         } else if (ud.type === 'Frustum Board') {
             tpl.wTop = ud.wTop; tpl.wBottom = ud.wBottom; tpl.h = ud.h; tpl.d = ud.d;
+        } else if (ud.type === 'Pyramid Frustum') {
+            tpl.wTop = ud.wTop; tpl.dTop = ud.dTop;
+            tpl.wBottom = ud.wBottom; tpl.dBottom = ud.dBottom; tpl.h = ud.h;
         }
         var custom = loadCustomTemplates();
         custom.push(tpl);
@@ -2865,6 +2972,8 @@ window.addEventListener('load', function() {
             return 'R' + tpl.rTop + '/' + tpl.rBottom + ' H' + tpl.h;
         } else if (tpl.type === 'Frustum Board') {
             return tpl.wTop + '/' + tpl.wBottom + ' x ' + tpl.h + ' x ' + tpl.d;
+        } else if (tpl.type === 'Pyramid Frustum') {
+            return tpl.wTop + 'x' + tpl.dTop + '/' + tpl.wBottom + 'x' + tpl.dBottom + ' H' + tpl.h;
         }
         return '';
     }
@@ -3884,6 +3993,8 @@ window.addEventListener('load', function() {
                 row.push('', ud.h, '', ud.rTop * 2 + '/' + ud.rBottom * 2, ud.notches);
             } else if (ud.type === 'Frustum Board') {
                 row.push(ud.wTop + '/' + ud.wBottom, ud.h, ud.d, '', ud.notches);
+            } else if (ud.type === 'Pyramid Frustum') {
+                row.push(ud.wTop + '/' + ud.wBottom, ud.h, ud.dTop + '/' + ud.dBottom, '', ud.notches);
             }
             row.push(groupLabel, currency + (ud.price || 0).toFixed(2), currency + cost.toFixed(2));
             rows.push(row);
@@ -4154,7 +4265,7 @@ window.addEventListener('load', function() {
     // Toolbar Button Handlers
     // ============================================================
 
-    var ADD_TYPES = ['Board', 'Frustum Board', 'Dowel', 'Wedge', 'L-Bracket', 'Tapered Leg'];
+    var ADD_TYPES = ['Board', 'Frustum Board', 'Pyramid Frustum', 'Dowel', 'Wedge', 'L-Bracket', 'Tapered Leg'];
 
     function closeAllDropdowns() {
         var drops = document.querySelectorAll('.add-dropdown.open, .menu-dropdown.open');
@@ -4168,6 +4279,7 @@ window.addEventListener('load', function() {
         if (type === 'L-Bracket') return makeLBracket();
         if (type === 'Tapered Leg') return makeTaperedLeg();
         if (type === 'Frustum Board') return makeFrustumBoard();
+        if (type === 'Pyramid Frustum') return makePyramidFrustum();
     }
 
 
@@ -4178,6 +4290,7 @@ window.addEventListener('load', function() {
         if (type === 'L-Bracket') return { type: 'L-Bracket', w: 60, h: 80, d: 20 };
         if (type === 'Tapered Leg') return { type: 'Tapered Leg', rTop: 15, rBottom: 25, h: 200 };
         if (type === 'Frustum Board') return { type: 'Frustum Board', wTop: 60, wBottom: 100, h: 80, d: 40 };
+        if (type === 'Pyramid Frustum') return { type: 'Pyramid Frustum', wTop: 40, dTop: 40, wBottom: 100, dBottom: 100, h: 80 };
         return {};
     }
 

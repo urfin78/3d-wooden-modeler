@@ -24,6 +24,7 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 - **Undo/Redo** support (Ctrl+Z / Ctrl+Shift+Z)
 - **Auto-resizing grid** that adapts to the size of your model
 - **Template library** with built-in metric woodworking parts and custom templates (stored in localStorage), integrated into the toolbar's `+ Add` mega-dropdown; custom templates can be exported/imported as JSON
+- **Assembly templates** — parameterised compositions (e.g. a complete Japanese lantern) that spawn multiple pieces as a pre-grouped Group. A modal prompts for parameters before inserting
 - **Save/Load** models as `.woodmodel.json` files for persistent projects
 - **Cost calculator** with per-piece pricing (fixed or per-mm), currency selector, and live cost summary
 - **CSV export** of a cut list with dimensions, types, notch counts, and costs

@@ -843,6 +843,15 @@ window.addEventListener('load', function() {
             'type.Frame': 'Frame',
             'tpl.windowFrame': 'Window 600×400 3×2',
             'tpl.shoji': 'Shoji 900×1800 3×6',
+            'asm.section': 'Assemblies',
+            'asm.cancel': 'Cancel',
+            'asm.confirm': 'Insert',
+            'asm.lantern': 'Japanese Lantern',
+            'asm.lantern.width': 'Width (mm)',
+            'asm.lantern.height': 'Height (mm)',
+            'asm.lantern.postSize': 'Post size (mm)',
+            'asm.lantern.roofHeight': 'Roof height (mm)',
+            'asm.lantern.overhang': 'Roof overhang (mm)',
             'tpl.frustumBoard': 'Frustum Board 60/100',
             'tpl.pyramidRoof': 'Pyramid Roof 100/40',
             'tpl.pyramid': 'Pyramid 100→0',
@@ -1018,6 +1027,15 @@ window.addEventListener('load', function() {
             'type.Frame': 'Rahmen',
             'tpl.windowFrame': 'Fenster 600×400 3×2',
             'tpl.shoji': 'Shoji 900×1800 3×6',
+            'asm.section': 'Baugruppen',
+            'asm.cancel': 'Abbrechen',
+            'asm.confirm': 'Einfügen',
+            'asm.lantern': 'Japanische Laterne',
+            'asm.lantern.width': 'Breite (mm)',
+            'asm.lantern.height': 'Höhe (mm)',
+            'asm.lantern.postSize': 'Pfostengröße (mm)',
+            'asm.lantern.roofHeight': 'Dachhöhe (mm)',
+            'asm.lantern.overhang': 'Dachüberstand (mm)',
             'tpl.frustumBoard': 'Trapez-Brett 60/100',
             'tpl.pyramidRoof': 'Pyramidendach 100/40',
             'tpl.pyramid': 'Pyramide 100→0',
@@ -3110,6 +3128,196 @@ window.addEventListener('load', function() {
         { nameKey: 'tpl.shoji',       type: 'Frame', wOuter: 900,  hOuter: 1800, dOuter: 30, frameThickness: 35, barThickness: 10, gridX: 3, gridY: 6, price: 45.00 }
     ];
 
+    // Build a fresh mesh from a piece spec ({type, dims}). Mirrors restoreScene's makeMeshFromSpec
+    // but is reusable from assemblies, which need to spawn many pieces in one operation.
+    function pieceFromSpec(spec) {
+        if (spec.type === 'Board') return makeBoard(spec.w, spec.h, spec.d, spec.angleStart, spec.angleEnd);
+        if (spec.type === 'Dowel') return makeDowel(spec.r, spec.h);
+        if (spec.type === 'Wedge') return makeWedge(spec.w, spec.h, spec.d);
+        if (spec.type === 'L-Bracket') return makeLBracket(spec.w, spec.h, spec.d);
+        if (spec.type === 'Tapered Leg') return makeTaperedLeg(spec.rTop, spec.rBottom, spec.h);
+        if (spec.type === 'Frustum Board') return makeFrustumBoard(spec.wTop, spec.wBottom, spec.h, spec.d);
+        if (spec.type === 'Pyramid Frustum') return makePyramidFrustum(spec.wTop, spec.dTop, spec.wBottom, spec.dBottom, spec.h);
+        if (spec.type === 'Frame') return makeFrame(spec.wOuter, spec.hOuter, spec.dOuter, spec.frameThickness, spec.barThickness, spec.gridX, spec.gridY);
+        return null;
+    }
+
+    // Assembly templates: parameterised compositions that spawn N pieces and group them.
+    // Each entry: { key, nameKey, params: [{name, labelKey, default, min?, max?, step?}], build: (p) => [pieceSpec] }.
+    // A pieceSpec is the piece factory args plus position/rotation/label, e.g.
+    //   { type: 'Board', w, h, d, px, py, pz, rx?, ry?, rz?, label? }.
+    var builtInAssemblies = [
+        {
+            key: 'lantern',
+            nameKey: 'asm.lantern',
+            params: [
+                { name: 'width',       labelKey: 'asm.lantern.width',     default: 240, min: 80,  max: 1000 },
+                { name: 'height',      labelKey: 'asm.lantern.height',    default: 360, min: 100, max: 2000 },
+                { name: 'postSize',    labelKey: 'asm.lantern.postSize',  default: 30,  min: 10,  max: 80 },
+                { name: 'roofHeight',  labelKey: 'asm.lantern.roofHeight',default: 120, min: 20,  max: 500 },
+                { name: 'roofOverhang',labelKey: 'asm.lantern.overhang',  default: 40,  min: 0,   max: 200 }
+            ],
+            build: function(p) {
+                var W = p.width, H = p.height, S = p.postSize, RH = p.roofHeight, RO = p.roofOverhang;
+                var inset = W / 2 - S / 2; // post centerline
+                var specs = [];
+                // 4 corner posts (Boards rotated to vertical: long axis = height, but Boards have x=w; use y=H by setting w=S, h=H, d=S)
+                [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(function(c, i) {
+                    specs.push({
+                        type: 'Board', w: S, h: H, d: S,
+                        px: c[0]*inset, py: H/2, pz: c[1]*inset,
+                        label: 'Post ' + (i+1)
+                    });
+                });
+                // 4 side panels (Frame primitives), one per face
+                var panelW = W - 2*S;
+                var panelH = H - 2*S;
+                var fr = Math.max(8, S * 0.6);
+                var bar = Math.max(4, S * 0.35);
+                var faces = [
+                    { rot: 0,            px: 0,           pz:  W/2 - S/2 },
+                    { rot: Math.PI,      px: 0,           pz: -W/2 + S/2 },
+                    { rot:  Math.PI/2,   px: -W/2 + S/2,  pz: 0 },
+                    { rot: -Math.PI/2,   px:  W/2 - S/2,  pz: 0 }
+                ];
+                faces.forEach(function(f, i) {
+                    specs.push({
+                        type: 'Frame',
+                        wOuter: panelW, hOuter: panelH, dOuter: Math.max(6, S * 0.3),
+                        frameThickness: fr, barThickness: bar, gridX: 3, gridY: 4,
+                        px: f.px, py: H/2, pz: f.pz, ry: f.rot,
+                        label: 'Side ' + (i+1)
+                    });
+                });
+                // Floor: a board flush with the bottom of the posts
+                specs.push({
+                    type: 'Board', w: W, h: S * 0.5, d: W,
+                    px: 0, py: S * 0.25, pz: 0,
+                    label: 'Floor'
+                });
+                // Roof: a pyramid frustum sitting on top of the posts, with overhang
+                specs.push({
+                    type: 'Pyramid Frustum',
+                    wTop: S * 1.5, dTop: S * 1.5,
+                    wBottom: W + 2*RO, dBottom: W + 2*RO,
+                    h: RH,
+                    px: 0, py: H + RH/2, pz: 0,
+                    label: 'Roof'
+                });
+                return specs;
+            }
+        }
+    ];
+
+    // Spawn an assembly: builds all pieces, places them, and reparents into a single Group.
+    // Params object is validated against the assembly's param schema (numbers clamped to [min,max]).
+    function addAssembly(asm, rawParams) {
+        // Clamp/validate params
+        var params = {};
+        asm.params.forEach(function(pd) {
+            var v = parseFloat(rawParams[pd.name]);
+            if (isNaN(v)) v = pd.default;
+            if (pd.min !== undefined) v = Math.max(pd.min, v);
+            if (pd.max !== undefined) v = Math.min(pd.max, v);
+            params[pd.name] = v;
+        });
+        var specs = asm.build(params);
+        if (!specs || !specs.length) return;
+        pushUndo();
+
+        var meshes = [];
+        specs.forEach(function(spec) {
+            var mesh = pieceFromSpec(spec);
+            if (!mesh) return;
+            mesh.position.set(spec.px || 0, spec.py || 0, spec.pz || 0);
+            mesh.rotation.set(spec.rx || 0, spec.ry || 0, spec.rz || 0);
+            if (spec.label) mesh.userData.label = spec.label;
+            scene.add(mesh);
+            pieces.push(mesh);
+            if (labelsVisible) createLabel(mesh);
+            applyXray(mesh);
+            meshes.push(mesh);
+        });
+
+        // Group all spawned pieces.
+        if (meshes.length >= 2) {
+            var center = new THREE.Vector3();
+            meshes.forEach(function(m) { center.add(m.position); });
+            center.divideScalar(meshes.length);
+            var gId = 'grp_' + (++groupCounter);
+            var group = new THREE.Group();
+            group.userData.gId = gId;
+            group.position.copy(center);
+            scene.add(group);
+            groups.push(group);
+            meshes.forEach(function(m) {
+                scene.remove(m);
+                m.position.sub(center);
+                m.userData.groupId = gId;
+                group.add(m);
+                removeLabel(m);
+            });
+            selectGroup(group);
+        } else if (meshes.length === 1) {
+            selectPiece(meshes[0]);
+        }
+        updateGrid();
+    }
+
+    // Modal for entering assembly parameters before spawning.
+    function openAssemblyParamsModal(asm) {
+        var existing = document.getElementById('asm-modal');
+        if (existing) existing.remove();
+        var modal = document.createElement('div');
+        modal.id = 'asm-modal';
+        modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:300; display:flex; align-items:center; justify-content:center;';
+        var box = document.createElement('div');
+        box.style.cssText = 'background:var(--surface,#fff); padding:20px; border-radius:8px; min-width:320px; box-shadow:var(--shadow-lg, 0 8px 24px rgba(0,0,0,0.2));';
+        var title = document.createElement('h3');
+        title.textContent = t(asm.nameKey);
+        title.style.cssText = 'margin:0 0 12px;';
+        box.appendChild(title);
+        var inputs = {};
+        asm.params.forEach(function(pd) {
+            var row = document.createElement('div');
+            row.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:8px;';
+            var lbl = document.createElement('label');
+            lbl.textContent = t(pd.labelKey);
+            lbl.style.cssText = 'flex:1; font-size:13px;';
+            var inp = document.createElement('input');
+            inp.type = 'number';
+            inp.value = pd.default;
+            if (pd.min !== undefined) inp.min = pd.min;
+            if (pd.max !== undefined) inp.max = pd.max;
+            inp.step = pd.step || 1;
+            inp.style.cssText = 'width:100px; padding:4px 6px;';
+            inputs[pd.name] = inp;
+            row.appendChild(lbl);
+            row.appendChild(inp);
+            box.appendChild(row);
+        });
+        var actions = document.createElement('div');
+        actions.style.cssText = 'display:flex; justify-content:flex-end; gap:8px; margin-top:12px;';
+        var cancel = document.createElement('button');
+        cancel.textContent = t('asm.cancel');
+        cancel.addEventListener('click', function() { modal.remove(); });
+        var ok = document.createElement('button');
+        ok.textContent = t('asm.confirm');
+        ok.style.cssText = 'background:var(--accent,#3b82f6); color:#fff;';
+        ok.addEventListener('click', function() {
+            var raw = {};
+            asm.params.forEach(function(pd) { raw[pd.name] = inputs[pd.name].value; });
+            modal.remove();
+            addAssembly(asm, raw);
+        });
+        actions.appendChild(cancel);
+        actions.appendChild(ok);
+        box.appendChild(actions);
+        modal.appendChild(box);
+        modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+        document.body.appendChild(modal);
+    }
+
     function loadCustomTemplates() {
         try {
             var stored = localStorage.getItem('woodmodeler_templates');
@@ -4640,6 +4848,27 @@ window.addEventListener('load', function() {
 
             menu.appendChild(section);
         });
+
+        // Assembly section: parameterised compositions that spawn a Group of pieces.
+        if (builtInAssemblies.length) {
+            var sep2 = document.createElement('div');
+            sep2.className = 'add-menu-sep';
+            menu.appendChild(sep2);
+            var asmSection = document.createElement('div');
+            asmSection.className = 'add-mega-section';
+            var asmLbl = document.createElement('div');
+            asmLbl.className = 'add-mega-section-label';
+            asmLbl.textContent = t('asm.section');
+            asmSection.appendChild(asmLbl);
+            builtInAssemblies.forEach(function(asm) {
+                asmSection.appendChild(makeAddMenuItem(
+                    t(asm.nameKey),
+                    '',
+                    function() { openAssemblyParamsModal(asm); }
+                ));
+            });
+            menu.appendChild(asmSection);
+        }
     }
 
     function positionMenu(dd, menu) {

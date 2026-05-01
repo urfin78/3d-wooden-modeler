@@ -2405,10 +2405,14 @@ window.addEventListener('load', function() {
                 entry.rTop = ud.rTop; entry.rBottom = ud.rBottom; entry.h = ud.h;
             }
             if (ud.csgModified) {
-                var pos = mesh.geometry.attributes.position.array;
-                var norm = mesh.geometry.attributes.normal.array;
-                entry.geoPositions = Array.prototype.slice.call(pos);
-                entry.geoNormals = Array.prototype.slice.call(norm);
+                if (Array.isArray(ud.csgOps) && ud.csgOps.length > 0) {
+                    entry.csgOps = ud.csgOps;
+                } else {
+                    var pos = mesh.geometry.attributes.position.array;
+                    var norm = mesh.geometry.attributes.normal.array;
+                    entry.geoPositions = Array.prototype.slice.call(pos);
+                    entry.geoNormals = Array.prototype.slice.call(norm);
+                }
             }
             piecesState.push(entry);
         });
@@ -2444,9 +2448,20 @@ window.addEventListener('load', function() {
         var groupsData = Array.isArray(state) ? [] : (state.groups || []);
         var rulersData = Array.isArray(state) ? [] : (state.rulers || []);
 
+        function makeMeshFromSpec(spec) {
+            if (spec.type === 'Board') return makeBoard(spec.w, spec.h, spec.d);
+            if (spec.type === 'Dowel') return makeDowel(spec.r, spec.h);
+            if (spec.type === 'Wedge') return makeWedge(spec.w, spec.h, spec.d);
+            if (spec.type === 'L-Bracket') return makeLBracket(spec.w, spec.h, spec.d);
+            if (spec.type === 'Tapered Leg') return makeTaperedLeg(spec.rTop, spec.rBottom, spec.h);
+            return null;
+        }
+
         function restoreMesh(entry) {
             var mesh;
-            if (entry.csgModified) {
+            var hasCsgOps = Array.isArray(entry.csgOps) && entry.csgOps.length > 0;
+            if (entry.csgModified && !hasCsgOps && entry.geoPositions) {
+                // Legacy path: prebaked geometry
                 var geo = new THREE.BufferGeometry();
                 geo.setAttribute('position', new THREE.Float32BufferAttribute(entry.geoPositions, 3));
                 geo.setAttribute('normal', new THREE.Float32BufferAttribute(entry.geoNormals, 3));
@@ -2468,6 +2483,7 @@ window.addEventListener('load', function() {
             mesh.userData.label = entry.label;
             mesh.userData.notches = entry.notches;
             mesh.userData.csgModified = entry.csgModified;
+            if (Array.isArray(entry.csgOps)) mesh.userData.csgOps = entry.csgOps.slice();
             mesh.userData.price = entry.price || 0;
             mesh.userData.priceMode = entry.priceMode || 'fixed';
             mesh.userData.sourceId = entry.sourceId || null;
@@ -2492,6 +2508,33 @@ window.addEventListener('load', function() {
             pieces.push(mesh);
             if (labelsVisible && !entry.groupId) createLabel(mesh);
             applyXray(mesh);
+        });
+
+        // CSG replay pass: pieces are now at their final world transforms.
+        // Replay any declarative csgOps so that csgFromMesh sees correct world coords.
+        pieces.forEach(function(mesh) {
+            var ops = mesh.userData.csgOps;
+            if (!Array.isArray(ops) || ops.length === 0) return;
+            mesh.updateMatrixWorld(true);
+            ops.forEach(function(op) {
+                if (op.op !== 'subtract' || !op.tool) return;
+                var toolMesh = makeMeshFromSpec(op.tool);
+                if (!toolMesh) return;
+                toolMesh.position.set(op.tool.px || 0, op.tool.py || 0, op.tool.pz || 0);
+                toolMesh.rotation.set(op.tool.rx || 0, op.tool.ry || 0, op.tool.rz || 0);
+                toolMesh.updateMatrixWorld(true);
+                try {
+                    var newGeo = csgSubtract(mesh, toolMesh);
+                    mesh.geometry.dispose();
+                    mesh.geometry = newGeo;
+                } catch (e) {
+                    console.error('CSG replay failed:', e);
+                }
+                toolMesh.geometry.dispose();
+                toolMesh.material.dispose();
+                pieceCounter--; // makeMeshFromSpec incremented it
+            });
+            mesh.userData.csgModified = true;
         });
 
         // Second pass: restore groups and attach children
@@ -2766,14 +2809,47 @@ window.addEventListener('load', function() {
         hideModeBanner();
     }
 
+    // Capture a tool mesh as a declarative spec (type + dims + world transform)
+    // so a cut can be replayed deterministically on load.
+    function captureCutToolSpec(tool) {
+        var ud = tool.userData;
+        var wp = new THREE.Vector3();
+        var wq = new THREE.Quaternion();
+        tool.getWorldPosition(wp);
+        tool.getWorldQuaternion(wq);
+        var we = new THREE.Euler().setFromQuaternion(wq, 'XYZ');
+        var spec = {
+            type: ud.type,
+            px: wp.x, py: wp.y, pz: wp.z,
+            rx: we.x, ry: we.y, rz: we.z
+        };
+        if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
+            spec.w = ud.w; spec.h = ud.h; spec.d = ud.d;
+        } else if (ud.type === 'Dowel') {
+            spec.r = ud.r; spec.h = ud.h;
+        } else if (ud.type === 'Tapered Leg') {
+            spec.rTop = ud.rTop; spec.rBottom = ud.rBottom; spec.h = ud.h;
+        }
+        return spec;
+    }
+
     function performCut(target, tool) {
         pushUndo();
         try {
+            // Legacy-locked: a piece loaded from a pre-csgOps save has csgModified=true
+            // without any recorded ops. Recording new ops here would make the next save
+            // drop the prebaked geometry of the original cuts. Keep it on the legacy path.
+            var legacyLocked = target.userData.csgModified && !Array.isArray(target.userData.csgOps);
+            var toolSpec = legacyLocked ? null : captureCutToolSpec(tool);
             var newGeo = csgSubtract(target, tool);
             target.geometry.dispose();
             target.geometry = newGeo;
             target.userData.notches++;
             target.userData.csgModified = true;
+            if (!legacyLocked) {
+                if (!Array.isArray(target.userData.csgOps)) target.userData.csgOps = [];
+                target.userData.csgOps.push({ op: 'subtract', tool: toolSpec });
+            }
             target.material.color.setHex(WOOD_COLOR);
             tool.material.color.setHex(WOOD_COLOR);
             selectPiece(target);
@@ -3313,6 +3389,7 @@ window.addEventListener('load', function() {
         mesh.userData.label = (ud.label || typeName(ud.type)) + ' ' + t('duplicate.suffix');
         mesh.userData.notches = ud.csgModified ? ud.notches : 0;
         mesh.userData.csgModified = ud.csgModified || false;
+        if (Array.isArray(ud.csgOps)) mesh.userData.csgOps = ud.csgOps.slice();
         mesh.userData.price = ud.price || 0;
         mesh.userData.priceMode = ud.priceMode || 'fixed';
         if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {

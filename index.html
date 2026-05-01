@@ -1565,6 +1565,11 @@ window.addEventListener('load', function() {
         var geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
         geo.setIndex(idx);
+        // Convert to non-indexed before computing normals so each face gets its own
+        // vertex normals (flat shading) — matches BoxGeometry's look. With shared
+        // vertices the averaged normals make faces appear darker/smoother than the
+        // surrounding Boards, which use BoxGeometry (already flat-shaded).
+        geo = geo.toNonIndexed();
         geo.computeVertexNormals();
         return geo;
     }

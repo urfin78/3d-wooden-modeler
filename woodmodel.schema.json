@@ -55,7 +55,7 @@
           },
 
           "csgModified": {
-            "description": "True when the piece geometry was altered by at least one Cut Joint. When true, geoPositions and geoNormals must be present and the shape-specific dimension fields are no longer used to rebuild geometry.",
+            "description": "True when the piece geometry was altered by at least one Cut Joint. When true, either csgOps (preferred, declarative) or geoPositions+geoNormals (legacy, prebaked) must be present.",
             "type": "boolean"
           },
 
@@ -132,14 +132,53 @@
           },
 
           "geoPositions": {
-            "description": "Flat array of vertex XYZ coordinates for CSG-modified geometry (BufferGeometry position attribute). Present only when csgModified is true.",
+            "description": "Legacy: flat array of vertex XYZ coordinates for CSG-modified geometry (BufferGeometry position attribute). Used for files saved before declarative csgOps existed. New saves use csgOps instead.",
             "type": "array",
             "items": { "type": "number" }
           },
           "geoNormals": {
-            "description": "Flat array of vertex normal XYZ values for CSG-modified geometry (BufferGeometry normal attribute). Same length as geoPositions. Present only when csgModified is true.",
+            "description": "Legacy: flat array of vertex normal XYZ values for CSG-modified geometry (BufferGeometry normal attribute). Same length as geoPositions. New saves use csgOps instead.",
             "type": "array",
             "items": { "type": "number" }
+          },
+
+          "csgOps": {
+            "description": "Declarative list of CSG operations applied to this piece, in order. On load, each op is replayed against a freshly built base mesh after the piece is placed at its world position. Preferred over geoPositions/geoNormals.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["op", "tool"],
+              "properties": {
+                "op": {
+                  "description": "Operation kind. Currently only 'subtract' is supported.",
+                  "type": "string",
+                  "enum": ["subtract"]
+                },
+                "tool": {
+                  "description": "Tool piece spec: shape type, its dimensions, and its world transform at the moment of the cut. The tool mesh exists only transiently during replay and is disposed afterwards.",
+                  "type": "object",
+                  "required": ["type", "px", "py", "pz", "rx", "ry", "rz"],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg"]
+                    },
+                    "px": { "type": "number" },
+                    "py": { "type": "number" },
+                    "pz": { "type": "number" },
+                    "rx": { "type": "number" },
+                    "ry": { "type": "number" },
+                    "rz": { "type": "number" },
+                    "w": { "type": "number", "exclusiveMinimum": 0 },
+                    "h": { "type": "number", "exclusiveMinimum": 0 },
+                    "d": { "type": "number", "exclusiveMinimum": 0 },
+                    "r": { "type": "number", "exclusiveMinimum": 0 },
+                    "rTop": { "type": "number", "exclusiveMinimum": 0 },
+                    "rBottom": { "type": "number", "exclusiveMinimum": 0 }
+                  }
+                }
+              }
+            }
           }
         }
       }

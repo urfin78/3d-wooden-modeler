@@ -499,6 +499,16 @@
                 <div><label data-i18n="panel.dim.height">Height</label><input type="number" id="dim-th" step="1" min="1"></div>
             </div>
         </div>
+        <div id="dim-frustum" style="display:none">
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.wTop">W Top</label><input type="number" id="dim-wtop" step="1" min="0"></div>
+                <div><label data-i18n="panel.dim.wBot">W Bot</label><input type="number" id="dim-wbot" step="1" min="0"></div>
+            </div>
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.height">Height</label><input type="number" id="dim-fh" step="1" min="1"></div>
+                <div><label data-i18n="panel.dim.d">D</label><input type="number" id="dim-fd" step="1" min="1"></div>
+            </div>
+        </div>
     </div>
 
     <div id="pos-fields">
@@ -781,6 +791,10 @@ window.addEventListener('load', function() {
             'type.L-Bracket': 'L-Bracket',
             'type.Tapered Leg': 'Tapered Leg',
             'type.Tapered': 'Tapered',
+            'type.Frustum Board': 'Frustum Board',
+            'panel.dim.wTop': 'W Top',
+            'panel.dim.wBot': 'W Bot',
+            'tpl.frustumBoard': 'Frustum Board 60/100',
             'lang.label': 'Language'
         },
         de: {
@@ -935,6 +949,10 @@ window.addEventListener('load', function() {
             'type.L-Bracket': 'L-Winkel',
             'type.Tapered Leg': 'Konusbein',
             'type.Tapered': 'Konus',
+            'type.Frustum Board': 'Trapez-Brett',
+            'panel.dim.wTop': 'B oben',
+            'panel.dim.wBot': 'B unten',
+            'tpl.frustumBoard': 'Trapez-Brett 60/100',
             'lang.label': 'Sprache'
         }
     };
@@ -1523,6 +1541,52 @@ window.addEventListener('load', function() {
         return mesh;
     }
 
+    // Frustum Board: trapezoidal board with different widths at top and bottom.
+    // wBottom = width along +X at y=0, wTop = width along +X at y=h, d = depth (z), h = height.
+    // Both top and bottom faces are centered on x=0, z=0; mesh.position.y is set to h/2.
+    function frustumBoardGeometry(wTop, wBottom, h, d) {
+        var xtH = wTop / 2,    xbH = wBottom / 2;
+        var zH = d / 2;
+        var yT = h / 2,        yB = -h / 2;
+        // 8 corners: bottom 0..3 (CCW from -x,-z), top 4..7
+        var verts = new Float32Array([
+            -xbH, yB, -zH,   xbH, yB, -zH,   xbH, yB, zH,   -xbH, yB, zH, // bottom
+            -xtH, yT, -zH,   xtH, yT, -zH,   xtH, yT, zH,   -xtH, yT, zH  // top
+        ]);
+        // 12 triangles (2 per face × 6 faces): bottom, top, front(+z), back(-z), right(+x), left(-x)
+        var idx = [
+            0,2,1, 0,3,2,   // bottom (normal -y)
+            4,5,6, 4,6,7,   // top    (normal +y)
+            3,6,2, 3,7,6,   // front  (+z)
+            0,1,5, 0,5,4,   // back   (-z)
+            1,2,6, 1,6,5,   // right  (+x)
+            0,4,7, 0,7,3    // left   (-x)
+        ];
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+        geo.setIndex(idx);
+        geo.computeVertexNormals();
+        return geo;
+    }
+
+    function makeFrustumBoard(wTop, wBottom, h, d) {
+        wTop = (wTop !== undefined) ? wTop : 60;
+        wBottom = (wBottom !== undefined) ? wBottom : 100;
+        h = h || 80;
+        d = d || 40;
+        var geo = frustumBoardGeometry(wTop, wBottom, h, d);
+        var mesh = new THREE.Mesh(geo, createWoodMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.position.y = h / 2;
+        mesh.userData = {
+            type: 'Frustum Board', id: ++pieceCounter,
+            wTop: wTop, wBottom: wBottom, h: h, d: d,
+            label: typeName('Frustum Board') + ' ' + pieceCounter, notches: 0, csgModified: false
+        };
+        return mesh;
+    }
+
     function makeTaperedLeg(rTop, rBottom, h) {
         rTop = rTop || 15; rBottom = rBottom || 25; h = h || 200;
         var geo = new THREE.CylinderGeometry(rTop, rBottom, h, 32);
@@ -1795,6 +1859,7 @@ window.addEventListener('load', function() {
 
     var dimWHD = document.getElementById('dim-whd');
     var dimRH = document.getElementById('dim-rh');
+    var dimFrustum = document.getElementById('dim-frustum');
     var dimTapered = document.getElementById('dim-tapered');
 
     var inputW = document.getElementById('dim-w');
@@ -1805,6 +1870,10 @@ window.addEventListener('load', function() {
     var inputRT = document.getElementById('dim-rt');
     var inputRB = document.getElementById('dim-rb');
     var inputTH = document.getElementById('dim-th');
+    var inputWTop = document.getElementById('dim-wtop');
+    var inputWBot = document.getElementById('dim-wbot');
+    var inputFH = document.getElementById('dim-fh');
+    var inputFD = document.getElementById('dim-fd');
 
     var inputPX = document.getElementById('pos-x');
     var inputPY = document.getElementById('pos-y');
@@ -1873,6 +1942,7 @@ window.addEventListener('load', function() {
         dimWHD.style.display = 'none';
         dimRH.style.display = 'none';
         dimTapered.style.display = 'none';
+        dimFrustum.style.display = 'none';
 
         if (type === 'Board' || type === 'Wedge' || type === 'L-Bracket') {
             dimWHD.style.display = 'block';
@@ -1888,6 +1958,12 @@ window.addEventListener('load', function() {
             inputRT.value = ud.rTop;
             inputRB.value = ud.rBottom;
             inputTH.value = ud.h;
+        } else if (type === 'Frustum Board') {
+            dimFrustum.style.display = 'block';
+            inputWTop.value = ud.wTop;
+            inputWBot.value = ud.wBottom;
+            inputFH.value = ud.h;
+            inputFD.value = ud.d;
         }
 
         inputPX.value = Math.round(mesh.position.x);
@@ -1917,6 +1993,8 @@ window.addEventListener('load', function() {
             text = 'R' + ud.r + ' x H' + ud.h + ' mm (' + t('summary.dia') + ' ' + (ud.r * 2) + ')';
         } else if (ud.type === 'Tapered Leg') {
             text = 'R' + ud.rTop + '/' + ud.rBottom + ' x H' + ud.h + ' mm';
+        } else if (ud.type === 'Frustum Board') {
+            text = ud.wTop + '/' + ud.wBottom + ' x ' + ud.h + ' x ' + ud.d + ' mm';
         }
         text += ' | ' + t('summary.notches') + ': ' + ud.notches;
         sizeSummary.textContent = text;
@@ -2043,6 +2121,8 @@ window.addEventListener('load', function() {
             newGeo.translate(-(bb.max.x + bb.min.x) / 2, -(bb.max.y + bb.min.y) / 2, -(bb.max.z + bb.min.z) / 2);
         } else if (ud.type === 'Tapered Leg') {
             newGeo = new THREE.CylinderGeometry(ud.rTop, ud.rBottom, ud.h, 32);
+        } else if (ud.type === 'Frustum Board') {
+            newGeo = frustumBoardGeometry(ud.wTop, ud.wBottom, ud.h, ud.d);
         }
         if (newGeo) {
             mesh.geometry = newGeo;
@@ -2070,6 +2150,11 @@ window.addEventListener('load', function() {
             ud.rTop = Math.max(1, parseFloat(inputRT.value) || 1);
             ud.rBottom = Math.max(1, parseFloat(inputRB.value) || 1);
             ud.h = Math.max(1, parseFloat(inputTH.value) || 1);
+        } else if (ud.type === 'Frustum Board') {
+            ud.wTop = Math.max(0, parseFloat(inputWTop.value) || 0);
+            ud.wBottom = Math.max(0, parseFloat(inputWBot.value) || 0);
+            ud.h = Math.max(1, parseFloat(inputFH.value) || 1);
+            ud.d = Math.max(1, parseFloat(inputFD.value) || 1);
         }
         rebuildGeometry(selectedPiece);
         updateSizeSummary();
@@ -2277,7 +2362,7 @@ window.addEventListener('load', function() {
         });
     }
 
-    [inputW, inputH, inputD, inputR, inputRHH, inputRT, inputRB, inputTH].forEach(function(inp) {
+    [inputW, inputH, inputD, inputR, inputRHH, inputRT, inputRB, inputTH, inputWTop, inputWBot, inputFH, inputFD].forEach(function(inp) {
         inp.addEventListener('change', onDimChange);
         bindEnter(inp, onDimChange);
     });
@@ -2403,6 +2488,8 @@ window.addEventListener('load', function() {
                 entry.r = ud.r; entry.h = ud.h;
             } else if (ud.type === 'Tapered Leg') {
                 entry.rTop = ud.rTop; entry.rBottom = ud.rBottom; entry.h = ud.h;
+            } else if (ud.type === 'Frustum Board') {
+                entry.wTop = ud.wTop; entry.wBottom = ud.wBottom; entry.h = ud.h; entry.d = ud.d;
             }
             if (ud.csgModified) {
                 if (Array.isArray(ud.csgOps) && ud.csgOps.length > 0) {
@@ -2454,6 +2541,7 @@ window.addEventListener('load', function() {
             if (spec.type === 'Wedge') return makeWedge(spec.w, spec.h, spec.d);
             if (spec.type === 'L-Bracket') return makeLBracket(spec.w, spec.h, spec.d);
             if (spec.type === 'Tapered Leg') return makeTaperedLeg(spec.rTop, spec.rBottom, spec.h);
+            if (spec.type === 'Frustum Board') return makeFrustumBoard(spec.wTop, spec.wBottom, spec.h, spec.d);
             return null;
         }
 
@@ -2474,6 +2562,7 @@ window.addEventListener('load', function() {
                 else if (entry.type === 'Wedge') mesh = makeWedge(entry.w, entry.h, entry.d);
                 else if (entry.type === 'L-Bracket') mesh = makeLBracket(entry.w, entry.h, entry.d);
                 else if (entry.type === 'Tapered Leg') mesh = makeTaperedLeg(entry.rTop, entry.rBottom, entry.h);
+                else if (entry.type === 'Frustum Board') mesh = makeFrustumBoard(entry.wTop, entry.wBottom, entry.h, entry.d);
                 pieceCounter--;
             }
             mesh.position.set(entry.px, entry.py, entry.pz);
@@ -2497,6 +2586,8 @@ window.addEventListener('load', function() {
                 mesh.userData.r = entry.r; mesh.userData.h = entry.h;
             } else if (entry.type === 'Tapered Leg') {
                 mesh.userData.rTop = entry.rTop; mesh.userData.rBottom = entry.rBottom; mesh.userData.h = entry.h;
+            } else if (entry.type === 'Frustum Board') {
+                mesh.userData.wTop = entry.wTop; mesh.userData.wBottom = entry.wBottom; mesh.userData.h = entry.h; mesh.userData.d = entry.d;
             }
             return mesh;
         }
@@ -2659,7 +2750,8 @@ window.addEventListener('load', function() {
         { nameKey: 'tpl.dowelRod10', type: 'Dowel',       r: 5, h: 300,  price: 1.50 },
         { nameKey: 'tpl.cornerBrace',type: 'L-Bracket',   w: 50, h: 50, d: 20,   price: 2.00 },
         { nameKey: 'tpl.tableLeg',   type: 'Tapered Leg', rTop: 20, rBottom: 30, h: 720, price: 12.00 },
-        { nameKey: 'tpl.doorWedge',  type: 'Wedge',       w: 80, h: 30, d: 40,   price: 1.00 }
+        { nameKey: 'tpl.doorWedge',  type: 'Wedge',       w: 80, h: 30, d: 40,   price: 1.00 },
+        { nameKey: 'tpl.frustumBoard', type: 'Frustum Board', wTop: 60, wBottom: 100, h: 80, d: 40, price: 3.00 }
     ];
 
     function loadCustomTemplates() {
@@ -2680,6 +2772,7 @@ window.addEventListener('load', function() {
         else if (tpl.type === 'Wedge') mesh = makeWedge(tpl.w, tpl.h, tpl.d);
         else if (tpl.type === 'L-Bracket') mesh = makeLBracket(tpl.w, tpl.h, tpl.d);
         else if (tpl.type === 'Tapered Leg') mesh = makeTaperedLeg(tpl.rTop, tpl.rBottom, tpl.h);
+        else if (tpl.type === 'Frustum Board') mesh = makeFrustumBoard(tpl.wTop, tpl.wBottom, tpl.h, tpl.d);
         if (mesh) {
             mesh.userData.label = (tpl.nameKey ? t(tpl.nameKey) : tpl.name) + ' ' + mesh.userData.id;
             mesh.userData.price = tpl.price || 0;
@@ -2700,6 +2793,8 @@ window.addEventListener('load', function() {
             tpl.r = ud.r; tpl.h = ud.h;
         } else if (ud.type === 'Tapered Leg') {
             tpl.rTop = ud.rTop; tpl.rBottom = ud.rBottom; tpl.h = ud.h;
+        } else if (ud.type === 'Frustum Board') {
+            tpl.wTop = ud.wTop; tpl.wBottom = ud.wBottom; tpl.h = ud.h; tpl.d = ud.d;
         }
         var custom = loadCustomTemplates();
         custom.push(tpl);
@@ -2763,6 +2858,8 @@ window.addEventListener('load', function() {
             return 'R' + tpl.r + ' H' + tpl.h;
         } else if (tpl.type === 'Tapered Leg') {
             return 'R' + tpl.rTop + '/' + tpl.rBottom + ' H' + tpl.h;
+        } else if (tpl.type === 'Frustum Board') {
+            return tpl.wTop + '/' + tpl.wBottom + ' x ' + tpl.h + ' x ' + tpl.d;
         }
         return '';
     }
@@ -3780,6 +3877,8 @@ window.addEventListener('load', function() {
                 row.push('', ud.h, '', ud.r * 2, ud.notches);
             } else if (ud.type === 'Tapered Leg') {
                 row.push('', ud.h, '', ud.rTop * 2 + '/' + ud.rBottom * 2, ud.notches);
+            } else if (ud.type === 'Frustum Board') {
+                row.push(ud.wTop + '/' + ud.wBottom, ud.h, ud.d, '', ud.notches);
             }
             row.push(groupLabel, currency + (ud.price || 0).toFixed(2), currency + cost.toFixed(2));
             rows.push(row);
@@ -4050,7 +4149,7 @@ window.addEventListener('load', function() {
     // Toolbar Button Handlers
     // ============================================================
 
-    var ADD_TYPES = ['Board', 'Dowel', 'Wedge', 'L-Bracket', 'Tapered Leg'];
+    var ADD_TYPES = ['Board', 'Frustum Board', 'Dowel', 'Wedge', 'L-Bracket', 'Tapered Leg'];
 
     function closeAllDropdowns() {
         var drops = document.querySelectorAll('.add-dropdown.open, .menu-dropdown.open');
@@ -4063,6 +4162,7 @@ window.addEventListener('load', function() {
         if (type === 'Wedge') return makeWedge();
         if (type === 'L-Bracket') return makeLBracket();
         if (type === 'Tapered Leg') return makeTaperedLeg();
+        if (type === 'Frustum Board') return makeFrustumBoard();
     }
 
 
@@ -4072,6 +4172,7 @@ window.addEventListener('load', function() {
         if (type === 'Wedge') return { type: 'Wedge', w: 80, h: 60, d: 40 };
         if (type === 'L-Bracket') return { type: 'L-Bracket', w: 60, h: 80, d: 20 };
         if (type === 'Tapered Leg') return { type: 'Tapered Leg', rTop: 15, rBottom: 25, h: 200 };
+        if (type === 'Frustum Board') return { type: 'Frustum Board', wTop: 60, wBottom: 100, h: 80, d: 40 };
         return {};
     }
 

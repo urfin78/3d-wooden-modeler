@@ -486,6 +486,12 @@
                 <div><label data-i18n="panel.dim.d">D</label><input type="number" id="dim-d" step="1" min="1"></div>
             </div>
         </div>
+        <div id="dim-board-angles" style="display:none">
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.angleStart">Start °</label><input type="number" id="dim-angle-start" step="1" min="1" max="179"></div>
+                <div><label data-i18n="panel.dim.angleEnd">End °</label><input type="number" id="dim-angle-end" step="1" min="1" max="179"></div>
+            </div>
+        </div>
         <div id="dim-rh" style="display:none">
             <div class="input-row">
                 <div><label data-i18n="panel.dim.radius">Radius</label><input type="number" id="dim-r" step="1" min="1"></div>
@@ -810,6 +816,8 @@ window.addEventListener('load', function() {
             'panel.dim.wBot': 'W Bot',
             'panel.dim.dTop': 'D Top',
             'panel.dim.dBot': 'D Bot',
+            'panel.dim.angleStart': 'Start °',
+            'panel.dim.angleEnd': 'End °',
             'tpl.frustumBoard': 'Trapezoid Side 200/300×600',
             'tpl.pyramidRoof': 'Pyramid Roof 100/40',
             'tpl.pyramid': 'Pyramid 100→0',
@@ -973,6 +981,8 @@ window.addEventListener('load', function() {
             'panel.dim.wBot': 'B unten',
             'panel.dim.dTop': 'T oben',
             'panel.dim.dBot': 'T unten',
+            'panel.dim.angleStart': 'Start °',
+            'panel.dim.angleEnd': 'Ende °',
             'tpl.frustumBoard': 'Trapez-Seite 200/300×600',
             'tpl.pyramidRoof': 'Pyramidendach 100/40',
             'tpl.pyramid': 'Pyramide 100→0',
@@ -1477,16 +1487,57 @@ window.addEventListener('load', function() {
         return new THREE.MeshStandardMaterial({ color: WOOD_COLOR, roughness: 0.7, metalness: 0.05 });
     }
 
-    function makeBoard(w, h, d) {
+    // Board geometry: BoxGeometry when both end angles are 90°, otherwise a hand-built BufferGeometry
+    // with sheared end faces. angleStart applies to the -x face, angleEnd to the +x face.
+    // Angles are measured between the end face and the +x axis when looking down the +z axis;
+    // 90° = perpendicular cut. Bottom edges (y=-h/2) stay at ±w/2; top edges shift by h*cot(angle).
+    function boardGeometry(w, h, d, angleStart, angleEnd) {
+        var aS = (angleStart === undefined) ? 90 : angleStart;
+        var aE = (angleEnd === undefined) ? 90 : angleEnd;
+        if (aS === 90 && aE === 90) return new THREE.BoxGeometry(w, h, d);
+        var rS = aS * Math.PI / 180;
+        var rE = aE * Math.PI / 180;
+        // Top-edge offset (added to bottom-edge x). Positive offset = top edge tilted toward +x.
+        var offS = h / Math.tan(rS);   // -x face: at angle aS, top moves by +cot(aS)*h
+        var offE = -h / Math.tan(rE);  // +x face: top moves opposite (mirror), so negative cot
+        var xLB = -w / 2,        xRB = w / 2;
+        var xLT = -w / 2 + offS, xRT = w / 2 + offE;
+        var yT = h / 2, yB = -h / 2, zF = d / 2, zBk = -d / 2;
+        // 8 vertices: bottom 0..3 (CCW from -x,-z) and top 4..7
+        var verts = new Float32Array([
+            xLB, yB, zBk,   xRB, yB, zBk,   xRB, yB, zF,   xLB, yB, zF, // bottom
+            xLT, yT, zBk,   xRT, yT, zBk,   xRT, yT, zF,   xLT, yT, zF  // top
+        ]);
+        var idx = [
+            0,2,1, 0,3,2,
+            4,5,6, 4,6,7,
+            3,6,2, 3,7,6,
+            0,1,5, 0,5,4,
+            1,2,6, 1,6,5,
+            0,4,7, 0,7,3
+        ];
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+        geo.setIndex(idx);
+        // Flat shading via toNonIndexed() — see frustumBoardGeometry for the rationale.
+        geo = geo.toNonIndexed();
+        geo.computeVertexNormals();
+        return geo;
+    }
+
+    function makeBoard(w, h, d, angleStart, angleEnd) {
         w = w || 100; h = h || 20; d = d || 50;
-        var geo = new THREE.BoxGeometry(w, h, d);
+        var geo = boardGeometry(w, h, d, angleStart, angleEnd);
         var mesh = new THREE.Mesh(geo, createWoodMaterial());
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         mesh.position.y = h / 2;
         mesh.userData = {
             type: 'Board', id: ++pieceCounter,
-            w: w, h: h, d: d, label: typeName('Board') + ' ' + pieceCounter, notches: 0, csgModified: false
+            w: w, h: h, d: d,
+            angleStart: (angleStart === undefined) ? 90 : angleStart,
+            angleEnd: (angleEnd === undefined) ? 90 : angleEnd,
+            label: typeName('Board') + ' ' + pieceCounter, notches: 0, csgModified: false
         };
         return mesh;
     }
@@ -2000,6 +2051,7 @@ window.addEventListener('load', function() {
     var dimRH = document.getElementById('dim-rh');
     var dimFrustum = document.getElementById('dim-frustum');
     var dimPyramid = document.getElementById('dim-pyramid');
+    var dimBoardAngles = document.getElementById('dim-board-angles');
     var dimTapered = document.getElementById('dim-tapered');
 
     var inputW = document.getElementById('dim-w');
@@ -2019,6 +2071,8 @@ window.addEventListener('load', function() {
     var inputPWBot = document.getElementById('dim-pwbot');
     var inputPDBot = document.getElementById('dim-pdbot');
     var inputPH = document.getElementById('dim-ph');
+    var inputAngleStart = document.getElementById('dim-angle-start');
+    var inputAngleEnd = document.getElementById('dim-angle-end');
 
     var inputPX = document.getElementById('pos-x');
     var inputPY = document.getElementById('pos-y');
@@ -2089,12 +2143,18 @@ window.addEventListener('load', function() {
         dimTapered.style.display = 'none';
         dimFrustum.style.display = 'none';
         dimPyramid.style.display = 'none';
+        dimBoardAngles.style.display = 'none';
 
         if (type === 'Board' || type === 'Wedge' || type === 'L-Bracket') {
             dimWHD.style.display = 'block';
             inputW.value = ud.w;
             inputH.value = ud.h;
             inputD.value = ud.d;
+            if (type === 'Board') {
+                dimBoardAngles.style.display = 'block';
+                inputAngleStart.value = (ud.angleStart === undefined) ? 90 : ud.angleStart;
+                inputAngleEnd.value = (ud.angleEnd === undefined) ? 90 : ud.angleEnd;
+            }
         } else if (type === 'Dowel') {
             dimRH.style.display = 'block';
             inputR.value = ud.r;
@@ -2247,7 +2307,7 @@ window.addEventListener('load', function() {
         var oldGeo = mesh.geometry;
         var newGeo;
         if (ud.type === 'Board') {
-            newGeo = new THREE.BoxGeometry(ud.w, ud.h, ud.d);
+            newGeo = boardGeometry(ud.w, ud.h, ud.d, ud.angleStart, ud.angleEnd);
         } else if (ud.type === 'Dowel') {
             newGeo = new THREE.CylinderGeometry(ud.r, ud.r, ud.h, 32);
         } else if (ud.type === 'Wedge') {
@@ -2300,6 +2360,10 @@ window.addEventListener('load', function() {
             ud.w = Math.max(1, parseFloat(inputW.value) || 1);
             ud.h = Math.max(1, parseFloat(inputH.value) || 1);
             ud.d = Math.max(1, parseFloat(inputD.value) || 1);
+            if (ud.type === 'Board') {
+                ud.angleStart = Math.min(179, Math.max(1, parseFloat(inputAngleStart.value) || 90));
+                ud.angleEnd = Math.min(179, Math.max(1, parseFloat(inputAngleEnd.value) || 90));
+            }
         } else if (ud.type === 'Dowel') {
             ud.r = Math.max(1, parseFloat(inputR.value) || 1);
             ud.h = Math.max(1, parseFloat(inputRHH.value) || 1);
@@ -2525,7 +2589,7 @@ window.addEventListener('load', function() {
         });
     }
 
-    [inputW, inputH, inputD, inputR, inputRHH, inputRT, inputRB, inputTH, inputWTop, inputWBot, inputFH, inputFD, inputPWTop, inputPDTop, inputPWBot, inputPDBot, inputPH].forEach(function(inp) {
+    [inputW, inputH, inputD, inputR, inputRHH, inputRT, inputRB, inputTH, inputWTop, inputWBot, inputFH, inputFD, inputPWTop, inputPDTop, inputPWBot, inputPDBot, inputPH, inputAngleStart, inputAngleEnd].forEach(function(inp) {
         inp.addEventListener('change', onDimChange);
         bindEnter(inp, onDimChange);
     });
@@ -2647,6 +2711,10 @@ window.addEventListener('load', function() {
             };
             if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
                 entry.w = ud.w; entry.h = ud.h; entry.d = ud.d;
+                if (ud.type === 'Board') {
+                    if (ud.angleStart !== undefined && ud.angleStart !== 90) entry.angleStart = ud.angleStart;
+                    if (ud.angleEnd !== undefined && ud.angleEnd !== 90) entry.angleEnd = ud.angleEnd;
+                }
             } else if (ud.type === 'Dowel') {
                 entry.r = ud.r; entry.h = ud.h;
             } else if (ud.type === 'Tapered Leg') {
@@ -2702,7 +2770,7 @@ window.addEventListener('load', function() {
         var rulersData = Array.isArray(state) ? [] : (state.rulers || []);
 
         function makeMeshFromSpec(spec) {
-            if (spec.type === 'Board') return makeBoard(spec.w, spec.h, spec.d);
+            if (spec.type === 'Board') return makeBoard(spec.w, spec.h, spec.d, spec.angleStart, spec.angleEnd);
             if (spec.type === 'Dowel') return makeDowel(spec.r, spec.h);
             if (spec.type === 'Wedge') return makeWedge(spec.w, spec.h, spec.d);
             if (spec.type === 'L-Bracket') return makeLBracket(spec.w, spec.h, spec.d);
@@ -2724,7 +2792,7 @@ window.addEventListener('load', function() {
                 mesh.castShadow = true;
                 mesh.receiveShadow = true;
             } else {
-                if (entry.type === 'Board') mesh = makeBoard(entry.w, entry.h, entry.d);
+                if (entry.type === 'Board') mesh = makeBoard(entry.w, entry.h, entry.d, entry.angleStart, entry.angleEnd);
                 else if (entry.type === 'Dowel') mesh = makeDowel(entry.r, entry.h);
                 else if (entry.type === 'Wedge') mesh = makeWedge(entry.w, entry.h, entry.d);
                 else if (entry.type === 'L-Bracket') mesh = makeLBracket(entry.w, entry.h, entry.d);
@@ -2750,6 +2818,10 @@ window.addEventListener('load', function() {
             mesh.userData.groupId = entry.groupId || null;
             if (entry.type === 'Board' || entry.type === 'Wedge' || entry.type === 'L-Bracket') {
                 mesh.userData.w = entry.w; mesh.userData.h = entry.h; mesh.userData.d = entry.d;
+                if (entry.type === 'Board') {
+                    mesh.userData.angleStart = (entry.angleStart === undefined) ? 90 : entry.angleStart;
+                    mesh.userData.angleEnd = (entry.angleEnd === undefined) ? 90 : entry.angleEnd;
+                }
             } else if (entry.type === 'Dowel') {
                 mesh.userData.r = entry.r; mesh.userData.h = entry.h;
             } else if (entry.type === 'Tapered Leg') {
@@ -2949,7 +3021,7 @@ window.addEventListener('load', function() {
 
     function addFromTemplate(tpl) {
         var mesh;
-        if (tpl.type === 'Board') mesh = makeBoard(tpl.w, tpl.h, tpl.d);
+        if (tpl.type === 'Board') mesh = makeBoard(tpl.w, tpl.h, tpl.d, tpl.angleStart, tpl.angleEnd);
         else if (tpl.type === 'Dowel') mesh = makeDowel(tpl.r, tpl.h);
         else if (tpl.type === 'Wedge') mesh = makeWedge(tpl.w, tpl.h, tpl.d);
         else if (tpl.type === 'L-Bracket') mesh = makeLBracket(tpl.w, tpl.h, tpl.d);
@@ -2972,6 +3044,10 @@ window.addEventListener('load', function() {
         var tpl = { name: name, type: ud.type, price: ud.price || 0 };
         if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
             tpl.w = ud.w; tpl.h = ud.h; tpl.d = ud.d;
+            if (ud.type === 'Board') {
+                if (ud.angleStart !== undefined && ud.angleStart !== 90) tpl.angleStart = ud.angleStart;
+                if (ud.angleEnd !== undefined && ud.angleEnd !== 90) tpl.angleEnd = ud.angleEnd;
+            }
         } else if (ud.type === 'Dowel') {
             tpl.r = ud.r; tpl.h = ud.h;
         } else if (ud.type === 'Tapered Leg') {
@@ -3123,10 +3199,19 @@ window.addEventListener('load', function() {
         };
         if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
             spec.w = ud.w; spec.h = ud.h; spec.d = ud.d;
+            if (ud.type === 'Board') {
+                if (ud.angleStart !== undefined && ud.angleStart !== 90) spec.angleStart = ud.angleStart;
+                if (ud.angleEnd !== undefined && ud.angleEnd !== 90) spec.angleEnd = ud.angleEnd;
+            }
         } else if (ud.type === 'Dowel') {
             spec.r = ud.r; spec.h = ud.h;
         } else if (ud.type === 'Tapered Leg') {
             spec.rTop = ud.rTop; spec.rBottom = ud.rBottom; spec.h = ud.h;
+        } else if (ud.type === 'Frustum Board') {
+            spec.wTop = ud.wTop; spec.wBottom = ud.wBottom; spec.h = ud.h; spec.d = ud.d;
+        } else if (ud.type === 'Pyramid Frustum') {
+            spec.wTop = ud.wTop; spec.dTop = ud.dTop;
+            spec.wBottom = ud.wBottom; spec.dBottom = ud.dBottom; spec.h = ud.h;
         }
         return spec;
     }

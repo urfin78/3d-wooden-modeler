@@ -16,7 +16,7 @@ Everything runs inside a `window.addEventListener('load', ...)` closure in `inde
 
 1. **CSG BSP-Tree** — Constructive Solid Geometry implementation (Evan Wallace algorithm) for boolean subtraction between meshes. Key functions: `csgFromMesh`, `csgSubtract`.
 
-2. **Three.js Scene Setup** — Renderer, camera, inline minimal OrbitControls, lighting, ground plane, auto-resizing grid (`updateGrid()`).
+2. **Three.js Scene Setup** — Renderer, camera, inline minimal OrbitControls, lighting, ground plane, auto-resizing grid (`updateGrid()`). The orbit pivot (`controls.target`) can be repositioned at runtime: double-click on a piece sets it to the raycast hit point, double-click on empty space recenters on the bounding box of all visible pieces (`focusCameraOnScene()`), and the `F` key calls `focusCameraOn()` for the current selection (single piece, group, or multi-select bbox).
 
 3. **Application State** — Global mutable state: `pieces[]` array, selection state, mode flags (snap, cut, overlap), undo/redo stacks.
 

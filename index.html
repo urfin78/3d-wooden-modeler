@@ -4309,6 +4309,36 @@ window.addEventListener('load', function() {
         }
     });
 
+    // Camera pivot focus
+    function focusCameraOn(target) {
+        if (!target) return;
+        var box = new THREE.Box3().setFromObject(target);
+        if (box.isEmpty()) return;
+        var center = box.getCenter(new THREE.Vector3());
+        controls.target.copy(center);
+        controls.update();
+    }
+    function focusCameraOnScene() {
+        if (!pieces.length) return;
+        var box = new THREE.Box3();
+        pieces.forEach(function(m) { if (m.visible) box.expandByObject(m); });
+        if (box.isEmpty()) return;
+        controls.target.copy(box.getCenter(new THREE.Vector3()));
+        controls.update();
+    }
+    renderer.domElement.addEventListener('dblclick', function(e) {
+        if (cutMode || rulerMode) return;
+        getMouseNDC(e);
+        raycaster.setFromCamera(mouse, camera);
+        var hits = raycaster.intersectObjects(pieces.filter(function(m) { return m.visible; }), false);
+        if (hits.length > 0) {
+            controls.target.copy(hits[0].point);
+            controls.update();
+        } else {
+            focusCameraOnScene();
+        }
+    });
+
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
@@ -4320,6 +4350,18 @@ window.addEventListener('load', function() {
         } else if (e.ctrlKey && e.key === 'd') {
             e.preventDefault();
             duplicateSelected();
+        } else if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey
+                   && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            if (selectedGroup) focusCameraOn(selectedGroup);
+            else if (selectedPiece) focusCameraOn(selectedPiece);
+            else if (multiSelected && multiSelected.size > 0) {
+                var box = new THREE.Box3();
+                multiSelected.forEach(function(m) { box.expandByObject(m); });
+                if (!box.isEmpty()) { controls.target.copy(box.getCenter(new THREE.Vector3())); controls.update(); }
+            } else {
+                focusCameraOnScene();
+            }
         } else if (e.key === 'Delete' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
             deleteSelected();
         } else if (e.key === 'Escape') {

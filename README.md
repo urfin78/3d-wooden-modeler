@@ -10,7 +10,7 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 
 - **7 shape types**: Board, Frustum Board (trapezoidal — different widths at top and bottom), Pyramid Frustum (4-sided — independent W/D at top and bottom; collapses to a true pyramid when top = 0), Dowel, Wedge, L-Bracket, and Tapered Leg
 - **Interactive 3D viewport** with orbit controls (pan, rotate, zoom); double-click a piece to set the orbit pivot, double-click empty space to recenter on the whole model, or press `F` to focus the current selection
-- **Real-time editing** of dimensions, position, and rotation via the side panel
+- **Real-time editing** of dimensions, position, and rotation via the side panel; Boards additionally support optional **miter angles** on each end face (e.g. for picture frames or rafter tops)
 - **Drag-to-move** pieces directly in the viewport (Shift+drag for vertical movement)
 - **Duplicate** selected piece via the floating action bar or Ctrl+D
 - **Split** a board or dowel — either by number of parts (equal-length) or by target part length (max pieces that fit, with optional leftover kept as extra piece) — with configurable saw kerf (blade thickness) so material lost to each cut is accounted for; split parts are visually grouped in the object list and cost summary (one board purchase = one cost entry)

@@ -71,6 +71,14 @@
       "dBottom": {
         "description": "Bottom depth (along z) in mm. Required for Pyramid Frustum.",
         "type": "number", "minimum": 0
+      },
+      "angleStart": {
+        "description": "Optional miter angle (degrees) at the -x end of a Board template. Defaults to 90 (omitted).",
+        "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 180
+      },
+      "angleEnd": {
+        "description": "Optional miter angle (degrees) at the +x end of a Board template. Defaults to 90 (omitted).",
+        "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 180
       }
     },
 

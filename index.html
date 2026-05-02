@@ -1548,31 +1548,58 @@ window.addEventListener('load', function() {
         var xtH = wTop / 2,    xbH = wBottom / 2;
         var zH = d / 2;
         var yT = h / 2,        yB = -h / 2;
-        // Mirror BoxGeometry's layout: 24 vertices (4 per face) so each face has its own
-        // normals (flat shading) and CSG sees clean per-face quads-as-triangles.
-        // Faces: bottom(-y), top(+y), front(+z), back(-z), right(+x), left(-x).
-        var positions = new Float32Array([
-            // bottom (-y): CCW from below
-            -xbH, yB, -zH,   xbH, yB, -zH,   xbH, yB, zH,   -xbH, yB, zH,
-            // top (+y): CCW from above
-            -xtH, yT, -zH,  -xtH, yT, zH,    xtH, yT, zH,    xtH, yT, -zH,
-            // front (+z): bottom-left, bottom-right, top-right, top-left
-            -xbH, yB, zH,    xbH, yB, zH,    xtH, yT, zH,   -xtH, yT, zH,
-            // back (-z): bottom-right, bottom-left, top-left, top-right (so CCW from -z)
-             xbH, yB, -zH,  -xbH, yB, -zH,  -xtH, yT, -zH,   xtH, yT, -zH,
-            // right (+x): bottom-front, bottom-back, top-back, top-front (CCW from +x)
-             xbH, yB,  zH,   xbH, yB, -zH,   xtH, yT, -zH,   xtH, yT,  zH,
-            // left (-x): bottom-back, bottom-front, top-front, top-back (CCW from -x)
-            -xbH, yB, -zH,  -xbH, yB,  zH,  -xtH, yT,  zH,  -xtH, yT, -zH
-        ]);
-        // Two triangles per face, indices into the 24-vertex array
+        // Build per-face vertex lists. Each face contributes either a quad (4 verts, 2 tris)
+        // or a triangle (3 verts, 1 tri) when one edge collapses (wTop=0 or wBottom=0).
+        // Degenerate faces (zero area) are skipped entirely.
+        var positions = [];
         var idx = [];
-        for (var f = 0; f < 6; f++) {
-            var b = f * 4;
-            idx.push(b, b+1, b+2,  b, b+2, b+3);
+        function addFace(verts) {
+            if (verts.length < 3) return;
+            // De-duplicate consecutive identical vertices (handles wTop=0 etc).
+            var clean = [];
+            for (var i = 0; i < verts.length; i++) {
+                var a = verts[i], b = verts[(i + 1) % verts.length];
+                if (a[0] !== b[0] || a[1] !== b[1] || a[2] !== b[2]) clean.push(a);
+            }
+            if (clean.length < 3) return;
+            // Reject degenerate (zero-area / colinear) faces — would give CSG a zero normal.
+            var v0 = clean[0], v1 = clean[1], v2 = clean[2];
+            var ax = v1[0]-v0[0], ay = v1[1]-v0[1], az = v1[2]-v0[2];
+            var bx = v2[0]-v0[0], by = v2[1]-v0[1], bz = v2[2]-v0[2];
+            var nx = ay*bz - az*by, ny = az*bx - ax*bz, nz = ax*by - ay*bx;
+            if (nx*nx + ny*ny + nz*nz < 1e-10) return;
+            var base = positions.length / 3;
+            clean.forEach(function(v) { positions.push(v[0], v[1], v[2]); });
+            for (var k = 2; k < clean.length; k++) {
+                idx.push(base, base + k - 1, base + k);
+            }
         }
+        // bottom (-y): CCW from below
+        addFace([
+            [-xbH, yB, -zH], [ xbH, yB, -zH], [ xbH, yB,  zH], [-xbH, yB,  zH]
+        ]);
+        // top (+y): CCW from above
+        addFace([
+            [-xtH, yT, -zH], [-xtH, yT,  zH], [ xtH, yT,  zH], [ xtH, yT, -zH]
+        ]);
+        // front (+z)
+        addFace([
+            [-xbH, yB,  zH], [ xbH, yB,  zH], [ xtH, yT,  zH], [-xtH, yT,  zH]
+        ]);
+        // back (-z)
+        addFace([
+            [ xbH, yB, -zH], [-xbH, yB, -zH], [-xtH, yT, -zH], [ xtH, yT, -zH]
+        ]);
+        // right (+x)
+        addFace([
+            [ xbH, yB,  zH], [ xbH, yB, -zH], [ xtH, yT, -zH], [ xtH, yT,  zH]
+        ]);
+        // left (-x)
+        addFace([
+            [-xbH, yB, -zH], [-xbH, yB,  zH], [-xtH, yT,  zH], [-xtH, yT, -zH]
+        ]);
         var geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
         geo.setIndex(idx);
         geo.computeVertexNormals();
         return geo;

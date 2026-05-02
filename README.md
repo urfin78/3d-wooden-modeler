@@ -8,7 +8,7 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 
 ## Features
 
-- **6 shape types**: Board, Frustum Board (trapezoidal — different widths at top and bottom), Dowel, Wedge, L-Bracket, and Tapered Leg
+- **7 shape types**: Board, Frustum Board (trapezoidal — different widths at top and bottom), Pyramid Frustum (4-sided — independent W/D at top and bottom; collapses to a true pyramid when top = 0), Dowel, Wedge, L-Bracket, and Tapered Leg
 - **Interactive 3D viewport** with orbit controls (pan, rotate, zoom); double-click a piece to set the orbit pivot, double-click empty space to recenter on the whole model, or press `F` to focus the current selection
 - **Real-time editing** of dimensions, position, and rotation via the side panel
 - **Drag-to-move** pieces directly in the viewport (Shift+drag for vertical movement)

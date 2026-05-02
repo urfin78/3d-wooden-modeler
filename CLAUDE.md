@@ -20,7 +20,7 @@ Everything runs inside a `window.addEventListener('load', ...)` closure in `inde
 
 3. **Application State** — Global mutable state: `pieces[]` array, selection state, mode flags (snap, cut, overlap), undo/redo stacks.
 
-4. **Shape Factory** — `makeBoard`, `makeDowel`, `makeWedge`, `makeLBracket`, `makeTaperedLeg`, `makeFrustumBoard`. Each returns a Three.js Mesh with a `userData` object storing type and dimensions. `addPiece()` registers meshes into the scene and `pieces[]`. The Frustum Board (`type: 'Frustum Board'`) is a hand-built BufferGeometry built by `frustumBoardGeometry(wTop, wBottom, h, d)` — 8 vertices, 12 triangles; top and bottom faces are both centered on the y axis. `wTop`/`wBottom` may be 0 (collapses to a wedge).
+4. **Shape Factory** — `makeBoard`, `makeDowel`, `makeWedge`, `makeLBracket`, `makeTaperedLeg`, `makeFrustumBoard`, `makePyramidFrustum`. Each returns a Three.js Mesh with a `userData` object storing type and dimensions. `addPiece()` registers meshes into the scene and `pieces[]`. The Frustum Board (`type: 'Frustum Board'`) is a hand-built BufferGeometry built by `frustumBoardGeometry(wTop, wBottom, h, d)`. The Pyramid Frustum (`type: 'Pyramid Frustum'`) is built by `pyramidFrustumGeometry(wTop, dTop, wBottom, dBottom, h)` — same 8-vertex / 12-triangle topology, but top and bottom faces have independent rectangular dimensions (set `wTop=dTop=0` for a true pyramid). Both primitives center their top and bottom faces on the y axis.
 
 5. **Label System** — 3D sprite labels positioned above pieces using canvas-rendered textures.
 

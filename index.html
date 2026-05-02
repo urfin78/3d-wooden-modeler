@@ -1491,36 +1491,66 @@ window.addEventListener('load', function() {
     // with sheared end faces. angleStart applies to the -x face, angleEnd to the +x face.
     // Angles are measured between the end face and the +x axis when looking down the +z axis;
     // 90° = perpendicular cut. Bottom edges (y=-h/2) stay at ±w/2; top edges shift by h*cot(angle).
+    // Per-face quads via addFace() — same flat-shading + CSG-friendly pattern as frustumBoardGeometry.
     function boardGeometry(w, h, d, angleStart, angleEnd) {
         var aS = (angleStart === undefined) ? 90 : angleStart;
         var aE = (angleEnd === undefined) ? 90 : angleEnd;
         if (aS === 90 && aE === 90) return new THREE.BoxGeometry(w, h, d);
         var rS = aS * Math.PI / 180;
         var rE = aE * Math.PI / 180;
-        // Top-edge offset (added to bottom-edge x). Positive offset = top edge tilted toward +x.
-        var offS = h / Math.tan(rS);   // -x face: at angle aS, top moves by +cot(aS)*h
-        var offE = -h / Math.tan(rE);  // +x face: top moves opposite (mirror), so negative cot
+        var offS = h / Math.tan(rS);
+        var offE = -h / Math.tan(rE);
         var xLB = -w / 2,        xRB = w / 2;
         var xLT = -w / 2 + offS, xRT = w / 2 + offE;
         var yT = h / 2, yB = -h / 2, zF = d / 2, zBk = -d / 2;
-        // 8 vertices: bottom 0..3 (CCW from -x,-z) and top 4..7
-        var verts = new Float32Array([
-            xLB, yB, zBk,   xRB, yB, zBk,   xRB, yB, zF,   xLB, yB, zF, // bottom
-            xLT, yT, zBk,   xRT, yT, zBk,   xRT, yT, zF,   xLT, yT, zF  // top
+        var positions = [];
+        var idx = [];
+        function addFace(verts) {
+            if (verts.length < 3) return;
+            var clean = [];
+            for (var i = 0; i < verts.length; i++) {
+                var a = verts[i], b = verts[(i + 1) % verts.length];
+                if (a[0] !== b[0] || a[1] !== b[1] || a[2] !== b[2]) clean.push(a);
+            }
+            if (clean.length < 3) return;
+            var v0 = clean[0], v1 = clean[1], v2 = clean[2];
+            var ax = v1[0]-v0[0], ay = v1[1]-v0[1], az = v1[2]-v0[2];
+            var bx = v2[0]-v0[0], by = v2[1]-v0[1], bz = v2[2]-v0[2];
+            var nx = ay*bz - az*by, ny = az*bx - ax*bz, nz = ax*by - ay*bx;
+            if (nx*nx + ny*ny + nz*nz < 1e-10) return;
+            var base = positions.length / 3;
+            clean.forEach(function(v) { positions.push(v[0], v[1], v[2]); });
+            for (var k = 2; k < clean.length; k++) {
+                idx.push(base, base + k - 1, base + k);
+            }
+        }
+        // bottom (-y): CCW from below
+        addFace([
+            [xLB, yB, zBk], [xRB, yB, zBk], [xRB, yB, zF], [xLB, yB, zF]
         ]);
-        var idx = [
-            0,2,1, 0,3,2,
-            4,5,6, 4,6,7,
-            3,6,2, 3,7,6,
-            0,1,5, 0,5,4,
-            1,2,6, 1,6,5,
-            0,4,7, 0,7,3
-        ];
+        // top (+y): CCW from above
+        addFace([
+            [xLT, yT, zBk], [xLT, yT, zF], [xRT, yT, zF], [xRT, yT, zBk]
+        ]);
+        // front (+z)
+        addFace([
+            [xLB, yB, zF], [xRB, yB, zF], [xRT, yT, zF], [xLT, yT, zF]
+        ]);
+        // back (-z)
+        addFace([
+            [xRB, yB, zBk], [xLB, yB, zBk], [xLT, yT, zBk], [xRT, yT, zBk]
+        ]);
+        // right (+x): bottom-front, bottom-back, top-back, top-front
+        addFace([
+            [xRB, yB, zF], [xRB, yB, zBk], [xRT, yT, zBk], [xRT, yT, zF]
+        ]);
+        // left (-x): bottom-back, bottom-front, top-front, top-back
+        addFace([
+            [xLB, yB, zBk], [xLB, yB, zF], [xLT, yT, zF], [xLT, yT, zBk]
+        ]);
         var geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
         geo.setIndex(idx);
-        // Flat shading via toNonIndexed() — see frustumBoardGeometry for the rationale.
-        geo = geo.toNonIndexed();
         geo.computeVertexNormals();
         return geo;
     }

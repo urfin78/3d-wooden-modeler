@@ -486,6 +486,12 @@
                 <div><label data-i18n="panel.dim.d">D</label><input type="number" id="dim-d" step="1" min="1"></div>
             </div>
         </div>
+        <div id="dim-board-angles" style="display:none">
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.angleStart">Start °</label><input type="number" id="dim-angle-start" step="1" min="1" max="179"></div>
+                <div><label data-i18n="panel.dim.angleEnd">End °</label><input type="number" id="dim-angle-end" step="1" min="1" max="179"></div>
+            </div>
+        </div>
         <div id="dim-rh" style="display:none">
             <div class="input-row">
                 <div><label data-i18n="panel.dim.radius">Radius</label><input type="number" id="dim-r" step="1" min="1"></div>
@@ -497,6 +503,29 @@
                 <div><label data-i18n="panel.dim.topR">Top R</label><input type="number" id="dim-rt" step="1" min="1"></div>
                 <div><label data-i18n="panel.dim.botR">Bot R</label><input type="number" id="dim-rb" step="1" min="1"></div>
                 <div><label data-i18n="panel.dim.height">Height</label><input type="number" id="dim-th" step="1" min="1"></div>
+            </div>
+        </div>
+        <div id="dim-frustum" style="display:none">
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.wTop">W Top</label><input type="number" id="dim-wtop" step="1" min="0"></div>
+                <div><label data-i18n="panel.dim.wBot">W Bot</label><input type="number" id="dim-wbot" step="1" min="0"></div>
+            </div>
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.height">Height</label><input type="number" id="dim-fh" step="1" min="1"></div>
+                <div><label data-i18n="panel.dim.d">D</label><input type="number" id="dim-fd" step="1" min="1"></div>
+            </div>
+        </div>
+        <div id="dim-pyramid" style="display:none">
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.wTop">W Top</label><input type="number" id="dim-pwtop" step="1" min="0"></div>
+                <div><label data-i18n="panel.dim.dTop">D Top</label><input type="number" id="dim-pdtop" step="1" min="0"></div>
+            </div>
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.wBot">W Bot</label><input type="number" id="dim-pwbot" step="1" min="0"></div>
+                <div><label data-i18n="panel.dim.dBot">D Bot</label><input type="number" id="dim-pdbot" step="1" min="0"></div>
+            </div>
+            <div class="input-row">
+                <div><label data-i18n="panel.dim.height">Height</label><input type="number" id="dim-ph" step="1" min="1"></div>
             </div>
         </div>
     </div>
@@ -781,6 +810,17 @@ window.addEventListener('load', function() {
             'type.L-Bracket': 'L-Bracket',
             'type.Tapered Leg': 'Tapered Leg',
             'type.Tapered': 'Tapered',
+            'type.Frustum Board': 'Frustum Board',
+            'type.Pyramid Frustum': 'Pyramid Frustum',
+            'panel.dim.wTop': 'W Top',
+            'panel.dim.wBot': 'W Bot',
+            'panel.dim.dTop': 'D Top',
+            'panel.dim.dBot': 'D Bot',
+            'panel.dim.angleStart': 'Start °',
+            'panel.dim.angleEnd': 'End °',
+            'tpl.frustumBoard': 'Trapezoid Side 200/300×600',
+            'tpl.pyramidRoof': 'Pyramid Roof 100/40',
+            'tpl.pyramid': 'Pyramid 100→0',
             'lang.label': 'Language'
         },
         de: {
@@ -935,6 +975,17 @@ window.addEventListener('load', function() {
             'type.L-Bracket': 'L-Winkel',
             'type.Tapered Leg': 'Konusbein',
             'type.Tapered': 'Konus',
+            'type.Frustum Board': 'Trapez-Brett',
+            'type.Pyramid Frustum': 'Pyramidenstumpf',
+            'panel.dim.wTop': 'B oben',
+            'panel.dim.wBot': 'B unten',
+            'panel.dim.dTop': 'T oben',
+            'panel.dim.dBot': 'T unten',
+            'panel.dim.angleStart': 'Start °',
+            'panel.dim.angleEnd': 'Ende °',
+            'tpl.frustumBoard': 'Trapez-Seite 200/300×600',
+            'tpl.pyramidRoof': 'Pyramidendach 100/40',
+            'tpl.pyramid': 'Pyramide 100→0',
             'lang.label': 'Sprache'
         }
     };
@@ -1436,16 +1487,87 @@ window.addEventListener('load', function() {
         return new THREE.MeshStandardMaterial({ color: WOOD_COLOR, roughness: 0.7, metalness: 0.05 });
     }
 
-    function makeBoard(w, h, d) {
+    // Board geometry: BoxGeometry when both end angles are 90°, otherwise a hand-built BufferGeometry
+    // with sheared end faces. angleStart applies to the -x face, angleEnd to the +x face.
+    // Angles are measured between the end face and the +x axis when looking down the +z axis;
+    // 90° = perpendicular cut. Bottom edges (y=-h/2) stay at ±w/2; top edges shift by h*cot(angle).
+    // Per-face quads via addFace() — same flat-shading + CSG-friendly pattern as frustumBoardGeometry.
+    function boardGeometry(w, h, d, angleStart, angleEnd) {
+        var aS = (angleStart === undefined) ? 90 : angleStart;
+        var aE = (angleEnd === undefined) ? 90 : angleEnd;
+        if (aS === 90 && aE === 90) return new THREE.BoxGeometry(w, h, d);
+        var rS = aS * Math.PI / 180;
+        var rE = aE * Math.PI / 180;
+        var offS = h / Math.tan(rS);
+        var offE = -h / Math.tan(rE);
+        var xLB = -w / 2,        xRB = w / 2;
+        var xLT = -w / 2 + offS, xRT = w / 2 + offE;
+        var yT = h / 2, yB = -h / 2, zF = d / 2, zBk = -d / 2;
+        var positions = [];
+        var idx = [];
+        function addFace(verts) {
+            if (verts.length < 3) return;
+            var clean = [];
+            for (var i = 0; i < verts.length; i++) {
+                var a = verts[i], b = verts[(i + 1) % verts.length];
+                if (a[0] !== b[0] || a[1] !== b[1] || a[2] !== b[2]) clean.push(a);
+            }
+            if (clean.length < 3) return;
+            var v0 = clean[0], v1 = clean[1], v2 = clean[2];
+            var ax = v1[0]-v0[0], ay = v1[1]-v0[1], az = v1[2]-v0[2];
+            var bx = v2[0]-v0[0], by = v2[1]-v0[1], bz = v2[2]-v0[2];
+            var nx = ay*bz - az*by, ny = az*bx - ax*bz, nz = ax*by - ay*bx;
+            if (nx*nx + ny*ny + nz*nz < 1e-10) return;
+            var base = positions.length / 3;
+            clean.forEach(function(v) { positions.push(v[0], v[1], v[2]); });
+            for (var k = 2; k < clean.length; k++) {
+                idx.push(base, base + k - 1, base + k);
+            }
+        }
+        // bottom (-y): CCW from below
+        addFace([
+            [xLB, yB, zBk], [xRB, yB, zBk], [xRB, yB, zF], [xLB, yB, zF]
+        ]);
+        // top (+y): CCW from above
+        addFace([
+            [xLT, yT, zBk], [xLT, yT, zF], [xRT, yT, zF], [xRT, yT, zBk]
+        ]);
+        // front (+z)
+        addFace([
+            [xLB, yB, zF], [xRB, yB, zF], [xRT, yT, zF], [xLT, yT, zF]
+        ]);
+        // back (-z)
+        addFace([
+            [xRB, yB, zBk], [xLB, yB, zBk], [xLT, yT, zBk], [xRT, yT, zBk]
+        ]);
+        // right (+x): bottom-front, bottom-back, top-back, top-front
+        addFace([
+            [xRB, yB, zF], [xRB, yB, zBk], [xRT, yT, zBk], [xRT, yT, zF]
+        ]);
+        // left (-x): bottom-back, bottom-front, top-front, top-back
+        addFace([
+            [xLB, yB, zBk], [xLB, yB, zF], [xLT, yT, zF], [xLT, yT, zBk]
+        ]);
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geo.setIndex(idx);
+        geo.computeVertexNormals();
+        return geo;
+    }
+
+    function makeBoard(w, h, d, angleStart, angleEnd) {
         w = w || 100; h = h || 20; d = d || 50;
-        var geo = new THREE.BoxGeometry(w, h, d);
+        var geo = boardGeometry(w, h, d, angleStart, angleEnd);
         var mesh = new THREE.Mesh(geo, createWoodMaterial());
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         mesh.position.y = h / 2;
         mesh.userData = {
             type: 'Board', id: ++pieceCounter,
-            w: w, h: h, d: d, label: typeName('Board') + ' ' + pieceCounter, notches: 0, csgModified: false
+            w: w, h: h, d: d,
+            angleStart: (angleStart === undefined) ? 90 : angleStart,
+            angleEnd: (angleEnd === undefined) ? 90 : angleEnd,
+            label: typeName('Board') + ' ' + pieceCounter, notches: 0, csgModified: false
         };
         return mesh;
     }
@@ -1519,6 +1641,168 @@ window.addEventListener('load', function() {
         mesh.userData = {
             type: 'L-Bracket', id: ++pieceCounter,
             w: w, h: h, d: d, label: typeName('L-Bracket') + ' ' + pieceCounter, notches: 0, csgModified: false
+        };
+        return mesh;
+    }
+
+    // Frustum Board: trapezoidal board with different widths at top and bottom.
+    // wBottom = width along +X at y=0, wTop = width along +X at y=h, d = depth (z), h = height.
+    // Both top and bottom faces are centered on x=0, z=0; mesh.position.y is set to h/2.
+    function frustumBoardGeometry(wTop, wBottom, h, d) {
+        var xtH = wTop / 2,    xbH = wBottom / 2;
+        var zH = d / 2;
+        var yT = h / 2,        yB = -h / 2;
+        // Build per-face vertex lists. Each face contributes either a quad (4 verts, 2 tris)
+        // or a triangle (3 verts, 1 tri) when one edge collapses (wTop=0 or wBottom=0).
+        // Degenerate faces (zero area) are skipped entirely.
+        var positions = [];
+        var idx = [];
+        function addFace(verts) {
+            if (verts.length < 3) return;
+            // De-duplicate consecutive identical vertices (handles wTop=0 etc).
+            var clean = [];
+            for (var i = 0; i < verts.length; i++) {
+                var a = verts[i], b = verts[(i + 1) % verts.length];
+                if (a[0] !== b[0] || a[1] !== b[1] || a[2] !== b[2]) clean.push(a);
+            }
+            if (clean.length < 3) return;
+            // Reject degenerate (zero-area / colinear) faces — would give CSG a zero normal.
+            var v0 = clean[0], v1 = clean[1], v2 = clean[2];
+            var ax = v1[0]-v0[0], ay = v1[1]-v0[1], az = v1[2]-v0[2];
+            var bx = v2[0]-v0[0], by = v2[1]-v0[1], bz = v2[2]-v0[2];
+            var nx = ay*bz - az*by, ny = az*bx - ax*bz, nz = ax*by - ay*bx;
+            if (nx*nx + ny*ny + nz*nz < 1e-10) return;
+            var base = positions.length / 3;
+            clean.forEach(function(v) { positions.push(v[0], v[1], v[2]); });
+            for (var k = 2; k < clean.length; k++) {
+                idx.push(base, base + k - 1, base + k);
+            }
+        }
+        // bottom (-y): CCW from below
+        addFace([
+            [-xbH, yB, -zH], [ xbH, yB, -zH], [ xbH, yB,  zH], [-xbH, yB,  zH]
+        ]);
+        // top (+y): CCW from above
+        addFace([
+            [-xtH, yT, -zH], [-xtH, yT,  zH], [ xtH, yT,  zH], [ xtH, yT, -zH]
+        ]);
+        // front (+z)
+        addFace([
+            [-xbH, yB,  zH], [ xbH, yB,  zH], [ xtH, yT,  zH], [-xtH, yT,  zH]
+        ]);
+        // back (-z)
+        addFace([
+            [ xbH, yB, -zH], [-xbH, yB, -zH], [-xtH, yT, -zH], [ xtH, yT, -zH]
+        ]);
+        // right (+x)
+        addFace([
+            [ xbH, yB,  zH], [ xbH, yB, -zH], [ xtH, yT, -zH], [ xtH, yT,  zH]
+        ]);
+        // left (-x)
+        addFace([
+            [-xbH, yB, -zH], [-xbH, yB,  zH], [-xtH, yT,  zH], [-xtH, yT, -zH]
+        ]);
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geo.setIndex(idx);
+        geo.computeVertexNormals();
+        return geo;
+    }
+
+    // Pyramid Frustum: 4-sided frustum centered on x=0, z=0; both top and bottom faces are axis-aligned rectangles.
+    // wTop=dTop=0 collapses the top to a point (true pyramid). wBottom=dBottom=0 collapses the bottom.
+    function pyramidFrustumGeometry(wTop, dTop, wBottom, dBottom, h) {
+        var xtH = wTop / 2,    ztH = dTop / 2;
+        var xbH = wBottom / 2, zbH = dBottom / 2;
+        var yT = h / 2,        yB = -h / 2;
+        // Per-face quads with degenerate-edge handling — same approach as
+        // frustumBoardGeometry. Faces with collapsed edges (wTop=dTop=0 → true
+        // pyramid) emit triangles instead of quads; zero-area faces are dropped.
+        var positions = [];
+        var idx = [];
+        function addFace(verts) {
+            if (verts.length < 3) return;
+            var clean = [];
+            for (var i = 0; i < verts.length; i++) {
+                var a = verts[i], b = verts[(i + 1) % verts.length];
+                if (a[0] !== b[0] || a[1] !== b[1] || a[2] !== b[2]) clean.push(a);
+            }
+            if (clean.length < 3) return;
+            var v0 = clean[0], v1 = clean[1], v2 = clean[2];
+            var ax = v1[0]-v0[0], ay = v1[1]-v0[1], az = v1[2]-v0[2];
+            var bx = v2[0]-v0[0], by = v2[1]-v0[1], bz = v2[2]-v0[2];
+            var nx = ay*bz - az*by, ny = az*bx - ax*bz, nz = ax*by - ay*bx;
+            if (nx*nx + ny*ny + nz*nz < 1e-10) return;
+            var base = positions.length / 3;
+            clean.forEach(function(v) { positions.push(v[0], v[1], v[2]); });
+            for (var k = 2; k < clean.length; k++) {
+                idx.push(base, base + k - 1, base + k);
+            }
+        }
+        // bottom (-y): CCW from below
+        addFace([
+            [-xbH, yB, -zbH], [ xbH, yB, -zbH], [ xbH, yB,  zbH], [-xbH, yB,  zbH]
+        ]);
+        // top (+y): CCW from above
+        addFace([
+            [-xtH, yT, -ztH], [-xtH, yT,  ztH], [ xtH, yT,  ztH], [ xtH, yT, -ztH]
+        ]);
+        // front (+z)
+        addFace([
+            [-xbH, yB,  zbH], [ xbH, yB,  zbH], [ xtH, yT,  ztH], [-xtH, yT,  ztH]
+        ]);
+        // back (-z)
+        addFace([
+            [ xbH, yB, -zbH], [-xbH, yB, -zbH], [-xtH, yT, -ztH], [ xtH, yT, -ztH]
+        ]);
+        // right (+x)
+        addFace([
+            [ xbH, yB,  zbH], [ xbH, yB, -zbH], [ xtH, yT, -ztH], [ xtH, yT,  ztH]
+        ]);
+        // left (-x)
+        addFace([
+            [-xbH, yB, -zbH], [-xbH, yB,  zbH], [-xtH, yT,  ztH], [-xtH, yT, -ztH]
+        ]);
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geo.setIndex(idx);
+        geo.computeVertexNormals();
+        return geo;
+    }
+
+    function makePyramidFrustum(wTop, dTop, wBottom, dBottom, h) {
+        wTop = (wTop !== undefined) ? wTop : 40;
+        dTop = (dTop !== undefined) ? dTop : 40;
+        wBottom = (wBottom !== undefined) ? wBottom : 100;
+        dBottom = (dBottom !== undefined) ? dBottom : 100;
+        h = h || 80;
+        var geo = pyramidFrustumGeometry(wTop, dTop, wBottom, dBottom, h);
+        var mesh = new THREE.Mesh(geo, createWoodMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.position.y = h / 2;
+        mesh.userData = {
+            type: 'Pyramid Frustum', id: ++pieceCounter,
+            wTop: wTop, dTop: dTop, wBottom: wBottom, dBottom: dBottom, h: h,
+            label: typeName('Pyramid Frustum') + ' ' + pieceCounter, notches: 0, csgModified: false
+        };
+        return mesh;
+    }
+
+    function makeFrustumBoard(wTop, wBottom, h, d) {
+        wTop = (wTop !== undefined) ? wTop : 60;
+        wBottom = (wBottom !== undefined) ? wBottom : 100;
+        h = h || 80;
+        d = d || 40;
+        var geo = frustumBoardGeometry(wTop, wBottom, h, d);
+        var mesh = new THREE.Mesh(geo, createWoodMaterial());
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.position.y = h / 2;
+        mesh.userData = {
+            type: 'Frustum Board', id: ++pieceCounter,
+            wTop: wTop, wBottom: wBottom, h: h, d: d,
+            label: typeName('Frustum Board') + ' ' + pieceCounter, notches: 0, csgModified: false
         };
         return mesh;
     }
@@ -1795,6 +2079,9 @@ window.addEventListener('load', function() {
 
     var dimWHD = document.getElementById('dim-whd');
     var dimRH = document.getElementById('dim-rh');
+    var dimFrustum = document.getElementById('dim-frustum');
+    var dimPyramid = document.getElementById('dim-pyramid');
+    var dimBoardAngles = document.getElementById('dim-board-angles');
     var dimTapered = document.getElementById('dim-tapered');
 
     var inputW = document.getElementById('dim-w');
@@ -1805,6 +2092,17 @@ window.addEventListener('load', function() {
     var inputRT = document.getElementById('dim-rt');
     var inputRB = document.getElementById('dim-rb');
     var inputTH = document.getElementById('dim-th');
+    var inputWTop = document.getElementById('dim-wtop');
+    var inputWBot = document.getElementById('dim-wbot');
+    var inputFH = document.getElementById('dim-fh');
+    var inputFD = document.getElementById('dim-fd');
+    var inputPWTop = document.getElementById('dim-pwtop');
+    var inputPDTop = document.getElementById('dim-pdtop');
+    var inputPWBot = document.getElementById('dim-pwbot');
+    var inputPDBot = document.getElementById('dim-pdbot');
+    var inputPH = document.getElementById('dim-ph');
+    var inputAngleStart = document.getElementById('dim-angle-start');
+    var inputAngleEnd = document.getElementById('dim-angle-end');
 
     var inputPX = document.getElementById('pos-x');
     var inputPY = document.getElementById('pos-y');
@@ -1873,12 +2171,20 @@ window.addEventListener('load', function() {
         dimWHD.style.display = 'none';
         dimRH.style.display = 'none';
         dimTapered.style.display = 'none';
+        dimFrustum.style.display = 'none';
+        dimPyramid.style.display = 'none';
+        dimBoardAngles.style.display = 'none';
 
         if (type === 'Board' || type === 'Wedge' || type === 'L-Bracket') {
             dimWHD.style.display = 'block';
             inputW.value = ud.w;
             inputH.value = ud.h;
             inputD.value = ud.d;
+            if (type === 'Board') {
+                dimBoardAngles.style.display = 'block';
+                inputAngleStart.value = (ud.angleStart === undefined) ? 90 : ud.angleStart;
+                inputAngleEnd.value = (ud.angleEnd === undefined) ? 90 : ud.angleEnd;
+            }
         } else if (type === 'Dowel') {
             dimRH.style.display = 'block';
             inputR.value = ud.r;
@@ -1888,6 +2194,19 @@ window.addEventListener('load', function() {
             inputRT.value = ud.rTop;
             inputRB.value = ud.rBottom;
             inputTH.value = ud.h;
+        } else if (type === 'Frustum Board') {
+            dimFrustum.style.display = 'block';
+            inputWTop.value = ud.wTop;
+            inputWBot.value = ud.wBottom;
+            inputFH.value = ud.h;
+            inputFD.value = ud.d;
+        } else if (type === 'Pyramid Frustum') {
+            dimPyramid.style.display = 'block';
+            inputPWTop.value = ud.wTop;
+            inputPDTop.value = ud.dTop;
+            inputPWBot.value = ud.wBottom;
+            inputPDBot.value = ud.dBottom;
+            inputPH.value = ud.h;
         }
 
         inputPX.value = Math.round(mesh.position.x);
@@ -1917,6 +2236,10 @@ window.addEventListener('load', function() {
             text = 'R' + ud.r + ' x H' + ud.h + ' mm (' + t('summary.dia') + ' ' + (ud.r * 2) + ')';
         } else if (ud.type === 'Tapered Leg') {
             text = 'R' + ud.rTop + '/' + ud.rBottom + ' x H' + ud.h + ' mm';
+        } else if (ud.type === 'Frustum Board') {
+            text = ud.wTop + '/' + ud.wBottom + ' x ' + ud.h + ' x ' + ud.d + ' mm';
+        } else if (ud.type === 'Pyramid Frustum') {
+            text = ud.wTop + 'x' + ud.dTop + ' / ' + ud.wBottom + 'x' + ud.dBottom + ' x H' + ud.h + ' mm';
         }
         text += ' | ' + t('summary.notches') + ': ' + ud.notches;
         sizeSummary.textContent = text;
@@ -2014,7 +2337,7 @@ window.addEventListener('load', function() {
         var oldGeo = mesh.geometry;
         var newGeo;
         if (ud.type === 'Board') {
-            newGeo = new THREE.BoxGeometry(ud.w, ud.h, ud.d);
+            newGeo = boardGeometry(ud.w, ud.h, ud.d, ud.angleStart, ud.angleEnd);
         } else if (ud.type === 'Dowel') {
             newGeo = new THREE.CylinderGeometry(ud.r, ud.r, ud.h, 32);
         } else if (ud.type === 'Wedge') {
@@ -2043,6 +2366,10 @@ window.addEventListener('load', function() {
             newGeo.translate(-(bb.max.x + bb.min.x) / 2, -(bb.max.y + bb.min.y) / 2, -(bb.max.z + bb.min.z) / 2);
         } else if (ud.type === 'Tapered Leg') {
             newGeo = new THREE.CylinderGeometry(ud.rTop, ud.rBottom, ud.h, 32);
+        } else if (ud.type === 'Frustum Board') {
+            newGeo = frustumBoardGeometry(ud.wTop, ud.wBottom, ud.h, ud.d);
+        } else if (ud.type === 'Pyramid Frustum') {
+            newGeo = pyramidFrustumGeometry(ud.wTop, ud.dTop, ud.wBottom, ud.dBottom, ud.h);
         }
         if (newGeo) {
             mesh.geometry = newGeo;
@@ -2063,6 +2390,10 @@ window.addEventListener('load', function() {
             ud.w = Math.max(1, parseFloat(inputW.value) || 1);
             ud.h = Math.max(1, parseFloat(inputH.value) || 1);
             ud.d = Math.max(1, parseFloat(inputD.value) || 1);
+            if (ud.type === 'Board') {
+                ud.angleStart = Math.min(179, Math.max(1, parseFloat(inputAngleStart.value) || 90));
+                ud.angleEnd = Math.min(179, Math.max(1, parseFloat(inputAngleEnd.value) || 90));
+            }
         } else if (ud.type === 'Dowel') {
             ud.r = Math.max(1, parseFloat(inputR.value) || 1);
             ud.h = Math.max(1, parseFloat(inputRHH.value) || 1);
@@ -2070,6 +2401,17 @@ window.addEventListener('load', function() {
             ud.rTop = Math.max(1, parseFloat(inputRT.value) || 1);
             ud.rBottom = Math.max(1, parseFloat(inputRB.value) || 1);
             ud.h = Math.max(1, parseFloat(inputTH.value) || 1);
+        } else if (ud.type === 'Frustum Board') {
+            ud.wTop = Math.max(0, parseFloat(inputWTop.value) || 0);
+            ud.wBottom = Math.max(0, parseFloat(inputWBot.value) || 0);
+            ud.h = Math.max(1, parseFloat(inputFH.value) || 1);
+            ud.d = Math.max(1, parseFloat(inputFD.value) || 1);
+        } else if (ud.type === 'Pyramid Frustum') {
+            ud.wTop = Math.max(0, parseFloat(inputPWTop.value) || 0);
+            ud.dTop = Math.max(0, parseFloat(inputPDTop.value) || 0);
+            ud.wBottom = Math.max(0, parseFloat(inputPWBot.value) || 0);
+            ud.dBottom = Math.max(0, parseFloat(inputPDBot.value) || 0);
+            ud.h = Math.max(1, parseFloat(inputPH.value) || 1);
         }
         rebuildGeometry(selectedPiece);
         updateSizeSummary();
@@ -2277,7 +2619,7 @@ window.addEventListener('load', function() {
         });
     }
 
-    [inputW, inputH, inputD, inputR, inputRHH, inputRT, inputRB, inputTH].forEach(function(inp) {
+    [inputW, inputH, inputD, inputR, inputRHH, inputRT, inputRB, inputTH, inputWTop, inputWBot, inputFH, inputFD, inputPWTop, inputPDTop, inputPWBot, inputPDBot, inputPH, inputAngleStart, inputAngleEnd].forEach(function(inp) {
         inp.addEventListener('change', onDimChange);
         bindEnter(inp, onDimChange);
     });
@@ -2399,10 +2741,19 @@ window.addEventListener('load', function() {
             };
             if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
                 entry.w = ud.w; entry.h = ud.h; entry.d = ud.d;
+                if (ud.type === 'Board') {
+                    if (ud.angleStart !== undefined && ud.angleStart !== 90) entry.angleStart = ud.angleStart;
+                    if (ud.angleEnd !== undefined && ud.angleEnd !== 90) entry.angleEnd = ud.angleEnd;
+                }
             } else if (ud.type === 'Dowel') {
                 entry.r = ud.r; entry.h = ud.h;
             } else if (ud.type === 'Tapered Leg') {
                 entry.rTop = ud.rTop; entry.rBottom = ud.rBottom; entry.h = ud.h;
+            } else if (ud.type === 'Frustum Board') {
+                entry.wTop = ud.wTop; entry.wBottom = ud.wBottom; entry.h = ud.h; entry.d = ud.d;
+            } else if (ud.type === 'Pyramid Frustum') {
+                entry.wTop = ud.wTop; entry.dTop = ud.dTop;
+                entry.wBottom = ud.wBottom; entry.dBottom = ud.dBottom; entry.h = ud.h;
             }
             if (ud.csgModified) {
                 if (Array.isArray(ud.csgOps) && ud.csgOps.length > 0) {
@@ -2449,11 +2800,13 @@ window.addEventListener('load', function() {
         var rulersData = Array.isArray(state) ? [] : (state.rulers || []);
 
         function makeMeshFromSpec(spec) {
-            if (spec.type === 'Board') return makeBoard(spec.w, spec.h, spec.d);
+            if (spec.type === 'Board') return makeBoard(spec.w, spec.h, spec.d, spec.angleStart, spec.angleEnd);
             if (spec.type === 'Dowel') return makeDowel(spec.r, spec.h);
             if (spec.type === 'Wedge') return makeWedge(spec.w, spec.h, spec.d);
             if (spec.type === 'L-Bracket') return makeLBracket(spec.w, spec.h, spec.d);
             if (spec.type === 'Tapered Leg') return makeTaperedLeg(spec.rTop, spec.rBottom, spec.h);
+            if (spec.type === 'Frustum Board') return makeFrustumBoard(spec.wTop, spec.wBottom, spec.h, spec.d);
+            if (spec.type === 'Pyramid Frustum') return makePyramidFrustum(spec.wTop, spec.dTop, spec.wBottom, spec.dBottom, spec.h);
             return null;
         }
 
@@ -2469,11 +2822,13 @@ window.addEventListener('load', function() {
                 mesh.castShadow = true;
                 mesh.receiveShadow = true;
             } else {
-                if (entry.type === 'Board') mesh = makeBoard(entry.w, entry.h, entry.d);
+                if (entry.type === 'Board') mesh = makeBoard(entry.w, entry.h, entry.d, entry.angleStart, entry.angleEnd);
                 else if (entry.type === 'Dowel') mesh = makeDowel(entry.r, entry.h);
                 else if (entry.type === 'Wedge') mesh = makeWedge(entry.w, entry.h, entry.d);
                 else if (entry.type === 'L-Bracket') mesh = makeLBracket(entry.w, entry.h, entry.d);
                 else if (entry.type === 'Tapered Leg') mesh = makeTaperedLeg(entry.rTop, entry.rBottom, entry.h);
+                else if (entry.type === 'Frustum Board') mesh = makeFrustumBoard(entry.wTop, entry.wBottom, entry.h, entry.d);
+                else if (entry.type === 'Pyramid Frustum') mesh = makePyramidFrustum(entry.wTop, entry.dTop, entry.wBottom, entry.dBottom, entry.h);
                 pieceCounter--;
             }
             mesh.position.set(entry.px, entry.py, entry.pz);
@@ -2493,10 +2848,19 @@ window.addEventListener('load', function() {
             mesh.userData.groupId = entry.groupId || null;
             if (entry.type === 'Board' || entry.type === 'Wedge' || entry.type === 'L-Bracket') {
                 mesh.userData.w = entry.w; mesh.userData.h = entry.h; mesh.userData.d = entry.d;
+                if (entry.type === 'Board') {
+                    mesh.userData.angleStart = (entry.angleStart === undefined) ? 90 : entry.angleStart;
+                    mesh.userData.angleEnd = (entry.angleEnd === undefined) ? 90 : entry.angleEnd;
+                }
             } else if (entry.type === 'Dowel') {
                 mesh.userData.r = entry.r; mesh.userData.h = entry.h;
             } else if (entry.type === 'Tapered Leg') {
                 mesh.userData.rTop = entry.rTop; mesh.userData.rBottom = entry.rBottom; mesh.userData.h = entry.h;
+            } else if (entry.type === 'Frustum Board') {
+                mesh.userData.wTop = entry.wTop; mesh.userData.wBottom = entry.wBottom; mesh.userData.h = entry.h; mesh.userData.d = entry.d;
+            } else if (entry.type === 'Pyramid Frustum') {
+                mesh.userData.wTop = entry.wTop; mesh.userData.dTop = entry.dTop;
+                mesh.userData.wBottom = entry.wBottom; mesh.userData.dBottom = entry.dBottom; mesh.userData.h = entry.h;
             }
             return mesh;
         }
@@ -2522,6 +2886,14 @@ window.addEventListener('load', function() {
                 if (!toolMesh) return;
                 toolMesh.position.set(op.tool.px || 0, op.tool.py || 0, op.tool.pz || 0);
                 toolMesh.rotation.set(op.tool.rx || 0, op.tool.ry || 0, op.tool.rz || 0);
+                if (op.tool.local) {
+                    // Tool transform is in target-local space — parent it to the target
+                    // so its world matrix follows the target and the cut stays anchored
+                    // even if the target was moved between cut time and save.
+                    mesh.add(toolMesh);
+                } else {
+                    // Legacy: absolute world coords.
+                }
                 toolMesh.updateMatrixWorld(true);
                 try {
                     var newGeo = csgSubtract(mesh, toolMesh);
@@ -2530,6 +2902,7 @@ window.addEventListener('load', function() {
                 } catch (e) {
                     console.error('CSG replay failed:', e);
                 }
+                if (op.tool.local) mesh.remove(toolMesh);
                 toolMesh.geometry.dispose();
                 toolMesh.material.dispose();
                 pieceCounter--; // makeMeshFromSpec incremented it
@@ -2659,7 +3032,10 @@ window.addEventListener('load', function() {
         { nameKey: 'tpl.dowelRod10', type: 'Dowel',       r: 5, h: 300,  price: 1.50 },
         { nameKey: 'tpl.cornerBrace',type: 'L-Bracket',   w: 50, h: 50, d: 20,   price: 2.00 },
         { nameKey: 'tpl.tableLeg',   type: 'Tapered Leg', rTop: 20, rBottom: 30, h: 720, price: 12.00 },
-        { nameKey: 'tpl.doorWedge',  type: 'Wedge',       w: 80, h: 30, d: 40,   price: 1.00 }
+        { nameKey: 'tpl.doorWedge',  type: 'Wedge',       w: 80, h: 30, d: 40,   price: 1.00 },
+        { nameKey: 'tpl.frustumBoard', type: 'Frustum Board', wTop: 200, wBottom: 300, h: 600, d: 18, price: 9.00 },
+        { nameKey: 'tpl.pyramidRoof', type: 'Pyramid Frustum', wTop: 40, dTop: 40, wBottom: 100, dBottom: 100, h: 60, price: 5.00 },
+        { nameKey: 'tpl.pyramid',     type: 'Pyramid Frustum', wTop: 0,  dTop: 0,  wBottom: 100, dBottom: 100, h: 80, price: 4.00 }
     ];
 
     function loadCustomTemplates() {
@@ -2675,11 +3051,13 @@ window.addEventListener('load', function() {
 
     function addFromTemplate(tpl) {
         var mesh;
-        if (tpl.type === 'Board') mesh = makeBoard(tpl.w, tpl.h, tpl.d);
+        if (tpl.type === 'Board') mesh = makeBoard(tpl.w, tpl.h, tpl.d, tpl.angleStart, tpl.angleEnd);
         else if (tpl.type === 'Dowel') mesh = makeDowel(tpl.r, tpl.h);
         else if (tpl.type === 'Wedge') mesh = makeWedge(tpl.w, tpl.h, tpl.d);
         else if (tpl.type === 'L-Bracket') mesh = makeLBracket(tpl.w, tpl.h, tpl.d);
         else if (tpl.type === 'Tapered Leg') mesh = makeTaperedLeg(tpl.rTop, tpl.rBottom, tpl.h);
+        else if (tpl.type === 'Frustum Board') mesh = makeFrustumBoard(tpl.wTop, tpl.wBottom, tpl.h, tpl.d);
+        else if (tpl.type === 'Pyramid Frustum') mesh = makePyramidFrustum(tpl.wTop, tpl.dTop, tpl.wBottom, tpl.dBottom, tpl.h);
         if (mesh) {
             mesh.userData.label = (tpl.nameKey ? t(tpl.nameKey) : tpl.name) + ' ' + mesh.userData.id;
             mesh.userData.price = tpl.price || 0;
@@ -2696,10 +3074,19 @@ window.addEventListener('load', function() {
         var tpl = { name: name, type: ud.type, price: ud.price || 0 };
         if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
             tpl.w = ud.w; tpl.h = ud.h; tpl.d = ud.d;
+            if (ud.type === 'Board') {
+                if (ud.angleStart !== undefined && ud.angleStart !== 90) tpl.angleStart = ud.angleStart;
+                if (ud.angleEnd !== undefined && ud.angleEnd !== 90) tpl.angleEnd = ud.angleEnd;
+            }
         } else if (ud.type === 'Dowel') {
             tpl.r = ud.r; tpl.h = ud.h;
         } else if (ud.type === 'Tapered Leg') {
             tpl.rTop = ud.rTop; tpl.rBottom = ud.rBottom; tpl.h = ud.h;
+        } else if (ud.type === 'Frustum Board') {
+            tpl.wTop = ud.wTop; tpl.wBottom = ud.wBottom; tpl.h = ud.h; tpl.d = ud.d;
+        } else if (ud.type === 'Pyramid Frustum') {
+            tpl.wTop = ud.wTop; tpl.dTop = ud.dTop;
+            tpl.wBottom = ud.wBottom; tpl.dBottom = ud.dBottom; tpl.h = ud.h;
         }
         var custom = loadCustomTemplates();
         custom.push(tpl);
@@ -2763,6 +3150,10 @@ window.addEventListener('load', function() {
             return 'R' + tpl.r + ' H' + tpl.h;
         } else if (tpl.type === 'Tapered Leg') {
             return 'R' + tpl.rTop + '/' + tpl.rBottom + ' H' + tpl.h;
+        } else if (tpl.type === 'Frustum Board') {
+            return tpl.wTop + '/' + tpl.wBottom + ' x ' + tpl.h + ' x ' + tpl.d;
+        } else if (tpl.type === 'Pyramid Frustum') {
+            return tpl.wTop + 'x' + tpl.dTop + '/' + tpl.wBottom + 'x' + tpl.dBottom + ' H' + tpl.h;
         }
         return '';
     }
@@ -2809,26 +3200,48 @@ window.addEventListener('load', function() {
         hideModeBanner();
     }
 
-    // Capture a tool mesh as a declarative spec (type + dims + world transform)
-    // so a cut can be replayed deterministically on load.
-    function captureCutToolSpec(tool) {
+    // Capture a tool mesh as a declarative spec (type + dims + transform)
+    // so a cut can be replayed deterministically on load. The transform is stored
+    // RELATIVE TO THE TARGET (target-local space) and flagged with `local: true` so
+    // that subsequent target moves don't desync the replayed cut from the geometry.
+    // Older saves used absolute world coords (no `local` flag) — handled in replay.
+    function captureCutToolSpec(tool, target) {
         var ud = tool.userData;
         var wp = new THREE.Vector3();
         var wq = new THREE.Quaternion();
         tool.getWorldPosition(wp);
         tool.getWorldQuaternion(wq);
+        // Convert world transform to target-local
+        if (target) {
+            target.updateMatrixWorld(true);
+            var inv = new THREE.Matrix4().copy(target.matrixWorld).invert();
+            wp.applyMatrix4(inv);
+            var tq = new THREE.Quaternion();
+            target.getWorldQuaternion(tq);
+            wq.premultiply(tq.invert());
+        }
         var we = new THREE.Euler().setFromQuaternion(wq, 'XYZ');
         var spec = {
             type: ud.type,
+            local: true,
             px: wp.x, py: wp.y, pz: wp.z,
             rx: we.x, ry: we.y, rz: we.z
         };
         if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
             spec.w = ud.w; spec.h = ud.h; spec.d = ud.d;
+            if (ud.type === 'Board') {
+                if (ud.angleStart !== undefined && ud.angleStart !== 90) spec.angleStart = ud.angleStart;
+                if (ud.angleEnd !== undefined && ud.angleEnd !== 90) spec.angleEnd = ud.angleEnd;
+            }
         } else if (ud.type === 'Dowel') {
             spec.r = ud.r; spec.h = ud.h;
         } else if (ud.type === 'Tapered Leg') {
             spec.rTop = ud.rTop; spec.rBottom = ud.rBottom; spec.h = ud.h;
+        } else if (ud.type === 'Frustum Board') {
+            spec.wTop = ud.wTop; spec.wBottom = ud.wBottom; spec.h = ud.h; spec.d = ud.d;
+        } else if (ud.type === 'Pyramid Frustum') {
+            spec.wTop = ud.wTop; spec.dTop = ud.dTop;
+            spec.wBottom = ud.wBottom; spec.dBottom = ud.dBottom; spec.h = ud.h;
         }
         return spec;
     }
@@ -2840,7 +3253,7 @@ window.addEventListener('load', function() {
             // without any recorded ops. Recording new ops here would make the next save
             // drop the prebaked geometry of the original cuts. Keep it on the legacy path.
             var legacyLocked = target.userData.csgModified && !Array.isArray(target.userData.csgOps);
-            var toolSpec = legacyLocked ? null : captureCutToolSpec(tool);
+            var toolSpec = legacyLocked ? null : captureCutToolSpec(tool, target);
             var newGeo = csgSubtract(target, tool);
             target.geometry.dispose();
             target.geometry = newGeo;
@@ -3780,6 +4193,10 @@ window.addEventListener('load', function() {
                 row.push('', ud.h, '', ud.r * 2, ud.notches);
             } else if (ud.type === 'Tapered Leg') {
                 row.push('', ud.h, '', ud.rTop * 2 + '/' + ud.rBottom * 2, ud.notches);
+            } else if (ud.type === 'Frustum Board') {
+                row.push(ud.wTop + '/' + ud.wBottom, ud.h, ud.d, '', ud.notches);
+            } else if (ud.type === 'Pyramid Frustum') {
+                row.push(ud.wTop + '/' + ud.wBottom, ud.h, ud.dTop + '/' + ud.dBottom, '', ud.notches);
             }
             row.push(groupLabel, currency + (ud.price || 0).toFixed(2), currency + cost.toFixed(2));
             rows.push(row);
@@ -4050,7 +4467,7 @@ window.addEventListener('load', function() {
     // Toolbar Button Handlers
     // ============================================================
 
-    var ADD_TYPES = ['Board', 'Dowel', 'Wedge', 'L-Bracket', 'Tapered Leg'];
+    var ADD_TYPES = ['Board', 'Frustum Board', 'Pyramid Frustum', 'Dowel', 'Wedge', 'L-Bracket', 'Tapered Leg'];
 
     function closeAllDropdowns() {
         var drops = document.querySelectorAll('.add-dropdown.open, .menu-dropdown.open');
@@ -4063,6 +4480,8 @@ window.addEventListener('load', function() {
         if (type === 'Wedge') return makeWedge();
         if (type === 'L-Bracket') return makeLBracket();
         if (type === 'Tapered Leg') return makeTaperedLeg();
+        if (type === 'Frustum Board') return makeFrustumBoard();
+        if (type === 'Pyramid Frustum') return makePyramidFrustum();
     }
 
 
@@ -4072,6 +4491,8 @@ window.addEventListener('load', function() {
         if (type === 'Wedge') return { type: 'Wedge', w: 80, h: 60, d: 40 };
         if (type === 'L-Bracket') return { type: 'L-Bracket', w: 60, h: 80, d: 20 };
         if (type === 'Tapered Leg') return { type: 'Tapered Leg', rTop: 15, rBottom: 25, h: 200 };
+        if (type === 'Frustum Board') return { type: 'Frustum Board', wTop: 60, wBottom: 100, h: 80, d: 40 };
+        if (type === 'Pyramid Frustum') return { type: 'Pyramid Frustum', wTop: 40, dTop: 40, wBottom: 100, dBottom: 100, h: 80 };
         return {};
     }
 
@@ -4309,6 +4730,36 @@ window.addEventListener('load', function() {
         }
     });
 
+    // Camera pivot focus
+    function focusCameraOn(target) {
+        if (!target) return;
+        var box = new THREE.Box3().setFromObject(target);
+        if (box.isEmpty()) return;
+        var center = box.getCenter(new THREE.Vector3());
+        controls.target.copy(center);
+        controls.update();
+    }
+    function focusCameraOnScene() {
+        if (!pieces.length) return;
+        var box = new THREE.Box3();
+        pieces.forEach(function(m) { if (m.visible) box.expandByObject(m); });
+        if (box.isEmpty()) return;
+        controls.target.copy(box.getCenter(new THREE.Vector3()));
+        controls.update();
+    }
+    renderer.domElement.addEventListener('dblclick', function(e) {
+        if (cutMode || rulerMode) return;
+        getMouseNDC(e);
+        raycaster.setFromCamera(mouse, camera);
+        var hits = raycaster.intersectObjects(pieces.filter(function(m) { return m.visible; }), false);
+        if (hits.length > 0) {
+            controls.target.copy(hits[0].point);
+            controls.update();
+        } else {
+            focusCameraOnScene();
+        }
+    });
+
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
@@ -4320,6 +4771,18 @@ window.addEventListener('load', function() {
         } else if (e.ctrlKey && e.key === 'd') {
             e.preventDefault();
             duplicateSelected();
+        } else if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey
+                   && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            if (selectedGroup) focusCameraOn(selectedGroup);
+            else if (selectedPiece) focusCameraOn(selectedPiece);
+            else if (multiSelected && multiSelected.size > 0) {
+                var box = new THREE.Box3();
+                multiSelected.forEach(function(m) { box.expandByObject(m); });
+                if (!box.isEmpty()) { controls.target.copy(box.getCenter(new THREE.Vector3())); controls.update(); }
+            } else {
+                focusCameraOnScene();
+            }
         } else if (e.key === 'Delete' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
             deleteSelected();
         } else if (e.key === 'Escape') {

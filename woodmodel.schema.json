@@ -35,7 +35,7 @@
           "type": {
             "description": "Fixed English identifier for the piece shape. Never translated; used as a discriminator for dimension fields.",
             "type": "string",
-            "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg"]
+            "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg", "Frustum Board"]
           },
 
           "id": {
@@ -130,6 +130,14 @@
             "description": "Bottom radius in mm. Required for Tapered Leg.",
             "type": "number", "exclusiveMinimum": 0
           },
+          "wTop": {
+            "description": "Top width in mm. Required for Frustum Board (may be 0 for a wedge-like collapse).",
+            "type": "number", "minimum": 0
+          },
+          "wBottom": {
+            "description": "Bottom width in mm. Required for Frustum Board (may be 0).",
+            "type": "number", "minimum": 0
+          },
 
           "geoPositions": {
             "description": "Legacy: flat array of vertex XYZ coordinates for CSG-modified geometry (BufferGeometry position attribute). Used for files saved before declarative csgOps existed. New saves use csgOps instead.",
@@ -161,7 +169,7 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg"]
+                      "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg", "Frustum Board"]
                     },
                     "px": { "type": "number" },
                     "py": { "type": "number" },
@@ -174,7 +182,9 @@
                     "d": { "type": "number", "exclusiveMinimum": 0 },
                     "r": { "type": "number", "exclusiveMinimum": 0 },
                     "rTop": { "type": "number", "exclusiveMinimum": 0 },
-                    "rBottom": { "type": "number", "exclusiveMinimum": 0 }
+                    "rBottom": { "type": "number", "exclusiveMinimum": 0 },
+                    "wTop": { "type": "number", "minimum": 0 },
+                    "wBottom": { "type": "number", "minimum": 0 }
                   }
                 }
               }

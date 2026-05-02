@@ -23,7 +23,7 @@
       "type": {
         "description": "Piece shape. Must match one of the fixed English identifiers used in the app.",
         "type": "string",
-        "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg"]
+        "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg", "Frustum Board"]
       },
 
       "price": {
@@ -55,6 +55,14 @@
       "rBottom": {
         "description": "Bottom radius in mm. Required for Tapered Leg.",
         "type": "number", "exclusiveMinimum": 0
+      },
+      "wTop": {
+        "description": "Top width in mm. Required for Frustum Board.",
+        "type": "number", "minimum": 0
+      },
+      "wBottom": {
+        "description": "Bottom width in mm. Required for Frustum Board.",
+        "type": "number", "minimum": 0
       }
     },
 
@@ -78,6 +86,10 @@
       {
         "if": { "properties": { "type": { "const": "Tapered Leg" } } },
         "then": { "required": ["rTop", "rBottom", "h"] }
+      },
+      {
+        "if": { "properties": { "type": { "const": "Frustum Board" } } },
+        "then": { "required": ["wTop", "wBottom", "h", "d"] }
       }
     ]
   },

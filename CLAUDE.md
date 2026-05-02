@@ -20,7 +20,7 @@ Everything runs inside a `window.addEventListener('load', ...)` closure in `inde
 
 3. **Application State** — Global mutable state: `pieces[]` array, selection state, mode flags (snap, cut, overlap), undo/redo stacks.
 
-4. **Shape Factory** — `makeBoard`, `makeDowel`, `makeWedge`, `makeLBracket`, `makeTaperedLeg`. Each returns a Three.js Mesh with a `userData` object storing type and dimensions. `addPiece()` registers meshes into the scene and `pieces[]`.
+4. **Shape Factory** — `makeBoard`, `makeDowel`, `makeWedge`, `makeLBracket`, `makeTaperedLeg`, `makeFrustumBoard`. Each returns a Three.js Mesh with a `userData` object storing type and dimensions. `addPiece()` registers meshes into the scene and `pieces[]`. The Frustum Board (`type: 'Frustum Board'`) is a hand-built BufferGeometry built by `frustumBoardGeometry(wTop, wBottom, h, d)` — 8 vertices, 12 triangles; top and bottom faces are both centered on the y axis. `wTop`/`wBottom` may be 0 (collapses to a wedge).
 
 5. **Label System** — 3D sprite labels positioned above pieces using canvas-rendered textures.
 

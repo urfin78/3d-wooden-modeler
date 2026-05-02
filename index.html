@@ -2784,6 +2784,14 @@ window.addEventListener('load', function() {
                 if (!toolMesh) return;
                 toolMesh.position.set(op.tool.px || 0, op.tool.py || 0, op.tool.pz || 0);
                 toolMesh.rotation.set(op.tool.rx || 0, op.tool.ry || 0, op.tool.rz || 0);
+                if (op.tool.local) {
+                    // Tool transform is in target-local space — parent it to the target
+                    // so its world matrix follows the target and the cut stays anchored
+                    // even if the target was moved between cut time and save.
+                    mesh.add(toolMesh);
+                } else {
+                    // Legacy: absolute world coords.
+                }
                 toolMesh.updateMatrixWorld(true);
                 try {
                     var newGeo = csgSubtract(mesh, toolMesh);
@@ -2792,6 +2800,7 @@ window.addEventListener('load', function() {
                 } catch (e) {
                     console.error('CSG replay failed:', e);
                 }
+                if (op.tool.local) mesh.remove(toolMesh);
                 toolMesh.geometry.dispose();
                 toolMesh.material.dispose();
                 pieceCounter--; // makeMeshFromSpec incremented it
@@ -3085,17 +3094,30 @@ window.addEventListener('load', function() {
         hideModeBanner();
     }
 
-    // Capture a tool mesh as a declarative spec (type + dims + world transform)
-    // so a cut can be replayed deterministically on load.
-    function captureCutToolSpec(tool) {
+    // Capture a tool mesh as a declarative spec (type + dims + transform)
+    // so a cut can be replayed deterministically on load. The transform is stored
+    // RELATIVE TO THE TARGET (target-local space) and flagged with `local: true` so
+    // that subsequent target moves don't desync the replayed cut from the geometry.
+    // Older saves used absolute world coords (no `local` flag) — handled in replay.
+    function captureCutToolSpec(tool, target) {
         var ud = tool.userData;
         var wp = new THREE.Vector3();
         var wq = new THREE.Quaternion();
         tool.getWorldPosition(wp);
         tool.getWorldQuaternion(wq);
+        // Convert world transform to target-local
+        if (target) {
+            target.updateMatrixWorld(true);
+            var inv = new THREE.Matrix4().copy(target.matrixWorld).invert();
+            wp.applyMatrix4(inv);
+            var tq = new THREE.Quaternion();
+            target.getWorldQuaternion(tq);
+            wq.premultiply(tq.invert());
+        }
         var we = new THREE.Euler().setFromQuaternion(wq, 'XYZ');
         var spec = {
             type: ud.type,
+            local: true,
             px: wp.x, py: wp.y, pz: wp.z,
             rx: we.x, ry: we.y, rz: we.z
         };
@@ -3116,7 +3138,7 @@ window.addEventListener('load', function() {
             // without any recorded ops. Recording new ops here would make the next save
             // drop the prebaked geometry of the original cuts. Keep it on the legacy path.
             var legacyLocked = target.userData.csgModified && !Array.isArray(target.userData.csgOps);
-            var toolSpec = legacyLocked ? null : captureCutToolSpec(tool);
+            var toolSpec = legacyLocked ? null : captureCutToolSpec(tool, target);
             var newGeo = csgSubtract(target, tool);
             target.geometry.dispose();
             target.geometry = newGeo;

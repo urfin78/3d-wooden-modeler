@@ -171,13 +171,17 @@
                   "enum": ["subtract"]
                 },
                 "tool": {
-                  "description": "Tool piece spec: shape type, its dimensions, and its world transform at the moment of the cut. The tool mesh exists only transiently during replay and is disposed afterwards.",
+                  "description": "Tool piece spec: shape type, dimensions, and transform at the moment of the cut. New saves store the transform in target-local space and set `local: true`; legacy saves store world-space coords with no `local` field. The tool mesh exists only transiently during replay and is disposed afterwards.",
                   "type": "object",
                   "required": ["type", "px", "py", "pz", "rx", "ry", "rz"],
                   "properties": {
                     "type": {
                       "type": "string",
                       "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg", "Frustum Board", "Pyramid Frustum"]
+                    },
+                    "local": {
+                      "description": "True when px/py/pz/rx/ry/rz are in target-local space. Absent / false in legacy world-space saves.",
+                      "type": "boolean"
                     },
                     "px": { "type": "number" },
                     "py": { "type": "number" },

@@ -35,7 +35,7 @@
           "type": {
             "description": "Fixed English identifier for the piece shape. Never translated; used as a discriminator for dimension fields.",
             "type": "string",
-            "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg", "Frustum Board", "Pyramid Frustum"]
+            "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg", "Frustum Board", "Pyramid Frustum", "Frame"]
           },
 
           "id": {
@@ -154,6 +154,13 @@
             "description": "Optional miter angle in degrees at the +x end face of a Board (mirror of angleStart). 90° = perpendicular cut (default; field omitted on save when 90). Range (0, 180).",
             "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 180
           },
+          "wOuter": { "description": "Outer width in mm. Required for Frame.", "type": "number", "exclusiveMinimum": 0 },
+          "hOuter": { "description": "Outer height in mm. Required for Frame.", "type": "number", "exclusiveMinimum": 0 },
+          "dOuter": { "description": "Outer depth in mm. Required for Frame.", "type": "number", "exclusiveMinimum": 0 },
+          "frameThickness": { "description": "Outer-frame thickness in mm. Required for Frame.", "type": "number", "minimum": 0 },
+          "barThickness": { "description": "Interior grid bar thickness in mm. Required for Frame (0 = no bars even when grid > 1).", "type": "number", "minimum": 0 },
+          "gridX": { "description": "Number of grid columns (vertical bars = gridX - 1). Required for Frame.", "type": "integer", "minimum": 1 },
+          "gridY": { "description": "Number of grid rows (horizontal bars = gridY - 1). Required for Frame.", "type": "integer", "minimum": 1 },
 
           "geoPositions": {
             "description": "Legacy: flat array of vertex XYZ coordinates for CSG-modified geometry (BufferGeometry position attribute). Used for files saved before declarative csgOps existed. New saves use csgOps instead.",
@@ -185,7 +192,7 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg", "Frustum Board", "Pyramid Frustum"]
+                      "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg", "Frustum Board", "Pyramid Frustum", "Frame"]
                     },
                     "local": {
                       "description": "True when px/py/pz/rx/ry/rz are in target-local space. Absent / false in legacy world-space saves.",
@@ -208,7 +215,14 @@
                     "dTop": { "type": "number", "minimum": 0 },
                     "dBottom": { "type": "number", "minimum": 0 },
                     "angleStart": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 180 },
-                    "angleEnd": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 180 }
+                    "angleEnd": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 180 },
+                    "wOuter": { "type": "number", "exclusiveMinimum": 0 },
+                    "hOuter": { "type": "number", "exclusiveMinimum": 0 },
+                    "dOuter": { "type": "number", "exclusiveMinimum": 0 },
+                    "frameThickness": { "type": "number", "minimum": 0 },
+                    "barThickness": { "type": "number", "minimum": 0 },
+                    "gridX": { "type": "integer", "minimum": 1 },
+                    "gridY": { "type": "integer", "minimum": 1 }
                   }
                 }
               }

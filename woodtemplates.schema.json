@@ -23,7 +23,7 @@
       "type": {
         "description": "Piece shape. Must match one of the fixed English identifiers used in the app.",
         "type": "string",
-        "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg", "Frustum Board", "Pyramid Frustum"]
+        "enum": ["Board", "Dowel", "Wedge", "L-Bracket", "Tapered Leg", "Frustum Board", "Pyramid Frustum", "Frame"]
       },
 
       "price": {
@@ -79,7 +79,14 @@
       "angleEnd": {
         "description": "Optional miter angle (degrees) at the +x end of a Board template. Defaults to 90 (omitted).",
         "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 180
-      }
+      },
+      "wOuter": { "description": "Outer width (mm). Required for Frame.", "type": "number", "exclusiveMinimum": 0 },
+      "hOuter": { "description": "Outer height (mm). Required for Frame.", "type": "number", "exclusiveMinimum": 0 },
+      "dOuter": { "description": "Outer depth (mm). Required for Frame.", "type": "number", "exclusiveMinimum": 0 },
+      "frameThickness": { "description": "Outer-frame thickness (mm). Required for Frame.", "type": "number", "minimum": 0 },
+      "barThickness": { "description": "Grid bar thickness (mm). Required for Frame.", "type": "number", "minimum": 0 },
+      "gridX": { "description": "Grid columns. Required for Frame.", "type": "integer", "minimum": 1 },
+      "gridY": { "description": "Grid rows. Required for Frame.", "type": "integer", "minimum": 1 }
     },
 
     "allOf": [
@@ -110,6 +117,10 @@
       {
         "if": { "properties": { "type": { "const": "Pyramid Frustum" } } },
         "then": { "required": ["wTop", "dTop", "wBottom", "dBottom", "h"] }
+      },
+      {
+        "if": { "properties": { "type": { "const": "Frame" } } },
+        "then": { "required": ["wOuter", "hOuter", "dOuter", "frameThickness", "barThickness", "gridX", "gridY"] }
       }
     ]
   },

@@ -1,5 +1,7 @@
 # 3D Wooden Modeler
 
+[![Schema validation](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml)
+
 > This project was fully created using [Claude Code](https://claude.ai/claude-code) by Anthropic.
 
 **[Try it live](https://urfin78.github.io/3d-wooden-modeler/)** — no installation required, runs entirely in the browser.
@@ -53,6 +55,10 @@ Load [`examples/stool.woodmodel.json`](examples/stool.woodmodel.json) via **Load
 - [Three.js](https://threejs.org/) r128 (loaded via CDN)
 - Inline CSG (Constructive Solid Geometry) implementation based on the Evan Wallace csg.js algorithm
 - Everything in a single `index.html` file -- HTML, CSS, and JavaScript
+
+## CI
+
+GitHub Actions validates example files in `examples/` against `woodmodel.schema.json` and `woodtemplates.schema.json` on every push and pull request (`ajv-cli`). The `package.json` at the repo root exists only for this CI step — the app itself has no build dependencies.
 
 ## License
 

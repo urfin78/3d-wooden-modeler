@@ -1,0 +1,78 @@
+name: Schema validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Install ajv-cli
+        run: npm install --no-audit --no-fund
+
+      - name: Validate example files
+        run: |
+          shopt -s nullglob
+          fail=0
+
+          validate_set() {
+            local schema="$1"; shift
+            local label="$1"; shift
+            local files=("$@")
+            if [ ${#files[@]} -eq 0 ]; then
+              echo "_No $label example files found — skipped._" >> "$GITHUB_STEP_SUMMARY"
+              return 0
+            fi
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "### $label (\`$schema\`)" >> "$GITHUB_STEP_SUMMARY"
+            for f in "${files[@]}"; do
+              echo "::group::$f"
+              if out=$(npx --no-install ajv validate \
+                        --spec=draft7 \
+                        --strict=false \
+                        --errors=text \
+                        -c ajv-formats \
+                        -s "$schema" \
+                        -d "$f" 2>&1); then
+                echo "$out"
+                echo "- :white_check_mark: \`$f\`" >> "$GITHUB_STEP_SUMMARY"
+              else
+                echo "$out"
+                {
+                  echo "- :x: \`$f\`"
+                  echo ""
+                  echo '  ```'
+                  # Indent ajv output by two spaces so it nests under the bullet.
+                  echo "$out" | sed 's/^/  /'
+                  echo '  ```'
+                } >> "$GITHUB_STEP_SUMMARY"
+                fail=1
+              fi
+              echo "::endgroup::"
+            done
+          }
+
+          echo "## Schema validation" > "$GITHUB_STEP_SUMMARY"
+
+          woodmodel_files=(examples/*.woodmodel.json)
+          validate_set woodmodel.schema.json "woodmodel" "${woodmodel_files[@]}"
+
+          template_files=(examples/*.woodtemplates.json)
+          validate_set woodtemplates.schema.json "woodtemplates" "${template_files[@]}"
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$fail" -eq 0 ]; then
+            echo "**All example files passed.** :tada:" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "**One or more example files failed validation.**" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          exit $fail

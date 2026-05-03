@@ -1,0 +1,35 @@
+[
+  {
+    "name": "Shelf board 600×20×200",
+    "type": "Board",
+    "price": 12.50,
+    "w": 600, "h": 20, "d": 200
+  },
+  {
+    "name": "8mm dowel 60mm",
+    "type": "Dowel",
+    "price": 0.50,
+    "r": 4, "h": 60
+  },
+  {
+    "name": "Tapered table leg",
+    "type": "Tapered Leg",
+    "price": 8.00,
+    "rTop": 15, "rBottom": 25, "h": 720
+  },
+  {
+    "name": "Window frame 600×400 3×2",
+    "type": "Frame",
+    "price": 0,
+    "wOuter": 600, "hOuter": 400, "dOuter": 20,
+    "frameThickness": 25, "barThickness": 12,
+    "gridX": 3, "gridY": 2
+  },
+  {
+    "name": "Mitered picture-frame stick",
+    "type": "Board",
+    "price": 0,
+    "w": 400, "h": 30, "d": 15,
+    "angleStart": 45, "angleEnd": 45
+  }
+]

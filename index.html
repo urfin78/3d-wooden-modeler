@@ -5273,6 +5273,27 @@ window.addEventListener('load', function() {
     animate();
     refreshDynamicUI();
 
+    // Test hook — only attached when ?__test=1 is in the URL.
+    // Smoke tests (Playwright, see .github/workflows/playwright.yml) read these
+    // to assert state without depending on internal renderer details.
+    // Production runs never set the flag, so the global stays unset.
+    if (/[?&]__test=1\b/.test(location.search)) {
+        window.__app = {
+            pieces: pieces,
+            groups: groups,
+            addPiece: addPiece,
+            makeDefaultForType: makeDefaultForType,
+            ADD_TYPES: ADD_TYPES,
+            performCut: performCut,
+            serializeScene: serializeScene,
+            restoreScene: restoreScene,
+            setLanguage: setLanguage,
+            getLanguage: function() { return currentLang; },
+            t: t
+        };
+        window.dispatchEvent(new Event('app-ready'));
+    }
+
 });
 </script>
 </body>

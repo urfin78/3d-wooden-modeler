@@ -16,9 +16,15 @@ jobs:
           node-version: '24'
 
       - name: Install ajv-cli
+        working-directory: .github
         run: npm install --no-audit --no-fund
 
       - name: Validate example files
+        env:
+          # Resolve `ajv` and the `ajv-formats` plugin from .github/node_modules
+          # while keeping schema/example paths relative to the repo root.
+          PATH: ${{ github.workspace }}/.github/node_modules/.bin:${{ env.PATH }}
+          NODE_PATH: ${{ github.workspace }}/.github/node_modules
         run: |
           shopt -s nullglob
           fail=0
@@ -35,7 +41,7 @@ jobs:
             echo "### $label (\`$schema\`)" >> "$GITHUB_STEP_SUMMARY"
             for f in "${files[@]}"; do
               echo "::group::$f"
-              if out=$(npx --no-install ajv validate \
+              if out=$(ajv validate \
                         --spec=draft7 \
                         --strict=false \
                         --errors=text \

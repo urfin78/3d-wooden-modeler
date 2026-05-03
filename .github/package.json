@@ -1,0 +1,15 @@
+{
+  "name": "3d-wooden-modeler-ci",
+  "private": true,
+  "description": "CI-only manifest. The app itself is a single self-contained index.html with no build step. This file exists only so GitHub Actions can install validation/test tooling.",
+  "scripts": {
+    "validate:schemas": "for f in examples/*.woodmodel.json; do ajv validate --spec=draft7 --strict=false -c ajv-formats -s woodmodel.schema.json -d \"$f\"; done && for f in examples/*.woodtemplates.json; do ajv validate --spec=draft7 --strict=false -c ajv-formats -s woodtemplates.schema.json -d \"$f\"; done",
+    "test:smoke": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "ajv-cli": "^5.0.0",
+    "ajv-formats": "^3.0.1",
+    "http-server": "^14.1.1"
+  }
+}

@@ -1,0 +1,61 @@
+name: Playwright smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Install CI tooling
+        working-directory: .github
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium for Playwright
+        working-directory: .github
+        run: npx playwright install --with-deps chromium
+
+      - name: Run smoke tests
+        env:
+          CI: '1'
+          # Tests live in tests/ at the repo root; webServer.command runs
+          # http-server out of .github/node_modules/.bin via npx.
+          PATH: ${{ github.workspace }}/.github/node_modules/.bin:${{ env.PATH }}
+          NODE_PATH: ${{ github.workspace }}/.github/node_modules
+        run: |
+          set -o pipefail
+          npx --prefix .github playwright test \
+            --config tests/playwright.config.js \
+            2>&1 | tee playwright.log
+
+      - name: Write summary
+        if: always()
+        run: |
+          {
+            echo "## Playwright smoke"
+            echo ""
+            if [ -f playwright.log ]; then
+              # Last 40 lines of the run is enough to spot the pass/fail line.
+              echo '```'
+              tail -n 40 playwright.log
+              echo '```'
+            else
+              echo "_No playwright.log produced._"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7

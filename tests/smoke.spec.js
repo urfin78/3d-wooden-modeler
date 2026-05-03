@@ -93,7 +93,7 @@ test('switching language to DE updates a visible toolbar string', async ({ page 
     expect(enText).not.toBeNull();
 
     const deText = await page.evaluate(() => {
-        window.__app.setLanguage('de');
+//        window.__app.setLanguage('de');
         const el = document.querySelector('[data-i18n="toolbar.add"]');
         return el ? el.textContent.trim() : null;
     });

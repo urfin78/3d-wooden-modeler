@@ -8,7 +8,11 @@ A browser-based 3D woodworking modeler — a single self-contained `index.html` 
 
 ## Development
 
-No build step, no package manager, no tests. Open `index.html` directly in a browser to run. All HTML, CSS, and JavaScript live in a single file.
+No build step and no local toolchain. Open `index.html` directly in a browser to run. All HTML, CSS, and JavaScript live in a single file.
+
+CI runs JSON-schema validation on every push and pull request via `.github/workflows/schema.yml` — `examples/*.woodmodel.json` and `examples/*.woodtemplates.json` are validated against the repo's schemas using `ajv-cli`. The accompanying `package.json` is **CI-only**: it exists so the GitHub Actions runner can `npm install ajv-cli`. Do not assume Node is available locally — keep tooling that needs Node confined to CI.
+
+When you change `woodmodel.schema.json` or `woodtemplates.schema.json`, also update or add an example file in `examples/` so the CI catches schema drift.
 
 ## Architecture
 

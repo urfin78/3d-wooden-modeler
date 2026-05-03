@@ -54,6 +54,10 @@ Load [`examples/stool.woodmodel.json`](examples/stool.woodmodel.json) via **Load
 - Inline CSG (Constructive Solid Geometry) implementation based on the Evan Wallace csg.js algorithm
 - Everything in a single `index.html` file -- HTML, CSS, and JavaScript
 
+## CI
+
+GitHub Actions validates example files in `examples/` against `woodmodel.schema.json` and `woodtemplates.schema.json` on every push and pull request (`ajv-cli`). The `package.json` at the repo root exists only for this CI step — the app itself has no build dependencies.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).

@@ -1,0 +1,57 @@
+name: Schema validation
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install ajv-cli
+        run: npm install --no-audit --no-fund
+
+      - name: Validate woodmodel example files
+        run: |
+          shopt -s nullglob
+          files=(examples/*.woodmodel.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No woodmodel example files found — skipping."
+            exit 0
+          fi
+          for f in "${files[@]}"; do
+            echo "::group::$f"
+            npx --no-install ajv validate \
+              --spec=draft7 \
+              --strict=false \
+              -c ajv-formats \
+              -s woodmodel.schema.json \
+              -d "$f"
+            echo "::endgroup::"
+          done
+
+      - name: Validate woodtemplates example files
+        run: |
+          shopt -s nullglob
+          files=(examples/*.woodtemplates.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No woodtemplates example files found — skipping."
+            exit 0
+          fi
+          for f in "${files[@]}"; do
+            echo "::group::$f"
+            npx --no-install ajv validate \
+              --spec=draft7 \
+              --strict=false \
+              -c ajv-formats \
+              -s woodtemplates.schema.json \
+              -d "$f"
+            echo "::endgroup::"
+          done

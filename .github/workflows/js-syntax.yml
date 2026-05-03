@@ -1,0 +1,70 @@
+name: JS syntax
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Extract inline <script> blocks from index.html
+        id: extract
+        run: |
+          mkdir -p .ci-tmp
+          # Pull every block strictly between a bare "<script>" line and the next "</script>".
+          # External <script src="...">...</script> tags are skipped because their opening
+          # tag is not a bare "<script>" on its own.
+          awk '
+            /^<script>[[:space:]]*$/ { in_block = 1; n++; out = ".ci-tmp/inline_" n ".js"; next }
+            in_block && /<\/script>/ { in_block = 0; next }
+            in_block { print > out }
+          ' index.html
+
+          count=$(ls -1 .ci-tmp/inline_*.js 2>/dev/null | wc -l)
+          if [ "$count" -eq 0 ]; then
+            echo "::error::No inline <script> blocks found in index.html — extraction regex may be stale."
+            exit 1
+          fi
+          echo "Extracted $count inline script block(s):"
+          wc -l .ci-tmp/inline_*.js
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: Syntax-check each block with node --check
+        run: |
+          fail=0
+          echo "## JS syntax check" > "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          for f in .ci-tmp/inline_*.js; do
+            echo "::group::$f"
+            if out=$(node --check "$f" 2>&1); then
+              echo "OK"
+              lines=$(wc -l < "$f")
+              echo "- :white_check_mark: \`$f\` (${lines} lines)" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "$out"
+              {
+                echo "- :x: \`$f\`"
+                echo ""
+                echo '  ```'
+                echo "$out" | sed 's/^/  /'
+                echo '  ```'
+              } >> "$GITHUB_STEP_SUMMARY"
+              fail=1
+            fi
+            echo "::endgroup::"
+          done
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$fail" -eq 0 ]; then
+            echo "**All inline scripts parsed successfully.** :tada:" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "**One or more inline scripts have syntax errors.**" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit $fail

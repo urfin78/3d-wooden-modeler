@@ -1,6 +1,6 @@
 # 3D Wooden Modeler
 
-[![Schema validation](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml)
+[![Schema validation](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml) [![JS syntax](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/js-syntax.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/js-syntax.yml)
 
 > This project was fully created using [Claude Code](https://claude.ai/claude-code) by Anthropic.
 
@@ -58,7 +58,12 @@ Load [`examples/stool.woodmodel.json`](examples/stool.woodmodel.json) via **Load
 
 ## CI
 
-GitHub Actions validates example files in `examples/` against `woodmodel.schema.json` and `woodtemplates.schema.json` on every push and pull request (`ajv-cli`). The `package.json` at the repo root exists only for this CI step — the app itself has no build dependencies.
+Two GitHub Actions workflows run on every push to `main` and on pull requests:
+
+- **Schema validation** — example files in `examples/` are validated against `woodmodel.schema.json` and `woodtemplates.schema.json` (`ajv-cli`).
+- **JS syntax** — the inline `<script>` block in `index.html` is extracted and parsed with `node --check` so unbalanced brackets, stray commas, or broken string literals fail before they ever reach a browser.
+
+The `package.json` at the repo root exists only for the schema CI step — the app itself has no build dependencies.
 
 ## License
 

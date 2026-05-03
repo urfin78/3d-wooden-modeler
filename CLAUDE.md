@@ -10,7 +10,12 @@ A browser-based 3D woodworking modeler — a single self-contained `index.html` 
 
 No build step and no local toolchain. Open `index.html` directly in a browser to run. All HTML, CSS, and JavaScript live in a single file.
 
-CI runs JSON-schema validation on every push and pull request via `.github/workflows/schema.yml` — `examples/*.woodmodel.json` and `examples/*.woodtemplates.json` are validated against the repo's schemas using `ajv-cli`. The accompanying `package.json` is **CI-only**: it exists so the GitHub Actions runner can `npm install ajv-cli`. Do not assume Node is available locally — keep tooling that needs Node confined to CI.
+CI runs two checks on every push to `main` and on pull requests:
+
+- `.github/workflows/schema.yml` — validates `examples/*.woodmodel.json` and `examples/*.woodtemplates.json` against the repo's schemas using `ajv-cli`.
+- `.github/workflows/js-syntax.yml` — extracts the inline `<script>` blocks from `index.html` (any line that is exactly `<script>` opens a block; the next `</script>` closes it) and runs `node --check` on each. Catches unbalanced brackets, stray commas, and broken string literals before the file gets opened in a browser. **Keep the bare `<script>` and `</script>` lines in `index.html` on their own lines** — the awk extractor depends on it.
+
+The accompanying `package.json` is **CI-only**: it exists so the GitHub Actions runner can `npm install ajv-cli`. Do not assume Node is available locally — keep tooling that needs Node confined to CI.
 
 When you change `woodmodel.schema.json` or `woodtemplates.schema.json`, also update or add an example file in `examples/` so the CI catches schema drift.
 

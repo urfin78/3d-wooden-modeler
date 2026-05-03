@@ -10,12 +10,13 @@ A browser-based 3D woodworking modeler — a single self-contained `index.html` 
 
 No build step and no local toolchain. Open `index.html` directly in a browser to run. All HTML, CSS, and JavaScript live in a single file.
 
-CI runs two checks on every push to `main` and on pull requests:
+CI runs three checks on every push to `main` and on pull requests:
 
 - `.github/workflows/schema.yml` — validates `examples/*.woodmodel.json` and `examples/*.woodtemplates.json` against the repo's schemas using `ajv-cli`.
 - `.github/workflows/js-syntax.yml` — extracts the inline `<script>` blocks from `index.html` (any line that is exactly `<script>` opens a block; the next `</script>` closes it) and runs `node --check` on each. Catches unbalanced brackets, stray commas, and broken string literals before the file gets opened in a browser. **Keep the bare `<script>` and `</script>` lines in `index.html` on their own lines** — the awk extractor depends on it.
+- `.github/workflows/playwright.yml` — Playwright headless Chromium smoke tests under `tests/`. Reach into the app via `window.__app`, which is **only attached when the page is loaded with `?__test=1`** (see the test-hook block at the very end of `index.html`'s closure). When you add new top-level helpers that future smoke tests should call, add them to the hook export — never re-export everything by default, the hook stays inert in production.
 
-The accompanying `package.json` is **CI-only**: it exists so the GitHub Actions runner can `npm install ajv-cli`. Do not assume Node is available locally — keep tooling that needs Node confined to CI.
+The accompanying **`.github/package.json`** is **CI-only**: it sits inside `.github/` (not the repo root) so it is clearly out of the way of the application code, and exists only so the GitHub Actions runner can `npm install` the validation/test toolchain. Do not assume Node is available locally — keep tooling that needs Node confined to CI.
 
 When you change `woodmodel.schema.json` or `woodtemplates.schema.json`, also update or add an example file in `examples/` so the CI catches schema drift.
 

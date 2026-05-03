@@ -1,5 +1,7 @@
 # 3D Wooden Modeler
 
+[![Schema validation](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml)
+
 > This project was fully created using [Claude Code](https://claude.ai/claude-code) by Anthropic.
 
 **[Try it live](https://urfin78.github.io/3d-wooden-modeler/)** — no installation required, runs entirely in the browser.

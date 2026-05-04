@@ -1,4 +1,4 @@
-name: Playwright smoke
+name: Visual regression
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  smoke:
+  visual:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -23,34 +23,30 @@ jobs:
         working-directory: .github
         run: npx playwright install --with-deps chromium
 
-      - name: Run smoke tests
+      - name: Run visual regression tests
         env:
           CI: '1'
           NODE_PATH: ${{ github.workspace }}/.github/node_modules
         run: |
-          # Prepend in-shell so we don't clobber the system PATH. (Setting it
-          # via the YAML `env:` block doesn't work — env-context PATH is empty
-          # there, so the prepend would wipe out /usr/bin and friends.)
           export PATH="${GITHUB_WORKSPACE}/.github/node_modules/.bin:${PATH}"
           set -o pipefail
           npx --prefix .github playwright test \
             --config tests/playwright.config.js \
-            tests/smoke.spec.js \
-            2>&1 | tee playwright.log
+            tests/visual.spec.js \
+            2>&1 | tee visual.log
 
       - name: Write summary
         if: always()
         run: |
           {
-            echo "## Playwright smoke"
+            echo "## Visual regression"
             echo ""
-            if [ -f playwright.log ]; then
-              # Last 40 lines of the run is enough to spot the pass/fail line.
+            if [ -f visual.log ]; then
               echo '```'
-              tail -n 40 playwright.log
+              tail -n 60 visual.log
               echo '```'
             else
-              echo "_No playwright.log produced._"
+              echo "_No visual.log produced._"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -58,6 +54,8 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v5
         with:
-          name: playwright-report
-          path: playwright-report
-          retention-days: 7
+          name: visual-regression-report
+          path: |
+            playwright-report
+            tests/visual.spec.js-snapshots
+          retention-days: 14

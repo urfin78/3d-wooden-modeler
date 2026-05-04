@@ -5289,7 +5289,27 @@ window.addEventListener('load', function() {
             restoreScene: restoreScene,
             setLanguage: setLanguage,
             getLanguage: function() { return currentLang; },
-            t: t
+            t: t,
+            // Visual-regression helpers: expose the renderer triplet plus a
+            // deterministic framing helper so screenshot tests aren't dependent
+            // on OrbitControls state or the responsive grid auto-resize.
+            scene: scene,
+            camera: camera,
+            renderer: renderer,
+            frameToObject: function(obj, opts) {
+                opts = opts || {};
+                var box = new THREE.Box3().setFromObject(obj);
+                var size = box.getSize(new THREE.Vector3());
+                var center = box.getCenter(new THREE.Vector3());
+                var maxDim = Math.max(size.x, size.y, size.z) || 1;
+                var fov = camera.fov * Math.PI / 180;
+                var dist = (maxDim / 2) / Math.tan(fov / 2) * (opts.zoom || 2.2);
+                var dir = new THREE.Vector3(1, 0.7, 1).normalize();
+                camera.position.copy(center).add(dir.multiplyScalar(dist));
+                camera.lookAt(center);
+                camera.updateProjectionMatrix();
+            },
+            forceRender: function() { renderer.render(scene, camera); }
         };
         window.dispatchEvent(new Event('app-ready'));
     }

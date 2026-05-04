@@ -1,0 +1,63 @@
+name: Update visual baselines
+
+# Manually triggered. Runs the visual tests with --update-snapshots so the
+# baseline PNGs under tests/visual.spec.js-snapshots/ are regenerated to match
+# the current rendering, then opens a PR with the changes for review.
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Source branch to update baselines on (default: current default branch)'
+        required: false
+        default: ''
+
+jobs:
+  regen:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.branch || github.ref_name }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Install CI tooling
+        working-directory: .github
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium for Playwright
+        working-directory: .github
+        run: npx playwright install --with-deps chromium
+
+      - name: Regenerate baselines
+        env:
+          CI: '1'
+          NODE_PATH: ${{ github.workspace }}/.github/node_modules
+        run: |
+          export PATH="${GITHUB_WORKSPACE}/.github/node_modules/.bin:${PATH}"
+          npx --prefix .github playwright test \
+            --config tests/playwright.config.js \
+            --grep "^visual:" \
+            --update-snapshots
+
+      - name: Open PR with regenerated baselines
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "ci: regenerate visual-regression baselines"
+          title: "ci: regenerate visual-regression baselines"
+          body: |
+            Automated baseline refresh from `update-baselines.yml`.
+
+            Triggered by @${{ github.actor }} on `${{ inputs.branch || github.ref_name }}`.
+
+            Review the diff carefully — these PNGs are what every future PR will be compared against.
+          branch: ci/update-visual-baselines
+          delete-branch: true
+          add-paths: |
+            tests/visual.spec.js-snapshots/**

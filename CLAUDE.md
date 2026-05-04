@@ -1,87 +1,34 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code working in this repo. Auto-loaded every session — keep it tight, only the things that are not derivable from reading the code.
 
-## Project Overview
+## Project
 
-A browser-based 3D woodworking modeler — a single self-contained `index.html` file with no build tools, no frameworks, and no dependencies beyond Three.js r128 loaded via CDN.
+Browser-based 3D woodworking modeler. Single self-contained `index.html` — no build step, no framework, no local toolchain. Three.js r128 via CDN. Open `index.html` in a browser to run.
 
-## Development
+The full app lives inside one `window.addEventListener('load', …)` closure in `index.html`, organized into numbered, comment-delimited sections. Use those comments to navigate.
 
-No build step and no local toolchain. Open `index.html` directly in a browser to run. All HTML, CSS, and JavaScript live in a single file.
+CI workflows live under `.github/workflows/`. The CI tooling manifest is `.github/package.json` (CI-only — Node is not assumed locally).
 
-CI runs three checks on every push to `main` and on pull requests:
+## Working agreements
 
-- `.github/workflows/schema.yml` — validates `examples/*.woodmodel.json` and `examples/*.woodtemplates.json` against the repo's schemas using `ajv-cli`.
-- `.github/workflows/js-syntax.yml` — extracts the inline `<script>` blocks from `index.html` (any line that is exactly `<script>` opens a block; the next `</script>` closes it) and runs `node --check` on each. Catches unbalanced brackets, stray commas, and broken string literals before the file gets opened in a browser. **Keep the bare `<script>` and `</script>` lines in `index.html` on their own lines** — the awk extractor depends on it.
-- `.github/workflows/playwright.yml` — Playwright headless Chromium smoke tests under `tests/`. Reach into the app via `window.__app`, which is **only attached when the page is loaded with `?__test=1`** (see the test-hook block at the very end of `index.html`'s closure). When you add new top-level helpers that future smoke tests should call, add them to the hook export — never re-export everything by default, the hook stays inert in production.
-- `.github/workflows/visual-regression.yml` — Playwright screenshot tests under `tests/visual.spec.js`. Each spec adds one default primitive (or builds the CSG-cut composition), calls `window.__app.frameToObject(mesh)` for deterministic camera framing, then `__app.forceRender()` and screenshots `#viewport canvas` against a baseline PNG under `tests/visual.spec.js-snapshots/`. The smoke and visual workflows are split by passing the spec file directly (`tests/smoke.spec.js` vs `tests/visual.spec.js`) — `--grep`-style filters match against the full test ID (including path) and would let visual specs slip through the smoke run. Tolerances live in `tests/playwright.config.js` (`maxDiffPixelRatio: 0.01`, `threshold: 0.2`) — Three.js renders are not byte-identical between runs even on the same OS. Fixed Playwright viewport `1280×720`. Baselines are OS-tagged by Playwright's filename suffix (so `*-linux.png`); only generate from CI.
-- `.github/workflows/update-baselines.yml` — `workflow_dispatch` only. Runs the visual tests with `--update-snapshots` and opens a PR via `peter-evans/create-pull-request@v7` (`ci/update-visual-baselines` branch) for human review of the regenerated PNGs.
-- `.github/workflows/consistency-lint.yml` — runs `.github/scripts/consistency-lint.mjs`. The script extracts the `translations`, `ADD_TYPES`, and `SUPPORTED_LANGS` declarations from `index.html` (regex-located, then evaluated in a `vm` sandbox to handle multi-line literals safely) and asserts: every translation key is symmetric across all supported languages; every `ADD_TYPES` entry has a `type.<Name>` translation in each language; every `nameKey: '...'` referenced in the file (built-in templates, assemblies) resolves in each language; every static `data-i18n` / `data-i18n-placeholder` / `data-i18n-title` attribute in the HTML resolves in each language; the schema's `pieces.items.properties.type.enum` equals `ADD_TYPES` as a set. Possibly-unused translation keys are reported as warnings only, since some are interpolated (`cost.*`, `snap.*`).
+- **No commits without explicit user approval after testing.** Don't run `git commit` / `git push` / `gh pr create` until the user has confirmed.
+- **No direct pushes to `main`.** Always feature branch + PR; `main` is protected.
+- **No `--amend` on commits that are already pushed**, and no force-push on a PR branch unless the user explicitly asks. Add a follow-up commit instead.
+- **Run `git fetch --all --prune` before branching or merging non-trivial work** — branching from a stale `main` has silently dropped commits before.
+- When adding features or changing behavior, update both `CLAUDE.md` and `README.md` to match.
 
-The accompanying **`.github/package.json`** is **CI-only**: it sits inside `.github/` (not the repo root) so it is clearly out of the way of the application code, and exists only so the GitHub Actions runner can `npm install` the validation/test toolchain. Do not assume Node is available locally — keep tooling that needs Node confined to CI.
+## Code conventions
 
-When you change `woodmodel.schema.json` or `woodtemplates.schema.json`, also update or add an example file in `examples/` so the CI catches schema drift.
-
-## Architecture
-
-Everything runs inside a `window.addEventListener('load', ...)` closure in `index.html`. The code is organized into clearly delimited sections:
-
-1. **CSG BSP-Tree** — Constructive Solid Geometry implementation (Evan Wallace algorithm) for boolean subtraction between meshes. Key functions: `csgFromMesh`, `csgSubtract`.
-
-2. **Three.js Scene Setup** — Renderer, camera, inline minimal OrbitControls, lighting, ground plane, auto-resizing grid (`updateGrid()`). The orbit pivot (`controls.target`) can be repositioned at runtime: double-click on a piece sets it to the raycast hit point, double-click on empty space recenters on the bounding box of all visible pieces (`focusCameraOnScene()`), and the `F` key calls `focusCameraOn()` for the current selection (single piece, group, or multi-select bbox).
-
-3. **Application State** — Global mutable state: `pieces[]` array, selection state, mode flags (snap, cut, overlap), undo/redo stacks.
-
-4. **Shape Factory** — `makeBoard`, `makeDowel`, `makeWedge`, `makeLBracket`, `makeTaperedLeg`, `makeFrustumBoard`, `makePyramidFrustum`, `makeFrame`. Each returns a Three.js Mesh with a `userData` object storing type and dimensions. The Frame (`type: 'Frame'`) is built by `frameGeometry(wOuter, hOuter, dOuter, frameThickness, barThickness, gridX, gridY)` — assembles up to 4 outer-border boxes plus `(gridX-1) + (gridY-1)` interior grid bars and concatenates their position/normal/index buffers into a single BufferGeometry. `gridX=1, gridY=1` yields just the empty outer frame. `addPiece()` registers meshes into the scene and `pieces[]`. The Frustum Board (`type: 'Frustum Board'`) is a hand-built BufferGeometry built by `frustumBoardGeometry(wTop, wBottom, h, d)`. The Pyramid Frustum (`type: 'Pyramid Frustum'`) is built by `pyramidFrustumGeometry(wTop, dTop, wBottom, dBottom, h)` — same 8-vertex / 12-triangle topology, but top and bottom faces have independent rectangular dimensions (set `wTop=dTop=0` for a true pyramid). Both primitives center their top and bottom faces on the y axis. Boards support optional miter angles at each end face (`userData.angleStart` for the -x face, `userData.angleEnd` for the +x face; default 90° = perpendicular). When both are 90° `boardGeometry()` returns a `BoxGeometry`; otherwise it builds a custom 8-vertex BufferGeometry where the top edge of each end face is shifted by `h * cot(angle)` along x — bottom edges stay at ±w/2. The angles are persisted only when ≠ 90 to keep older save files unchanged.
-
-5. **Label System** — 3D sprite labels positioned above pieces using canvas-rendered textures.
-
-6. **Selection & UI Binding** — `selectPiece()` updates the side panel form fields from `mesh.userData`. Input change handlers write back to `userData` and call `rebuildGeometry()`.
-
-7. **Geometry Rebuild** — `rebuildGeometry(mesh)` recreates the mesh geometry from `userData` dimensions, preserving position/rotation. Critical path when dimensions change.
-
-8. **Serialization & Undo** — `serializeScene()`/`restoreScene()` convert full scene state to/from JSON. Undo/redo pushes serialized snapshots.
-
-9. **Save & Load** — `saveModel()` wraps serialized scene with metadata and triggers `.woodmodel.json` download. `loadModel()` reads the file and calls `restoreScene()`.
-
-10. **Template Library** — Built-in metric templates + custom templates stored in `localStorage`. Integrated into the toolbar's `+ Add` mega-dropdown (`buildAddMegaMenu()`), grouped by piece type. `buildDropdownMenus()` is kept as a backwards-compat alias for save/import flows. The mega-menu also has an **Assemblies** section sourced from `builtInAssemblies`: each entry has a `params` schema and a `build(params)` function that returns piece specs. `addAssembly(asm, rawParams)` validates params, calls `pieceFromSpec()` for each spec (a globally reusable mirror of `restoreScene`'s inner `makeMeshFromSpec`), positions/rotates/labels each mesh, then reparents them all into a single THREE.Group. `openAssemblyParamsModal(asm)` builds a transient modal with one number input per param. Assemblies are persisted only via the regular pieces+groups in the save file — there is no separate `assemblyTemplates` section, and no post-insert parameter-editing UI yet (would need an inverse of `build()` to be reversible).
-
-11. **Cut Joint Mode** — Two-click workflow: select target, then tool piece. Calls `csgSubtract` and records notch info in `userData.notches`. Each cut is also recorded declaratively as `userData.csgOps[]` (entries `{op:'subtract', tool:{type, dims, world transform}}`). On save, declarative ops are written to JSON; on load, ops are replayed against a freshly built base mesh after pieces are placed at world positions but before group reparenting. Legacy saves with prebaked `geoPositions`/`geoNormals` (no `csgOps`) still load correctly.
-
-12. **Split Piece** — `splitSelected()` divides a Board or Dowel into parts along a chosen axis, subtracting kerf (saw blade thickness in mm). Two modes: "by number of parts" (equal-length pieces, kerf taken from each) or "by part length" (fixed target length, max pieces that fit). In length mode, an optional "Keep leftover as extra piece" checkbox preserves the remainder as a separate piece (costs one additional kerf for the separating cut). Kerf default is 3 mm; mode, kerf, and leftover preference persist in `localStorage` (`woodmodeler.splitKerf`, `woodmodeler.splitMode`, `woodmodeler.splitKeepLeftover`). For fixed-price pieces, all split parts form a **source group**: each part gets `userData.sourceId` (shared UUID), `userData.sourcePrice` (original board price), `userData.sourcePriceMode`, and `userData.sourceLabel`; `userData.price` is set to 0. The group cost is counted once in the cost summary and CSV, not per piece. Per-mm prices are preserved per piece (cost is length-proportional). Pieces are laid out starting from the original's left edge (cut axis), keeping the original position/rotation. Not available for CSG-modified pieces.
-
-13. **Overlap Detection** — Bounding-box intersection checks between all piece pairs.
-
-14. **Ruler** — Two-click distance measurement on piece surfaces. `enterRulerMode()`/`exitRulerMode()` toggle the mode; clicks raycast against `pieces[]` and use the hit point. `addRuler(p1, p2)` creates a `THREE.Line` plus a sprite label showing total distance and per-axis components (|dx|, |dy|, |dz|). Snaps to corners and edges of all visible pieces (continuous edge projection via `closestPointsTwoLines` between camera ray and edge segment, clamped); Shift enables angle snap to 3 axes and 6 in-plane 45° diagonals (`ANGLE_SNAP_DIRS`, `snapAngle`). Snap indicator (yellow corner / cyan edge) and dashed preview line are lazy-created. Measurements are persistent (stored in `rulers[]`), serialized in save/load and undo/redo, and cleared via "Clear Rulers" or `clearAll()`. ESC cancels an in-progress measurement or exits the mode. Hint banner (`#ruler-hint`) shows current step. Individual rulers can be deleted by clicking their label outside ruler mode: `pickRulerSpriteAt(e)` raycasts against ruler sprites in the mouseup handler; on hit, `confirm(t('ruler.deleteConfirm'))` prompts the user, then `pushUndo()` + `removeRulerAt(index)` removes the single ruler.
-
-15. **X-Ray Mode** — `xrayMode` toggle makes all non-selected pieces translucent (`opacity = XRAY_OPACITY`, `depthWrite = false`) so pieces hidden inside others (e.g. dowels in boards) become visible. The currently selected piece stays fully opaque. `applyXray(mesh)` is called whenever a mesh enters the scene (addPiece, restoreScene, split) or when selection changes.
-
-16. **Grouping** — `THREE.Group` is used as the container (no reimplementation). Group action lives in the floating action bar; Ungroup is in the side panel's group section. Multi-select via Ctrl+click (builds `multiSelected` Set); `createGroup()` centers a new Group, reparents the selected pieces as children, and assigns `userData.groupId` to each. `ungroup()` reparents children back to the scene preserving world transforms. Clicking any piece in a group selects the whole group; dragging moves the group as a unit. Snap (`faceSnapXZ`/`faceSnapY`) excludes the dragged group's own children and force-updates descendant matrices so Box3 checks are correct. Snap indicator only flashes on the no-snap → snap transition. `splitSelected` and `duplicateSelected` use world transforms so operations on grouped pieces keep positions correct; split parts re-attach to the same group. `serializeScene`/`restoreScene` persist `groups[]` (gId + transform) alongside `groupId` on each piece; `restoreMesh` always sets `userData.type` so CSG-modified pieces survive load/save cycles.
-
-17. **Template Export/Import** — Custom templates (in `localStorage`) can be exported to a `.woodtemplates.json` file and imported back; used for sharing template libraries between installations.
-
-18. **Cost Calculator** — Per-piece `userData.price` and `userData.priceMode` (fixed/per_mm). `updateCostSummary()` renders live totals in sidebar; grouped (split) pieces show their source board cost once under a group header. `exportCSV()` includes a `sourceGroup` column. Currency persisted in `localStorage`.
-
-19. **Mouse/Keyboard Interaction** — Raycasting for piece selection, drag-move (with snap support), keyboard shortcuts. Delete key is suppressed when an input is focused.
-
-20. **UI Layout** — Light theme with design tokens defined as CSS variables on `:root` (`--bg`, `--surface`, `--accent`, `--radius`, shadows). Toolbar is grouped into zones: left `+ Add` mega-dropdown (one menu, sectioned per piece type), center mode-toggle icons (Snap, Labels, X-Ray, Ruler — `.icon-btn` with `.active` for state, no text labels), `Tools` menu (Cut Joint, Split, Show Overlaps, Clear Rulers, Clear All), Undo/Redo icons, `File` menu (Save, Load, Export CSV, Export/Import Templates), and a Settings (gear) icon-menu containing the language and currency selectors. Selection-only actions (Duplicate, Group, Delete) live in `#action-bar`, a floating bar shown by `updateActionBar()` whenever `selectedPiece`, `selectedGroup`, or `multiSelected.size > 0`. Cut and ruler modes display a banner via `showModeBanner()` / `hideModeBanner()` (Cut) and `#ruler-hint` (Ruler). Generic dropdowns (`.menu-dropdown` with `.menu-panel` children) are wired by `wireDropdown()` and positioned by `positionMenu()` (right-aligns when overflowing the viewport).
-
-21. **i18n / Translations** — Dict-based localization (no framework). `translations` holds per-language key→string maps (currently `en` and `de`); `t(key, params)` looks up strings with `{var}` interpolation and falls back to English if a key is missing. `typeName(type)` resolves piece-type keys (`type.Board`, `type.Dowel`, etc.). Static HTML uses `data-i18n`, `data-i18n-placeholder`, `data-i18n-title` attributes; `applyTranslations()` walks the DOM and populates them. Dynamic DOM (object list, size summary, cost total, split modal previews, toolbar toggles) calls `t()` directly. `refreshDynamicUI()` re-renders state-dependent text on language change. Language persists in `localStorage` under `woodmodeler.lang`; initial language comes from storage or `navigator.language`. Adding a language: add an entry to `translations` with the same key set, append the code to `SUPPORTED_LANGS`, add an `<option>` to `#lang-select`.
-
-## Key Conventions
-
-- Piece metadata lives in `mesh.userData` (type, dimensions, label, notches, price, priceMode). `userData.type` values are fixed English identifiers (`'Board'`, `'Dowel'`, `'Wedge'`, `'L-Bracket'`, `'Tapered Leg'`) — translations are applied only at the display layer via `typeName()`.
 - All dimensions are in millimeters.
-- State mutations should be preceded by `pushUndo()` for undo support.
-- The `pieces[]` array is the source of truth for all scene objects.
-- When changing piece dimensions, always call `rebuildGeometry()` to recreate the mesh geometry.
-- Call `updateGrid()` after any operation that changes piece positions or dimensions.
-- User-facing strings must go through `t()` / `typeName()`, never hardcoded. When adding a new string, add the key to every language in `translations`.
+- `mesh.userData.type` values are fixed English identifiers (`'Board'`, `'Dowel'`, `'Wedge'`, `'L-Bracket'`, `'Tapered Leg'`, `'Frustum Board'`, `'Pyramid Frustum'`, `'Frame'`). Translations happen only at the display layer via `typeName()`.
+- The `pieces[]` array is the source of truth for scene objects. Mutate state via `pushUndo()` first; rebuild geometry via `rebuildGeometry()` after dimension changes; call `updateGrid()` after position/dimension changes.
+- User-facing strings must go through `t()` / `typeName()`. When adding a new string, add the key in every language in `translations` (currently `en` + `de`) — the consistency-lint CI fails otherwise.
+- The `?__test=1` query attaches `window.__app` for Playwright tests. When adding helpers that future tests should reach, append them to that hook explicitly — do not re-export everything by default. The hook stays inert without the query.
 
-## Git Repo Conventions
-- **Always run `git fetch --all --prune` before branching, merging, or starting non-trivial work.** The remote may have commits or branches that aren't local yet — branching from a stale `main` once caused a Pages deploy step to silently disappear during a merge.
-- add a commit including message for changes
-- work on feature branches, not directly on main
-- merge to main via pull requests only (main branch is protected)
-- when adding features or making changes, update both CLAUDE.md and README.md to reflect the current state
+## Hidden constraints (CI will catch these, but easier to avoid up front)
+
+- The JS-syntax workflow extracts inline scripts via awk that matches a bare `<script>` line opening and `</script>` line closing. **Keep those tags on their own lines in `index.html`.**
+- When you change `woodmodel.schema.json` or `woodtemplates.schema.json`, also update or add an example in `examples/` so the schema-validation CI catches drift.
+- Visual-regression baselines live under `tests/visual.spec.js-snapshots/`. Regenerate them via the `Update visual baselines` workflow (`workflow_dispatch`) — never edit by hand. They're OS-tagged (`*-linux.png`); only generate from CI.
+- The smoke and visual Playwright workflows are split by passing the spec path explicitly (`tests/smoke.spec.js` vs `tests/visual.spec.js`). Don't try to filter by `--grep` — it matches the full test ID including path and lets visual specs slip through.

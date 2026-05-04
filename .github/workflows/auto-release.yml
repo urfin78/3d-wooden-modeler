@@ -3,6 +3,13 @@ name: Auto Release
 on:
   workflow_dispatch:
 
+# peter-evans/create-pull-request@v7 and the official actions/checkout|setup-node|upload-artifact@v5
+# all still ship Node 20 bindings as of early 2026; GitHub forces JS actions to Node 24 on
+# 2026-06-02 and removes Node 20 from runners on 2026-09-16. Opt in early to silence the
+# deprecation warning and avoid breakage at the cutover.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   release:
     runs-on: ubuntu-latest

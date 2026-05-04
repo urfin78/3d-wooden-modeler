@@ -43,7 +43,7 @@ jobs:
           export PATH="${GITHUB_WORKSPACE}/.github/node_modules/.bin:${PATH}"
           npx --prefix .github playwright test \
             --config tests/playwright.config.js \
-            --grep "^visual:" \
+            tests/visual.spec.js \
             --update-snapshots
 
       - name: Open PR with regenerated baselines

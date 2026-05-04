@@ -35,7 +35,7 @@ jobs:
           set -o pipefail
           npx --prefix .github playwright test \
             --config tests/playwright.config.js \
-            --grep-invert "^visual:" \
+            tests/smoke.spec.js \
             2>&1 | tee playwright.log
 
       - name: Write summary

@@ -32,7 +32,7 @@ jobs:
           set -o pipefail
           npx --prefix .github playwright test \
             --config tests/playwright.config.js \
-            --grep "^visual:" \
+            tests/visual.spec.js \
             2>&1 | tee visual.log
 
       - name: Write summary

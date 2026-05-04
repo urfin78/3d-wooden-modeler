@@ -1,6 +1,6 @@
 # 3D Wooden Modeler
 
-[![Schema validation](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml) [![JS syntax](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/js-syntax.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/js-syntax.yml) [![Playwright smoke](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/playwright.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/playwright.yml)
+[![Schema validation](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml) [![JS syntax](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/js-syntax.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/js-syntax.yml) [![Playwright smoke](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/playwright.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/playwright.yml) [![Consistency lint](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/consistency-lint.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/consistency-lint.yml)
 
 > This project was fully created using [Claude Code](https://claude.ai/claude-code) by Anthropic.
 
@@ -58,11 +58,12 @@ Load [`examples/stool.woodmodel.json`](examples/stool.woodmodel.json) via **Load
 
 ## CI
 
-Three GitHub Actions workflows run on every push to `main` and on pull requests:
+Four GitHub Actions workflows run on every push to `main` and on pull requests:
 
 - **Schema validation** — example files in `examples/` are validated against `woodmodel.schema.json` and `woodtemplates.schema.json` (`ajv-cli`).
 - **JS syntax** — the inline `<script>` block in `index.html` is extracted and parsed with `node --check` so unbalanced brackets, stray commas, or broken string literals fail before they ever reach a browser.
 - **Playwright smoke** — headless Chromium drives the app through a small set of smoke tests (every primitive can be added; CSG cut survives save/reload; language switch updates UI strings). The tests under `tests/` reach into the app via `window.__app`, a hook attached only when the page is loaded with `?__test=1`.
+- **Consistency lint** — `.github/scripts/consistency-lint.mjs` parses `index.html` and `woodmodel.schema.json` and verifies that translation keys are symmetric across all `SUPPORTED_LANGS`, that every `ADD_TYPES` entry has a matching `type.<Name>` translation, that every `nameKey` referenced in built-in templates and assemblies resolves in every language, that every static `data-i18n*` attribute resolves, and that the JSON-schema `type` discriminator equals `ADD_TYPES` as a set.
 
 The CI tooling lives under [`.github/package.json`](.github/package.json) — kept inside `.github/` so it stays out of the application code. The app itself has no build dependencies.
 

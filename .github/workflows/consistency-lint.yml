@@ -1,0 +1,19 @@
+name: Consistency lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Run consistency linter
+        run: node .github/scripts/consistency-lint.mjs

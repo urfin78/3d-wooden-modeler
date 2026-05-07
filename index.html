@@ -4513,6 +4513,22 @@ window.addEventListener('load', function() {
             updateGrid();
             return;
         }
+        if (multiSelected.size > 0) {
+            pushUndo();
+            multiSelected.forEach(function(m) {
+                var i = pieces.indexOf(m);
+                if (i !== -1) pieces.splice(i, 1);
+                removeLabel(m);
+                if (m.parent) m.parent.remove(m);
+                m.geometry.dispose();
+                m.material.dispose();
+            });
+            multiSelected.clear();
+            selectedPiece = null;
+            selectPiece(null);
+            updateGrid();
+            return;
+        }
         if (!selectedPiece) return;
         pushUndo();
         var idx = pieces.indexOf(selectedPiece);

@@ -21,9 +21,14 @@ Modell: `herb-dryer.woodmodel.json`
 
 **Netto-Bedarf: 6240 mm**
 
-Bohrungen pro Längsbrett: 4× Ø6 durchgehend
-- Position: 12 mm und 25 mm von jeder Stirnkante
+Bohrungen pro Längsbrett: 2× Ø6 durchgehend, asymmetrisch
+- Links: 12 mm von der linken Stirnkante
+- Rechts: 25 mm von der rechten Stirnkante
 - mittig auf 40 mm Brettbreite
+
+Die Asymmetrie ermöglicht den Dreh-Mechanismus: Dübel links bei 12 mm, rechts bei 25 mm.
+Dreht man den Rahmen um 180° (horizontal), wandern die Löcher auf die jeweils andere Seite —
+die Dübel des darunterliegenden Rahmens treffen kein Loch mehr und der Rahmen liegt direkt auf (Stapel-Modus).
 
 ### Eckleisten — Vierkant 10×10 mm
 
@@ -37,15 +42,15 @@ Bohrungen pro Längsbrett: 4× Ø6 durchgehend
 
 | Stück | Maße | Material |
 |---|---|---|
-| 1 | 400 × 400 × 10 mm | Sperrholz / Multiplex |
+| 1 | 400 × 400 × 6 mm | Sperrholz / Multiplex |
 
 ### Verbindungs-Dübel — Rundstab Ø6 mm
 
 | Stück | Länge | Verwendung |
 |---|---|---|
-| 12 | 50 mm | 4 Ecken × 3 Zwischenräume |
+| 12 | 60 mm | 4 Ecken × 3 Zwischenräume |
 
-**Netto-Bedarf: 600 mm**
+**Netto-Bedarf: 720 mm**
 
 ### Tablettboden (nicht im 3D-Modell)
 
@@ -97,7 +102,8 @@ Zusätzlich nötig: 4× Ø6 × 50 mm Dübel (im 1-m-Stab eh dabei).
 
 - Rahmen-Eckverbindung über innenliegende 10×10×30 Vierkantleisten (geleimt + ggf. mit kurzen Schrauben durchs Außenbrett)
 - Stoff/Netz mit Tackerklammern von unten an die Rahmen-Unterseite spannen
-- Dübel werden fest in das "äußere" Loch (12 mm-Position) jedes Rahmens geleimt — sie ragen 30 mm nach oben heraus
-- Tablett um 180° drehen, um umzuschalten:
-  - Dübel über Loch → Tablett rutscht durch (geschlossen, niedrig)
-  - Dübel auf Holz → Abstand wird gehalten (offen, lüftet)
+- Dübel (Ø6 × 60 mm) werden fest ins linke Loch (12 mm) bzw. rechte Loch (25 mm) geleimt: 20 mm tief, 40 mm ragen heraus
+- Die 40 mm verteilen sich: 30 mm Spalt + 10 mm Eingriff ins Loch des darüberliegenden Rahmens
+- Rahmen um 180° drehen (horizontal), um umzuschalten:
+  - Normal (nicht gedreht): Dübel fluchtet mit Loch → Rahmen hängt auf Dübeln (Lüft-Modus, offen, 30 mm Spalt)
+  - Gedreht 180°: Löcher wandern auf andere Seite, Dübel trifft Holz → Rahmen liegt direkt auf (Stapel-Modus, geschlossen)

@@ -1,48 +1,68 @@
-# Kräutertrockner 400×400 mm
+# Kräutertrockner 340×340 mm
 
 Stapelbarer Kräutertrockner, 4 Rahmen + Deckel, Verbindung über Ø6-Dübel.
 Modell: `herb-dryer.woodmodel.json`
 
 ## Maße
 
-- Grundfläche: 400 × 400 mm
-- Höhe offen (mit Dübel-Abstand): 260 mm
-- Höhe geschlossen (Tabletts gedreht, fluchtend): 170 mm
+- Grundfläche: 340 × 340 mm
+- Höhe offen (mit Dübel-Abstand): 308 mm (4 Rahmen × 47 mm + 3 × 30 mm Spalt + Deckel)
 - Spalt zwischen Rahmen: 30 mm
 
 ## Stückliste
 
-### Rahmenbretter — Leiste 40×13 mm
+### Rahmenbretter — Leiste 47×13,5 mm
 
 | Stück | Länge | Verwendung |
 |---|---|---|
-| 8 | 400 mm | Längsbretter (2 pro Rahmen × 4 Rahmen) |
-| 8 | 380 mm | Stirnbretter (2 pro Rahmen × 4 Rahmen) |
+| 8 | 340 mm | Längsbretter (2 pro Rahmen × 4 Rahmen) |
+| 8 | 313 mm | Stirnbretter (2 pro Rahmen × 4 Rahmen) |
 
-**Netto-Bedarf: 6240 mm**
+**Netto-Bedarf: 5224 mm**
 
-Bohrungen pro Längsbrett: 2× Ø6 durchgehend, asymmetrisch
-- Links: 12 mm von der linken Stirnkante
-- Rechts: 25 mm von der rechten Stirnkante
-- mittig auf 13 mm Brettdicke
+Bohrungen pro Längsbrett: **4 Löcher** (2 pro Ende, nebeneinander), mittig auf 13,5 mm Brettdicke,
+an den Positionen 15 mm und 35 mm von der jeweiligen Stirnkante:
 
-Die Asymmetrie ermöglicht den Dreh-Mechanismus: Dübel links bei 12 mm, rechts bei 25 mm.
-Dreht man den Rahmen um 180° (horizontal), wandern die Löcher auf die jeweils andere Seite —
-die Dübel des darunterliegenden Rahmens treffen kein Loch mehr und der Rahmen liegt direkt auf (Stapel-Modus).
+- **Dübelsitz** (ein Loch pro Ende): von oben 20 mm tief gebohrt (hier wird der Dübel eingeklebt),
+  von unten 10 mm tief (nimmt im Stapelmodus den Dübel des darunterliegenden Rahmens auf).
+- **Durchgangsloch** (das zweite Loch daneben): Ø6 durchgehend — versteckt im Stapelmodus den
+  herausragenden Dübel des unteren Rahmens.
 
-### Eckleisten — Vierkant 10×10 mm
+**Alle Längsbretter (vorne wie hinten) sind identisch gebohrt** — das ist die Voraussetzung
+dafür, dass sich die Etagen beliebig tauschen lassen. Pro Brett:
+
+- **Linkes Ende:** Dübelsitz **außen** (15 mm) + Durchgangsloch **innen** (35 mm)
+- **Rechtes Ende:** Dübelsitz **innen** (35 mm) + Durchgangsloch **außen** (15 mm)
+
+Dadurch hat jedes Brett einen Dübel außen und einen innen. Der eingeklebte Dübel sitzt also
+links außen und rechts innen.
+
+Der Umschalt-Trick steckt allein in der **Verteilung** von Sitz und Durchgang über die vier Ecken:
+Sie ist so gewählt, dass die 180°-Drehung (Punktspiegelung um die Rahmenmitte) an jeder
+Dübel-Position Sitz und Durchgang vertauscht. Da das Loch**muster** dabei symmetrisch bleibt,
+sind alle Rahmen untereinander gleich und in beliebiger Reihenfolge stapelbar.
+
+- **Lüft-Modus** (zwei Rahmen gleich orientiert): Dübel des unteren Rahmens trifft den Dübelsitz
+  des oberen → Rahmen hängt 10 mm tief auf den Dübeln, 30 mm Spalt bleibt offen.
+- **Stapel-Modus** (oberer Rahmen um 180° gedreht): Dübel trifft das Durchgangsloch und
+  verschwindet darin → Rahmen liegt direkt auf.
+
+### Eckleisten — Vierkant 20×20 mm
 
 | Stück | Länge | Verwendung |
 |---|---|---|
-| 16 | 30 mm | Innenecke jedes Rahmens (4 pro Rahmen × 4 Rahmen) |
+| 16 | 47 mm | Innenecke jedes Rahmens (4 pro Rahmen × 4 Rahmen), volle Rahmenhöhe |
 
-**Netto-Bedarf: 480 mm**
+**Netto-Bedarf: 752 mm**
+
+Die 20×20-Leiste sitzt bündig in der Innenecke der beiden Außenbretter und läuft über die
+gesamte Rahmenhöhe (47 mm) — mehr Klebefläche als die frühere 10×10×30-Variante.
 
 ### Deckel / Bodenplatte
 
 | Stück | Maße | Material |
 |---|---|---|
-| 1 | 400 × 400 × 6 mm | Sperrholz / Multiplex |
+| 1 | 340 × 340 × 6 mm | Sperrholz / Multiplex |
 
 ### Verbindungs-Dübel — Rundstab Ø6 mm
 
@@ -56,56 +76,57 @@ die Dübel des darunterliegenden Rahmens treffen kein Loch mehr und der Rahmen l
 
 | Stück | Maße | Material |
 |---|---|---|
-| 4 | ca. 380 × 380 mm | Stoff / Gaze / Netz |
+| 4 | ca. 313 × 313 mm | Stoff / Gaze / Netz |
 
 ## Material-Optionen mit Preisvergleich (inkl. Kerf 3 mm)
 
-### Rahmen-Leiste 40×13
+### Rahmen-Leiste 47×13,5
+
+Netto-Bedarf 5224 mm (8× 340 + 8× 313). 3× 2000 mm = 6000 mm Rohmaterial.
 
 | Variante | Zuschnitt | Stück | Gesamt | Verschnitt |
 |---|---|---|---|---|
-| **3× 2100 mm × 7,29 €** | 3× (400+400+400+380+380 / 400+400+380+380+380 / 400+400+380+380+380) | 3 | **21,87 €** | 128 / 148 / 148 mm |
-| 2× 2100 + 3× 900 mm | 2× 2100 + 3× 900 | 5 | **26,55 €** | ~660 mm |
-| 1× 2100 + 5× 900 mm | 1× 2100 + 5× 900 | 6 | **27,24 €** | ~360 mm |
-| 7× 900 mm × 3,99 € | 7× (400+400 / 400+400 / 400+400 / 400+380 / 380+380 / 380+380 / 380+380) | 7 | **27,93 €** | ~60 mm |
+| **3× 2000 mm × 7,29 €** | 340+340+340+313+313 / 340+340+340+313+313 / 340+340+313+313+313+313 | 3 | **21,87 €** | 342 / 342 / 53 mm |
 
-**Empfehlung: 3× 2100 mm — günstigste Variante, engste Leiste endet bei 1972 mm (128 mm Rest).**
+**Empfehlung: 3× 2000 mm — 5224 mm netto plus Kerf passen bequem in 6000 mm; die dritte Leiste endet bei 1947 mm (53 mm Rest).**
 
-### Vierkantleiste 10×10
+### Vierkantleiste 20×20
+
+Netto-Bedarf 752 mm (16× 47 mm). 1 Stück 900 mm reicht völlig (~148 mm Rest).
 
 | Variante | Stück | Stückpreis | Gesamt | Verschnitt |
 |---|---|---|---|---|
-| **C: 900 mm × 1,79 €** | 1 | 1,79 € | **1,79 €** | ~390 mm Rest |
-| D: 2000 mm × 2,60 € | 1 | 2,60 € | 2,60 € | ~1490 mm Rest |
+| **900 mm** | 1 | _Preis prüfen_ | **TBD** | ~148 mm Rest |
 
-**Empfehlung C:** 1 Stück 900 mm reicht völlig.
+**Hinweis:** Preis für 20×20×900 noch offen (sourcePrice im Modell = 0).
 
 ## Gesamtpreis (4 Rahmen + Deckel)
 
 | Position | Preis |
 |---|---|
-| Rahmen-Leiste (3× 2100 mm × 7,29 €) | 21,87 € |
-| Eckleiste (Variante C: 1× 900 mm × 1,79 €) | 1,79 € |
-| Sperrholz Pappel 400×400×6 mm | 3,50 € |
+| Rahmen-Leiste (3× 2000 mm × 7,29 €) | 21,87 € |
+| Eckleiste (1× 20×20×900 mm) | _Preis prüfen_ |
+| Sperrholz Pappel 340×340×6 mm | 3,50 € |
 | Rundstab Buche Ø6 × 1000 mm | 1,65 € |
 | Stoff / Netz für 4 Tabletts | ~5,00 € |
-| **Summe** | **~33,81 €** |
+| **Summe** | **~32,02 € + Eckleiste** |
 
 Hinweis: Deckel ist 6 mm Pappel-Sperrholz (statt 10 mm im Modell).
 Rundstab Ø6 × 1000 mm reicht auch für 5. Rahmen.
 
 ## Erweiterung auf 5 Rahmen
 
-Reststücke reichen nicht für einen 5. Rahmen (nur ~60 mm Verschnitt übrig) — 1 zusätzliche Leiste nötig.
-Zusätzlich nötig: 4× Ø6 × 50 mm Dübel (im 1-m-Stab eh dabei).
-→ **Mehrpreis: 7,29 €** (1 weitere Leiste 2100 mm)
+Reststücke (342 + 342 + 53 mm = 737 mm) reichen nicht für einen 5. Rahmen (Bedarf 2× 340 + 2× 313 = 1306 mm) — 1 zusätzliche Leiste nötig.
+Zusätzlich nötig: 4× Ø6 × 60 mm Dübel (im 1-m-Stab eh dabei).
+→ **Mehrpreis: 7,29 €** (1 weitere Leiste 2000 mm)
 
 ## Zusammenbau-Hinweise
 
-- Rahmen-Eckverbindung über innenliegende 10×10×30 Vierkantleisten (geleimt + ggf. mit kurzen Schrauben durchs Außenbrett)
+- Rahmen-Eckverbindung über innenliegende 20×20×47 Vierkantleisten über die volle Rahmenhöhe (geleimt + ggf. mit kurzen Schrauben durchs Außenbrett)
 - Stoff/Netz mit Tackerklammern von unten an die Rahmen-Unterseite spannen
-- Dübel (Ø6 × 60 mm) werden fest ins linke Loch (12 mm) bzw. rechte Loch (25 mm) geleimt: 20 mm tief, 40 mm ragen heraus
-- Die 40 mm verteilen sich: 30 mm Spalt + 10 mm Eingriff ins Loch des darüberliegenden Rahmens (Brettdicke 13 mm)
+- Dübel (Ø6 × 60 mm) werden fest in den **Dübelsitz** (20-mm-Loch von oben) geleimt: 20 mm tief, 40 mm ragen heraus
+- Die 40 mm verteilen sich: 30 mm Spalt + 10 mm Eingriff ins 10-mm-Loch (von unten) des darüberliegenden Rahmens (Brettdicke 13,5 mm)
+- Pro Ecke sitzt **neben** dem Dübelsitz ein durchgehendes Loch; alle Längsbretter sind gleich gebohrt (Sitz links außen / rechts innen)
 - Rahmen um 180° drehen (horizontal), um umzuschalten:
-  - Normal (nicht gedreht): Dübel fluchtet mit Loch → Rahmen hängt auf Dübeln (Lüft-Modus, offen, 30 mm Spalt)
-  - Gedreht 180°: Löcher wandern auf andere Seite, Dübel trifft Holz → Rahmen liegt direkt auf (Stapel-Modus, geschlossen)
+  - Normal (nicht gedreht): Dübel trifft Dübelsitz → Rahmen hängt auf Dübeln (Lüft-Modus, offen, 30 mm Spalt)
+  - Gedreht 180°: Dübel trifft das Durchgangsloch und verschwindet darin → Rahmen liegt direkt auf (Stapel-Modus, geschlossen)

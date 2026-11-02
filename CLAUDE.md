@@ -6,9 +6,11 @@ Guidance for Claude Code working in this repo. Auto-loaded every session — kee
 
 Browser-based 3D woodworking modeler. Single self-contained `index.html` — no build step, no framework, no local toolchain. Three.js r128 via CDN. Open `index.html` in a browser to run.
 
-The full app lives inside one `window.addEventListener('load', …)` closure in `index.html`, organized into numbered, comment-delimited sections. Use those comments to navigate.
+The full app lives inside one `window.addEventListener('load', …)` closure in `index.html`, organized into comment-delimited sections. Use those comments to navigate.
 
 CI workflows live under `.github/workflows/`. The CI tooling manifest is `.github/package.json` (CI-only — Node is not assumed locally).
+
+Releases run through the manual `Auto Release` workflow, which also deploys `index.html` to `gh-pages`. It derives the version bump from commit subject lines since the last tag: `feat:` → minor, `type!:` or `BREAKING CHANGE` in the subject → major, anything else → patch. Only subjects are read, so a `BREAKING CHANGE` in the commit body does not count.
 
 ## Working agreements
 
@@ -28,7 +30,8 @@ CI workflows live under `.github/workflows/`. The CI tooling manifest is `.githu
 
 ## Hidden constraints (CI will catch these, but easier to avoid up front)
 
-- The JS-syntax workflow extracts inline scripts via awk that matches a bare `<script>` line opening and `</script>` line closing. **Keep those tags on their own lines in `index.html`.**
+- The JS-syntax workflow extracts inline scripts via awk that matches a bare `<script>` line opening and `</script>` line closing. **Keep those tags on their own lines in `index.html`, with the opening `<script>` unindented** — an indented one is not extracted.
 - When you change `woodmodel.schema.json` or `woodtemplates.schema.json`, also update or add an example in `examples/` so the schema-validation CI catches drift.
+- When you add a shape type, update `ADD_TYPES` in `index.html` and all three `type` enums: the piece `type` and the CSG tool `type` in `woodmodel.schema.json`, plus the one in `woodtemplates.schema.json`. The consistency-lint CI only compares `ADD_TYPES` with the piece `type`, so it won't catch the other two.
 - Visual-regression baselines live under `tests/visual.spec.js-snapshots/`. Regenerate them via the `Update visual baselines` workflow (`workflow_dispatch`) — never edit by hand. They're OS-tagged (`*-linux.png`); only generate from CI.
 - The smoke and visual Playwright workflows are split by passing the spec path explicitly (`tests/smoke.spec.js` vs `tests/visual.spec.js`). Don't try to filter by `--grep` — it matches the full test ID including path and lets visual specs slip through.

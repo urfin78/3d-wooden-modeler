@@ -3,8 +3,7 @@
   "private": true,
   "description": "CI-only manifest. The app itself is a single self-contained index.html with no build step. This file exists only so GitHub Actions can install validation/test tooling.",
   "scripts": {
-    "validate:schemas": "for f in examples/*.woodmodel.json; do ajv validate --spec=draft7 --strict=false -c ajv-formats -s woodmodel.schema.json -d \"$f\"; done && for f in examples/*.woodtemplates.json; do ajv validate --spec=draft7 --strict=false -c ajv-formats -s woodtemplates.schema.json -d \"$f\"; done",
-    "test:smoke": "playwright test"
+    "validate:schemas": "for f in examples/*.woodmodel.json; do ajv validate --spec=draft7 --strict=false -c ajv-formats -s woodmodel.schema.json -d \"$f\"; done && for f in examples/*.woodtemplates.json; do ajv validate --spec=draft7 --strict=false -c ajv-formats -s woodtemplates.schema.json -d \"$f\"; done"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0",

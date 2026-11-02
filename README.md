@@ -66,6 +66,8 @@ Five GitHub Actions workflows run on every push to `main` and on pull requests:
 - **Consistency lint** — `.github/scripts/consistency-lint.mjs` parses `index.html` and `woodmodel.schema.json` and verifies that translation keys are symmetric across all `SUPPORTED_LANGS`, that every `ADD_TYPES` entry has a matching `type.<Name>` translation, that every `nameKey` referenced in built-in templates and assemblies resolves in every language, that every static `data-i18n*` attribute resolves, and that the JSON-schema `type` discriminator equals `ADD_TYPES` as a set.
 - **Visual regression** — Playwright takes a canvas screenshot per default `ADD_TYPES` primitive plus one CSG-cut composition (`tests/visual.spec.js`) and compares against PNG baselines under `tests/visual.spec.js-snapshots/`. Baselines are regenerated via the manual **Update visual baselines** workflow (`workflow_dispatch`), which runs `playwright test --update-snapshots` and opens a PR with the new PNGs for review.
 
+Releases are cut by the manual **Auto Release** workflow (`workflow_dispatch`). It derives the version bump from commit subject lines since the last tag (`feat:` for minor, `type!:` or `BREAKING CHANGE` in the subject for major, anything else for patch), creates a GitHub Release, and deploys `index.html` to the `gh-pages` branch.
+
 The CI tooling lives under [`.github/package.json`](.github/package.json) — kept inside `.github/` so it stays out of the application code. The app itself has no build dependencies.
 
 ## License

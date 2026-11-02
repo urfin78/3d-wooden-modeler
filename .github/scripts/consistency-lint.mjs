@@ -11,6 +11,7 @@ import vm from 'node:vm';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const INDEX_HTML = resolve(ROOT, 'index.html');
 const WOODMODEL_SCHEMA = resolve(ROOT, 'woodmodel.schema.json');
+const WOODTEMPLATES_SCHEMA = resolve(ROOT, 'woodtemplates.schema.json');
 
 const errors = [];
 const warnings = [];
@@ -113,18 +114,35 @@ for (const key of htmlKeys) {
     }
 }
 
-// Schema `type` discriminator must equal ADD_TYPES (as an unordered set).
-const schema = JSON.parse(readFileSync(WOODMODEL_SCHEMA, 'utf8'));
-const schemaTypeEnum = schema?.properties?.pieces?.items?.properties?.type?.enum;
-if (!Array.isArray(schemaTypeEnum)) {
-    err('woodmodel.schema.json: pieces.items.properties.type.enum is missing or not an array');
-} else {
-    const a = new Set(ADD_TYPES);
-    const b = new Set(schemaTypeEnum);
-    const onlyInAdd = [...a].filter(x => !b.has(x));
-    const onlyInSchema = [...b].filter(x => !a.has(x));
-    if (onlyInAdd.length) err('Schema type enum is missing ADD_TYPES values: ' + onlyInAdd.join(', '));
-    if (onlyInSchema.length) err('Schema type enum has extra values not in ADD_TYPES: ' + onlyInSchema.join(', '));
+// Every schema `type` enum must equal ADD_TYPES (as an unordered set).
+const modelSchema = JSON.parse(readFileSync(WOODMODEL_SCHEMA, 'utf8'));
+const templatesSchema = JSON.parse(readFileSync(WOODTEMPLATES_SCHEMA, 'utf8'));
+const modelPieceProps = modelSchema?.properties?.pieces?.items?.properties;
+const schemaTypeEnums = [
+    {
+        label: 'woodmodel.schema.json: pieces.items.properties.type.enum',
+        values: modelPieceProps?.type?.enum,
+    },
+    {
+        label: 'woodmodel.schema.json: pieces.items.properties.csgOps.items.properties.tool.properties.type.enum',
+        values: modelPieceProps?.csgOps?.items?.properties?.tool?.properties?.type?.enum,
+    },
+    {
+        label: 'woodtemplates.schema.json: items.properties.type.enum',
+        values: templatesSchema?.items?.properties?.type?.enum,
+    },
+];
+const addTypeSet = new Set(ADD_TYPES);
+for (const { label, values } of schemaTypeEnums) {
+    if (!Array.isArray(values)) {
+        err(label + ' is missing or not an array');
+        continue;
+    }
+    const schemaSet = new Set(values);
+    const onlyInAdd = [...addTypeSet].filter(x => !schemaSet.has(x));
+    const onlyInSchema = [...schemaSet].filter(x => !addTypeSet.has(x));
+    if (onlyInAdd.length) err(label + ' is missing ADD_TYPES values: ' + onlyInAdd.join(', '));
+    if (onlyInSchema.length) err(label + ' has extra values not in ADD_TYPES: ' + onlyInSchema.join(', '));
 }
 
 // Unused translation keys: present in translations but never referenced in HTML
@@ -152,7 +170,7 @@ out.push('- Translation keys (union): ' + union.size);
 out.push('- ADD_TYPES: ' + ADD_TYPES.length);
 out.push('- nameKey references: ' + nameKeys.size);
 out.push('- HTML data-i18n keys: ' + htmlKeys.size);
-out.push('- Schema type enum size: ' + (Array.isArray(schemaTypeEnum) ? schemaTypeEnum.length : 'n/a'));
+out.push('- Schema type enums checked: ' + schemaTypeEnums.length);
 out.push('');
 if (errors.length) {
     out.push('## Errors');

@@ -32,6 +32,6 @@ Releases run through the manual `Auto Release` workflow, which also deploys `ind
 
 - The JS-syntax workflow extracts inline scripts via awk that matches a bare `<script>` line opening and `</script>` line closing. **Keep those tags on their own lines in `index.html`, with the opening `<script>` unindented** — an indented one is not extracted.
 - When you change `woodmodel.schema.json` or `woodtemplates.schema.json`, also update or add an example in `examples/` so the schema-validation CI catches drift.
-- When you add a shape type, update `ADD_TYPES` in `index.html` and all three `type` enums: the piece `type` and the CSG tool `type` in `woodmodel.schema.json`, plus the one in `woodtemplates.schema.json`. The consistency-lint CI only compares `ADD_TYPES` with the piece `type`, so it won't catch the other two.
+- When you add a shape type, update `ADD_TYPES` in `index.html` and all three `type` enums: the piece `type` and the CSG tool `type` in `woodmodel.schema.json`, plus the one in `woodtemplates.schema.json`. The consistency-lint CI fails if any of them differs.
 - Visual-regression baselines live under `tests/visual.spec.js-snapshots/`. Regenerate them via the `Update visual baselines` workflow (`workflow_dispatch`) — never edit by hand. They're OS-tagged (`*-linux.png`); only generate from CI.
 - The smoke and visual Playwright workflows are split by passing the spec path explicitly (`tests/smoke.spec.js` vs `tests/visual.spec.js`). Don't try to filter by `--grep` — it matches the full test ID including path and lets visual specs slip through.

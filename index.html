@@ -699,8 +699,20 @@
 
 <div id="print-sheet"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.187.0/three.module.min.js"
+    },
+    "integrity": {
+        "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.187.0/three.module.min.js": "sha384-2o6Brc+6k9FL4RKEg+Vu8Go3AJDwxyDwy786tCvLULIju/uivk9dVjFze1elAFor",
+        "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.187.0/three.core.js": "sha384-drH6BueSlcvoXCwAqWkNJvXwu2Ax3mnGOmZnIXaomedIw+uXSP9Bf/XIUINgLUW+"
+    }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
 window.addEventListener('load', function() {
     "use strict";
 
@@ -1394,11 +1406,15 @@ window.addEventListener('load', function() {
     // ============================================================
 
     var viewport = document.getElementById('viewport');
+    // Keep the legacy color pipeline: hex colors reach the screen unconverted and
+    // measureVisibility() can read piece IDs back from a render target unchanged.
+    THREE.ColorManagement.enabled = false;
     var renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
     renderer.setSize(viewport.clientWidth, viewport.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.setClearColor(0xf0eee9);
     viewport.appendChild(renderer.domElement);
 
@@ -1553,14 +1569,14 @@ window.addEventListener('load', function() {
         }
     }
 
-    // Lights
-    var hemiLight = new THREE.HemisphereLight(0xfff5e6, 0xd8d4cc, 0.55);
+    // Lights (intensities scaled by PI since r155 dropped the legacy lighting mode)
+    var hemiLight = new THREE.HemisphereLight(0xfff5e6, 0xd8d4cc, 0.55 * Math.PI);
     scene.add(hemiLight);
 
-    var ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
+    var ambientLight = new THREE.AmbientLight(0xffffff, 0.25 * Math.PI);
     scene.add(ambientLight);
 
-    var dirLight = new THREE.DirectionalLight(0xffffff, 0.75);
+    var dirLight = new THREE.DirectionalLight(0xffffff, 0.75 * Math.PI);
     dirLight.position.set(300, 500, 400);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
@@ -6117,6 +6133,7 @@ window.addEventListener('load', function() {
     // Production runs never set the flag, so the global stays unset.
     if (/[?&]__test=1\b/.test(location.search)) {
         window.__app = {
+            THREE: THREE,
             pieces: pieces,
             groups: groups,
             addPiece: addPiece,

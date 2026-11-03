@@ -177,6 +177,7 @@ test('offscreen sheet render leaves renderer, scene and selection untouched', as
 
     const result = await page.evaluate(() => {
         const app = window.__app;
+        const THREE = app.THREE;
         app.addPiece(app.makeDefaultForType('Dowel'));
         // addPiece selects the piece, so its material carries the selection color.
         const piece = app.makeDefaultForType('Board');

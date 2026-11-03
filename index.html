@@ -153,7 +153,7 @@
     .add-dropdown > button:hover { background: var(--surface-2); }
     .add-dropdown > button::after { content: ' \25BE'; font-size: 9px; color: var(--text-muted); }
     .add-menu {
-        display: none; position: fixed; min-width: 200px;
+        display: none; position: fixed; min-width: 200px; overflow-y: auto;
         background: var(--surface); border: 1px solid var(--border);
         border-radius: var(--radius); z-index: 300; padding: 5px 0;
         box-shadow: var(--shadow-lg);
@@ -298,7 +298,7 @@
     }
     .menu-dropdown > button:hover { background: var(--surface-2); }
     .menu-panel {
-        display: none; position: fixed; min-width: 200px;
+        display: none; position: fixed; min-width: 200px; overflow-y: auto;
         background: var(--surface); border: 1px solid var(--border);
         border-radius: var(--radius); z-index: 300; padding: 5px 0;
         box-shadow: var(--shadow-lg);
@@ -5824,6 +5824,8 @@ window.addEventListener('load', function() {
         var btn = dd.querySelector('button');
         var rect = btn.getBoundingClientRect();
         menu.style.top = (rect.bottom + 4) + 'px';
+        // Keep tall menus inside the window; the rest scrolls
+        menu.style.maxHeight = (window.innerHeight - rect.bottom - 12) + 'px';
         menu.style.left = '0px';
         var menuRect = menu.getBoundingClientRect();
         var menuWidth = menuRect.width || 220;
@@ -6064,6 +6066,8 @@ window.addEventListener('load', function() {
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
+        var openDropdown = document.querySelector('.add-dropdown.open, .menu-dropdown.open');
+        if (openDropdown) positionMenu(openDropdown, openDropdown.querySelector('.add-menu, .menu-panel'));
     });
 
     // ============================================================
@@ -6144,6 +6148,12 @@ window.addEventListener('load', function() {
                 camera.updateProjectionMatrix();
             },
             forceRender: function() { renderer.render(scene, camera); },
+            // README screenshots: place the camera through the orbit controls
+            setCameraView: function(position, target) {
+                camera.position.set(position.x, position.y, position.z);
+                controls.target.set(target.x, target.y, target.z);
+                controls.update();
+            },
             // Workshop output: sheet DOM builder and the state-neutral offscreen render
             buildWorkshopSheet: buildWorkshopSheet,
             renderViewToDataURL: renderViewToDataURL

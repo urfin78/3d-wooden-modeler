@@ -47,7 +47,7 @@ jobs:
           npx --prefix .github playwright test \
             --config tests/playwright.config.js \
             tests/visual.spec.js \
-            --update-snapshots
+            --update-snapshots=all
 
       - name: Open PR with regenerated baselines
         uses: peter-evans/create-pull-request@v7

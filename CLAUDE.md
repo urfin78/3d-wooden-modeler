@@ -4,7 +4,7 @@ Guidance for Claude Code working in this repo. Auto-loaded every session — kee
 
 ## Project
 
-Browser-based 3D woodworking modeler. Single self-contained `index.html` — no build step, no framework, no local toolchain. Three.js r128 via CDN. Open `index.html` in a browser to run.
+Browser-based 3D woodworking modeler. Single self-contained `index.html` — no build step, no framework, no local toolchain. Three.js 0.187.0 (ES module) via CDN, pinned with an import map. Open `index.html` in a browser to run.
 
 The full app lives inside one `window.addEventListener('load', …)` closure in `index.html`, organized into comment-delimited sections. Use those comments to navigate.
 
@@ -23,6 +23,8 @@ Releases run through the manual `Auto Release` workflow, which also deploys `ind
 ## Code conventions
 
 - All dimensions are in millimeters.
+- The renderer deliberately keeps the legacy color pipeline (`ColorManagement.enabled = false`, linear output, light intensities scaled by π). Enabling color management would change the look and break the ID colors in `measureVisibility()`.
+- Change `material.transparent` at runtime only through `setTransparent()`. Three.js compiles opaque materials with a shader variant that forces alpha to 1, so the toggle needs `needsUpdate`.
 - `mesh.userData.type` values are fixed English identifiers (`'Board'`, `'Dowel'`, `'Wedge'`, `'L-Bracket'`, `'Tapered Leg'`, `'Frustum Board'`, `'Pyramid Frustum'`, `'Frame'`). Translations happen only at the display layer via `typeName()`.
 - The `pieces[]` array is the source of truth for scene objects. Mutate state via `pushUndo()` first; rebuild geometry via `rebuildGeometry()` after dimension changes; call `updateGrid()` after position/dimension changes.
 - User-facing strings must go through `t()` / `typeName()`. When adding a new string, add the key in every language in `translations` (currently `en` + `de`) — the consistency-lint CI fails otherwise.
@@ -31,7 +33,8 @@ Releases run through the manual `Auto Release` workflow, which also deploys `ind
 
 ## Hidden constraints (CI will catch these, but easier to avoid up front)
 
-- The JS-syntax workflow extracts inline scripts via awk that matches a bare `<script>` line opening and `</script>` line closing. **Keep those tags on their own lines in `index.html`, with the opening `<script>` unindented** — an indented one is not extracted.
+- The JS-syntax workflow extracts inline scripts via awk that matches a bare `<script>` or `<script type="module">` line opening and `</script>` line closing. **Keep those tags on their own lines in `index.html`, with the opening tag unindented** — an indented one is not extracted.
+- When you bump Three.js, change the version in every import map URL and recompute both `sha384` hashes from the cdnjs files. `three.module.min.js` also imports `three.core.js`, so both need a hash. jsDelivr minifies its own copy, so its hash differs.
 - When you change `woodmodel.schema.json` or `woodtemplates.schema.json`, also update or add an example in `examples/` so the schema-validation CI catches drift.
 - When you add a shape type, update `ADD_TYPES` in `index.html` and all three `type` enums: the piece `type` and the CSG tool `type` in `woodmodel.schema.json`, plus the one in `woodtemplates.schema.json`. The consistency-lint CI fails if any of them differs.
 - Visual-regression baselines live under `tests/visual.spec.js-snapshots/`. Regenerate them via the `Update visual baselines` workflow (`workflow_dispatch`) — never edit by hand. They're OS-tagged (`*-linux.png`); only generate from CI.

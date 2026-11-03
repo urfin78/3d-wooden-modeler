@@ -24,6 +24,7 @@ Releases run through the manual `Auto Release` workflow, which also deploys `ind
 
 - All dimensions are in millimeters.
 - The renderer deliberately keeps the legacy color pipeline (`ColorManagement.enabled = false`, linear output, light intensities scaled by π). Enabling color management would change the look and break the ID colors in `measureVisibility()`.
+- Change `material.transparent` at runtime only through `setTransparent()`. Three.js compiles opaque materials with a shader variant that forces alpha to 1, so the toggle needs `needsUpdate`.
 - `mesh.userData.type` values are fixed English identifiers (`'Board'`, `'Dowel'`, `'Wedge'`, `'L-Bracket'`, `'Tapered Leg'`, `'Frustum Board'`, `'Pyramid Frustum'`, `'Frame'`). Translations happen only at the display layer via `typeName()`.
 - The `pieces[]` array is the source of truth for scene objects. Mutate state via `pushUndo()` first; rebuild geometry via `rebuildGeometry()` after dimension changes; call `updateGrid()` after position/dimension changes.
 - User-facing strings must go through `t()` / `typeName()`. When adding a new string, add the key in every language in `translations` (currently `en` + `de`) — the consistency-lint CI fails otherwise.

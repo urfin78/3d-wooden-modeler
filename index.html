@@ -2070,12 +2070,20 @@ window.addEventListener('load', function() {
         return mesh;
     }
 
+    // Opaque materials compile with a shader variant that forces alpha to 1, so toggling
+    // transparent only takes effect after a recompile.
+    function setTransparent(mat, transparent) {
+        if (mat.transparent === transparent) return;
+        mat.transparent = transparent;
+        mat.needsUpdate = true;
+    }
+
     function applyXray(mesh) {
         var isActive = xrayMode && (
             mesh === selectedPiece ||
             (selectedGroup && mesh.userData.groupId === selectedGroup.userData.gId)
         );
-        mesh.material.transparent = xrayMode && !isActive;
+        setTransparent(mesh.material, xrayMode && !isActive);
         mesh.material.opacity = (xrayMode && !isActive) ? XRAY_OPACITY : 1.0;
         // Disable depth writes so transparent pieces don't occlude objects inside them
         mesh.material.depthWrite = !xrayMode || isActive;
@@ -4882,7 +4890,7 @@ window.addEventListener('load', function() {
                     });
                     var ghost = !!opts.highlight && opts.highlight.indexOf(m) === -1;
                     mat.color.setHex(opts.highlight && !ghost ? SHEET_HIGHLIGHT_COLOR : WOOD_COLOR);
-                    mat.transparent = ghost;
+                    setTransparent(mat, ghost);
                     mat.opacity = ghost ? SHEET_GHOST_OPACITY : 1.0;
                     mat.depthWrite = !ghost;
                     if (ghost && m.castShadow) {
@@ -4908,7 +4916,7 @@ window.addEventListener('load', function() {
             for (var i = matState.length - 1; i >= 0; i--) {
                 var s = matState[i];
                 s.mat.color.setHex(s.color);
-                s.mat.transparent = s.transparent;
+                setTransparent(s.mat, s.transparent);
                 s.mat.opacity = s.opacity;
                 s.mat.depthWrite = s.depthWrite;
             }

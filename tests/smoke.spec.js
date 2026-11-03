@@ -206,6 +206,38 @@ test('offscreen sheet render leaves renderer, scene and selection untouched', as
     expect(result.length).toBeGreaterThan(1000);
 });
 
+test('x-ray mode makes unselected pieces see-through and restores them', async ({ page }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+        const app = window.__app;
+        const target = app.makeDefaultForType('Board');
+        app.addPiece(target);
+        // The selected piece stays opaque, so select another one far out of view.
+        const other = app.makeDefaultForType('Board');
+        other.position.x += 3000;
+        app.addPiece(other);
+        app.frameToObject(target);
+        const centerPixel = () => {
+            app.forceRender();
+            const gl = app.renderer.getContext();
+            const px = new Uint8Array(4);
+            gl.readPixels(gl.drawingBufferWidth >> 1, gl.drawingBufferHeight >> 1, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+            return Array.from(px).slice(0, 3);
+        };
+        const button = document.getElementById('btn-xray');
+        const off = centerPixel();
+        button.click();
+        const on = centerPixel();
+        button.click();
+        return { off, on, restored: centerPixel() };
+    });
+
+    // The light background shows through, which raises the wood's low blue channel.
+    expect(result.on[2]).toBeGreaterThan(result.off[2] + 20);
+    expect(result.restored).toEqual(result.off);
+});
+
 test('workshop sheet gives enclosed parts a detail view and restores materials', async ({ page }) => {
     await gotoApp(page);
 

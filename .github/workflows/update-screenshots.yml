@@ -1,0 +1,62 @@
+name: Update README screenshots
+
+# Manually triggered. Regenerates the PNGs under docs/screenshots/ from the
+# current app, then opens a PR with the changes for review.
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Source branch to take the screenshots on (default: current default branch)'
+        required: false
+        default: ''
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  regen:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.branch || github.ref_name }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Install CI tooling
+        working-directory: .github
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium for Playwright
+        working-directory: .github
+        run: npx playwright install --with-deps chromium
+
+      - name: Regenerate screenshots
+        env:
+          CI: '1'
+          NODE_PATH: ${{ github.workspace }}/.github/node_modules
+        run: |
+          export PATH="${GITHUB_WORKSPACE}/.github/node_modules/.bin:${PATH}"
+          npx --prefix .github playwright test \
+            --config tests/playwright.config.js \
+            tests/readme-screenshots.spec.js
+
+      - name: Open PR with regenerated screenshots
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "docs: regenerate README screenshots"
+          title: "docs: regenerate README screenshots"
+          body: |
+            Automated screenshot refresh from `update-screenshots.yml`.
+
+            Triggered by @${{ github.actor }} on `${{ inputs.branch || github.ref_name }}`.
+          branch: docs/update-readme-screenshots
+          delete-branch: true
+          add-paths: |
+            docs/screenshots/**

@@ -6144,6 +6144,12 @@ window.addEventListener('load', function() {
                 camera.updateProjectionMatrix();
             },
             forceRender: function() { renderer.render(scene, camera); },
+            // README screenshots: place the camera through the orbit controls
+            setCameraView: function(position, target) {
+                camera.position.set(position.x, position.y, position.z);
+                controls.target.set(target.x, target.y, target.z);
+                controls.update();
+            },
             // Workshop output: sheet DOM builder and the state-neutral offscreen render
             buildWorkshopSheet: buildWorkshopSheet,
             renderViewToDataURL: renderViewToDataURL

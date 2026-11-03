@@ -245,3 +245,28 @@ test('workshop sheet gives enclosed parts a detail view and restores materials',
     expect(result.before).toHaveLength(3);
     expect(result.after).toEqual(result.before);
 });
+
+test('tall add menu stays inside the window and scrolls to its last item', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 500 });
+    await gotoApp(page);
+    await page.locator('#add-dropdown > button').click();
+
+    const menuFits = () => page.locator('#add-dropdown .add-menu').evaluate((menu) => ({
+        bottom: menu.getBoundingClientRect().bottom,
+        windowHeight: window.innerHeight,
+        scrolls: menu.scrollHeight > menu.clientHeight
+    }));
+    const small = await menuFits();
+    expect(small.scrolls).toBe(true);
+    expect(small.bottom).toBeLessThanOrEqual(small.windowHeight);
+
+    // The limit follows the window while the menu is open
+    await page.setViewportSize({ width: 1280, height: 400 });
+    const smaller = await menuFits();
+    expect(smaller.bottom).toBeLessThanOrEqual(smaller.windowHeight);
+
+    const lastItem = page.locator('#add-dropdown .add-menu-item').last();
+    await lastItem.scrollIntoViewIfNeeded();
+    const box = await lastItem.boundingBox();
+    expect(box.y + box.height).toBeLessThanOrEqual(smaller.windowHeight);
+});

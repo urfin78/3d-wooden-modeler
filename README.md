@@ -30,6 +30,8 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 - **Save/Load** models as `.woodmodel.json` files for persistent projects
 - **Cost calculator** with per-piece pricing (fixed or per-mm), currency selector, and live cost summary
 - **CSV export** of a cut list with dimensions, types, notch counts, and costs
+- **Workshop sheet** — File → Print Workshop Sheet builds a printable A4 sheet (or PDF via the browser's print dialog): front, side and top views with overall dimensions in mm, an isometric view with position numbers on the parts visible from there, further views for parts only visible from another side, zoomed X-ray detail views for parts hidden from every side (marked in the isometric view, nearby parts share one view), and a parts list that merges identical parts into one numbered row with their quantity (all identical parts carry that number in the views) and a picture of the part on its own, dimensions, miter angles and notch counts
+- **PNG export** of the current viewport (File → Export View as PNG)
 - **Multi-language UI** — English and German, switchable from the Settings (gear) menu in the toolbar; language is auto-detected from the browser and persisted
 
 ## Usage
@@ -37,7 +39,7 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 1. Open `index.html` in any modern browser
 2. Use the toolbar's `+ Add` menu to add pieces — choose from defaults or library templates, grouped by piece type
 3. Toggle modes (Snap, Labels, X-Ray, Ruler) via the icon buttons in the toolbar
-4. Less frequent actions (Cut Joint, Split, Show Overlaps, Clear Rulers, Clear All) live in the **Tools** menu; file actions (Save/Load, Export CSV, Import/Export Templates) live in the **File** menu
+4. Less frequent actions (Cut Joint, Split, Show Overlaps, Clear Rulers, Clear All) live in the **Tools** menu; file actions (Save/Load, Export CSV, Print Workshop Sheet, Export PNG, Import/Export Templates) live in the **File** menu
 5. Click a piece to select it and edit its dimensions, position, rotation, and label in the side panel; per-selection actions (Duplicate, Group, Delete) appear in a floating action bar
 6. Drag pieces to reposition them (Shift+drag for vertical movement)
 7. Use **Cut Joint** (Tools menu) to carve one piece into another (e.g., drill a dowel hole into a board)
@@ -45,6 +47,7 @@ A browser-based 3D woodworking modeller for planning and visualizing wooden cons
 9. Set prices per piece and check the **Cost Summary** in the side panel
 10. **Save** your model and **Load** it later (File menu) to continue working
 11. Export your cut list as CSV when done (File menu)
+12. Print a **Workshop Sheet** (File menu) to take dimensioned views and the parts list into the workshop; choose "Save as PDF" in the print dialog for a PDF
 
 ### Example model
 

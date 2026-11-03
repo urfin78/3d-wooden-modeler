@@ -26,6 +26,7 @@ Releases run through the manual `Auto Release` workflow, which also deploys `ind
 - `mesh.userData.type` values are fixed English identifiers (`'Board'`, `'Dowel'`, `'Wedge'`, `'L-Bracket'`, `'Tapered Leg'`, `'Frustum Board'`, `'Pyramid Frustum'`, `'Frame'`). Translations happen only at the display layer via `typeName()`.
 - The `pieces[]` array is the source of truth for scene objects. Mutate state via `pushUndo()` first; rebuild geometry via `rebuildGeometry()` after dimension changes; call `updateGrid()` after position/dimension changes.
 - User-facing strings must go through `t()` / `typeName()`. When adding a new string, add the key in every language in `translations` (currently `en` + `de`) — the consistency-lint CI fails otherwise.
+- `renderViewToDataURL()` (workshop sheet, PNG export) renders through the live renderer, so it must restore everything it touches — renderer size, pixel ratio, clear color, scene visibility, piece materials. If you add a new kind of scene helper (sprite, indicator, line) directly under `scene`, the `clean` mode hides it automatically; anything attached as a child of a piece mesh shows up on the sheet. `measureVisibility()` swaps every piece's material for an ID color, so the same rule applies there.
 - The `?__test=1` query attaches `window.__app` for Playwright tests. When adding helpers that future tests should reach, append them to that hook explicitly — do not re-export everything by default. The hook stays inert without the query.
 
 ## Hidden constraints (CI will catch these, but easier to avoid up front)

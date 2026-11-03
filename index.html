@@ -362,6 +362,42 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; border: 2px solid var(--bg); }
     ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+    /* Workshop sheet — only rendered while printing via File → Print Workshop Sheet */
+    #print-sheet { display: none; }
+    #print-sheet .sheet-page { color: #000; font-size: 10pt; }
+    #print-sheet .sheet-header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1.5pt solid #000; padding-bottom: 4pt; margin-bottom: 8pt; }
+    #print-sheet h1 { font-size: 16pt; margin: 0; }
+    #print-sheet h2 { font-size: 13pt; margin: 0 0 6pt; }
+    #print-sheet .sheet-meta { font-size: 9pt; text-align: right; }
+    #print-sheet .sheet-views { display: grid; grid-template-columns: 1fr 1fr; gap: 6pt; }
+    #print-sheet .sheet-view { margin: 0; border: 0.5pt solid #999; padding: 3pt; }
+    #print-sheet .sheet-view-img { position: relative; }
+    #print-sheet .sheet-view-img img { display: block; width: 100%; height: auto; }
+    #print-sheet .sheet-view-img svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    #print-sheet figcaption { font-size: 9pt; font-weight: 600; text-align: center; margin-top: 2pt; }
+    #print-sheet .sheet-parts, #print-sheet .sheet-details { break-before: page; }
+    #print-sheet .sheet-view { break-inside: avoid; }
+    /* Separate borders: collapsed hairlines get dropped in Chrome's print preview */
+    #print-sheet table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 9pt; }
+    /* Outer borders on the cells: a table border would run past the last row at a page break */
+    #print-sheet tr > :first-child { border-left: 1px solid #666; }
+    #print-sheet th { border-top: 1px solid #666; }
+    #print-sheet thead { display: table-header-group; }
+    #print-sheet tr { break-inside: avoid; }
+    #print-sheet th, #print-sheet td { border-right: 1px solid #666; border-bottom: 1px solid #666; padding: 2pt 4pt; text-align: left; vertical-align: middle; }
+    #print-sheet td.sheet-dims { white-space: nowrap; }
+    #print-sheet td.sheet-thumb { padding: 1pt; width: 16mm; }
+    #print-sheet td.sheet-thumb img { display: block; width: 16mm; height: auto; }
+    /* Keep the header shading when "Print backgrounds" is off in the print dialog */
+    #print-sheet th { background: #eee; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    #print-sheet td.num { text-align: right; }
+    @page { size: A4 portrait; margin: 12mm; }
+    @media print {
+        body.print-sheet-active { overflow: visible; background: #fff; }
+        body.print-sheet-active > *:not(#print-sheet) { display: none !important; }
+        body.print-sheet-active #print-sheet { display: block; }
+    }
 </style>
 </head>
 <body>
@@ -424,6 +460,8 @@
             <div class="menu-item" id="menu-load" data-i18n="toolbar.load">Load</div>
             <div class="menu-sep"></div>
             <div class="menu-item" id="menu-export-csv" data-i18n="toolbar.exportCsv">Export CSV</div>
+            <div class="menu-item" id="menu-print-sheet" data-i18n="toolbar.printSheet">Print Workshop Sheet</div>
+            <div class="menu-item" id="menu-export-png" data-i18n="toolbar.exportPng">Export View as PNG</div>
             <div class="menu-item" id="menu-export-templates" data-i18n="toolbar.exportTemplates">Export Templates</div>
             <div class="menu-item" id="menu-import-templates" data-i18n="toolbar.importTemplates">Import Templates</div>
         </div>
@@ -659,6 +697,8 @@
     </div>
 </div>
 
+<div id="print-sheet"></div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 window.addEventListener('load', function() {
@@ -711,6 +751,26 @@ window.addEventListener('load', function() {
             'toolbar.delete': 'Delete',
             'toolbar.clearAll': 'Clear All',
             'toolbar.exportCsv': 'Export CSV',
+            'toolbar.printSheet': 'Print Workshop Sheet',
+            'toolbar.exportPng': 'Export View as PNG',
+            'sheet.title': 'Workshop Sheet',
+            'sheet.overall': 'Overall size (W × H × D)',
+            'sheet.partCount': '{count} parts',
+            'sheet.partCountOne': '1 part',
+            'sheet.view.front': 'Front view',
+            'sheet.view.side': 'Side view (from right)',
+            'sheet.view.top': 'Top view',
+            'sheet.view.iso': 'Isometric view',
+            'sheet.view.other': 'Other side: Pos. {pos}',
+            'sheet.view.detail': 'Detail {id}: Pos. {pos} (×{zoom} vs. isometric view)',
+            'sheet.details': 'Other sides and hidden parts',
+            'sheet.partsList': 'Parts list',
+            'sheet.col.pos': 'Pos.',
+            'sheet.col.image': 'Part',
+            'sheet.col.qty': 'Qty',
+            'sheet.col.dims': 'Dimensions',
+            'sheet.col.miter': 'Miter',
+            'sheet.empty': 'The model is empty — nothing to print.',
             'toolbar.save': 'Save',
             'toolbar.load': 'Load',
             'toolbar.exportTemplates': 'Export Templates',
@@ -895,6 +955,26 @@ window.addEventListener('load', function() {
             'toolbar.delete': 'Löschen',
             'toolbar.clearAll': 'Alles löschen',
             'toolbar.exportCsv': 'CSV-Export',
+            'toolbar.printSheet': 'Werkstattblatt drucken',
+            'toolbar.exportPng': 'Ansicht als PNG exportieren',
+            'sheet.title': 'Werkstattblatt',
+            'sheet.overall': 'Gesamtmaß (B × H × T)',
+            'sheet.partCount': '{count} Teile',
+            'sheet.partCountOne': '1 Teil',
+            'sheet.view.front': 'Vorderansicht',
+            'sheet.view.side': 'Seitenansicht (von rechts)',
+            'sheet.view.top': 'Draufsicht',
+            'sheet.view.iso': 'Isometrie',
+            'sheet.view.other': 'Andere Seite: Pos. {pos}',
+            'sheet.view.detail': 'Detail {id}: Pos. {pos} (×{zoom} gegenüber Isometrie)',
+            'sheet.details': 'Andere Seiten und verdeckte Teile',
+            'sheet.partsList': 'Teileliste',
+            'sheet.col.pos': 'Pos.',
+            'sheet.col.image': 'Teil',
+            'sheet.col.qty': 'Anz.',
+            'sheet.col.dims': 'Maße',
+            'sheet.col.miter': 'Gehrung',
+            'sheet.empty': 'Das Modell ist leer – nichts zu drucken.',
             'toolbar.save': 'Speichern',
             'toolbar.load': 'Laden',
             'toolbar.exportTemplates': 'Vorlagen exportieren',
@@ -2399,6 +2479,11 @@ window.addEventListener('load', function() {
     function updateSizeSummary() {
         if (!selectedPiece) return;
         var ud = selectedPiece.userData;
+        sizeSummary.textContent = pieceSizeText(ud) + ' | ' + t('summary.notches') + ': ' + ud.notches;
+    }
+
+    // Human-readable dimensions of a piece; shared by the side panel and the workshop sheet.
+    function pieceSizeText(ud) {
         var text = '';
         if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
             text = ud.w + ' x ' + ud.h + ' x ' + ud.d + ' mm';
@@ -2413,8 +2498,7 @@ window.addEventListener('load', function() {
         } else if (ud.type === 'Frame') {
             text = ud.wOuter + ' x ' + ud.hOuter + ' x ' + ud.dOuter + ' mm — ' + ud.gridX + 'x' + ud.gridY;
         }
-        text += ' | ' + t('summary.notches') + ': ' + ud.notches;
-        sizeSummary.textContent = text;
+        return text;
     }
 
     // ============================================================
@@ -4626,6 +4710,738 @@ window.addEventListener('load', function() {
     }
 
     // ============================================================
+    // Workshop Output
+    // ============================================================
+
+    var printSheet = document.getElementById('print-sheet');
+    var SVG_NS = 'http://www.w3.org/2000/svg';
+    var SHEET_VIEW_W = 1000;
+    // Aspect ratio fills an A4 portrait page with the 2x2 view grid
+    var SHEET_VIEW_H = 1300;
+    // Free pixels around the model in each view, leaves room for the dimension lines
+    var SHEET_VIEW_MARGIN = 90;
+    var SHEET_THUMB_W = 240;
+    var SHEET_THUMB_H = 180;
+    var SHEET_THUMB_MARGIN = 10;
+    var SHEET_DETAIL_H = 800;
+    // Faces meeting at less than this do not get an outline, so cylinder facets show no lines
+    var SHEET_OUTLINE_ANGLE = 30;
+    var SHEET_HIGHLIGHT_COLOR = 0xc8452f;
+    var SHEET_GHOST_OPACITY = 0.18;
+    // Directions checked for visibility. The first is the isometric overview on page 1.
+    var SHEET_PROBE_DIRS = [
+        [1, 0.7, 1], [-1, 0.7, -1], [1, 0.7, -1], [-1, 0.7, 1],
+        [1, -0.7, 1], [-1, -0.7, -1], [1, -0.7, -1], [-1, -0.7, 1]
+    ];
+    // A piece with fewer visible pixels in a half-size probe image counts as not visible there
+    var SHEET_MIN_VISIBLE_PX = 4;
+    // hAxis/vAxis: world axis spanned horizontally/vertically in the image, used for the dimension values
+    var SHEET_VIEWS = [
+        { key: 'sheet.view.front', dir: [0, 0, 1], up: [0, 1, 0], hAxis: 'x', vAxis: 'y' },
+        { key: 'sheet.view.side', dir: [1, 0, 0], up: [0, 1, 0], hAxis: 'z', vAxis: 'y' },
+        { key: 'sheet.view.top', dir: [0, 1, 0], up: [0, 0, -1], hAxis: 'x', vAxis: 'z' }
+    ];
+
+    // CSG results have T-junctions: faces are split into triangles whose edges do not line up, so
+    // EdgesGeometry would draw every unmatched edge as a line across flat faces. Here an unmatched
+    // edge only counts if it lies on the boundary of a triangle facing another way, i.e. on a real crease.
+    function csgOutlineGeometry(geometry) {
+        var cosLimit = Math.cos(SHEET_OUTLINE_ANGLE * Math.PI / 180);
+        var source = geometry.index ? geometry.toNonIndexed() : geometry;
+        var pos = source.attributes.position;
+        var tris = [];
+        for (var i = 0; i + 2 < pos.count; i += 3) {
+            var v = [
+                new THREE.Vector3().fromBufferAttribute(pos, i),
+                new THREE.Vector3().fromBufferAttribute(pos, i + 1),
+                new THREE.Vector3().fromBufferAttribute(pos, i + 2)
+            ];
+            var normal = new THREE.Vector3().subVectors(v[1], v[0]).cross(new THREE.Vector3().subVectors(v[2], v[0]));
+            if (normal.lengthSq() < 1e-10) continue;
+            tris.push({ v: v, n: normal.normalize() });
+        }
+        function vertexKey(p) {
+            return Math.round(p.x * 1000) + ',' + Math.round(p.y * 1000) + ',' + Math.round(p.z * 1000);
+        }
+        var edges = {};
+        tris.forEach(function(tri, t) {
+            for (var e = 0; e < 3; e++) {
+                var a = tri.v[e];
+                var b = tri.v[(e + 1) % 3];
+                var ka = vertexKey(a);
+                var kb = vertexKey(b);
+                if (ka === kb) continue;
+                var key = ka < kb ? ka + '|' + kb : kb + '|' + ka;
+                if (!edges[key]) edges[key] = { a: a, b: b, tris: [] };
+                edges[key].tris.push(t);
+            }
+        });
+        var onCrease = function(edge) {
+            var self = tris[edge.tris[0]];
+            var mid = new THREE.Vector3().addVectors(edge.a, edge.b).multiplyScalar(0.5);
+            var closest = new THREE.Vector3();
+            return tris.some(function(other) {
+                if (other === self || other.n.dot(self.n) >= cosLimit) return false;
+                for (var e = 0; e < 3; e++) {
+                    new THREE.Line3(other.v[e], other.v[(e + 1) % 3]).closestPointToPoint(mid, true, closest);
+                    if (closest.distanceTo(mid) < 0.01) return true;
+                }
+                return false;
+            });
+        };
+        var lines = [];
+        Object.keys(edges).forEach(function(key) {
+            var edge = edges[key];
+            var keep = edge.tris.length > 1
+                ? tris[edge.tris[0]].n.dot(tris[edge.tris[1]].n) < cosLimit
+                : onCrease(edge);
+            if (keep) lines.push(edge.a.x, edge.a.y, edge.a.z, edge.b.x, edge.b.y, edge.b.z);
+        });
+        var result = new THREE.BufferGeometry();
+        result.setAttribute('position', new THREE.Float32BufferAttribute(lines, 3));
+        return result;
+    }
+
+    // Outline lines for a piece. CSG outlines are expensive and a sheet renders each piece many
+    // times, so their line positions are cached per geometry.
+    var csgOutlineCache = new WeakMap();
+    function pieceOutlineGeometry(m) {
+        if (!m.userData.csgModified) return new THREE.EdgesGeometry(m.geometry, SHEET_OUTLINE_ANGLE);
+        if (!csgOutlineCache.has(m.geometry)) csgOutlineCache.set(m.geometry, csgOutlineGeometry(m.geometry));
+        return csgOutlineCache.get(m.geometry).clone();
+    }
+
+    // Hide everything directly under `scene` except lights, pieces and groups; collects what it hid
+    function hideNonPieces(hidden) {
+        scene.children.forEach(function(c) {
+            var keep = c.isLight || c.userData.gId !== undefined || pieces.indexOf(c) !== -1;
+            if (!keep && c.visible) {
+                c.visible = false;
+                hidden.push(c);
+            }
+        });
+    }
+
+    // Render the scene through `cam` and return a PNG data URL. Renderer size, clear color,
+    // scene visibility and piece materials must be left exactly as found — the live viewport keeps
+    // using them. Runs synchronously so toDataURL works without preserveDrawingBuffer.
+    // w/h: output size in px (default: current canvas size).
+    // opts.clean: white background, pieces only (no grid, labels, rulers, highlights) with outlines.
+    // opts.only: with clean, render just this piece and hide all others.
+    // opts.highlight: with clean, show these pieces solid in the highlight color, all others as ghosts.
+    function renderViewToDataURL(cam, w, h, opts) {
+        opts = opts || {};
+        var oldSize = renderer.getSize(new THREE.Vector2());
+        var oldRatio = renderer.getPixelRatio();
+        var oldClear = renderer.getClearColor(new THREE.Color());
+        var oldAlpha = renderer.getClearAlpha();
+        var resized = !!(w && h);
+        var hidden = [];
+        var matState = [];
+        var outlines = [];
+        var outlineMat = null;
+        var ghostOutlineMat = null;
+        var shadowless = [];
+        try {
+            if (resized) {
+                renderer.setPixelRatio(1);
+                renderer.setSize(w, h, false);
+            }
+            if (opts.clean) {
+                renderer.setClearColor(0xffffff, 1);
+                hideNonPieces(hidden);
+                outlineMat = new THREE.LineBasicMaterial({ color: 0x2a1d10 });
+                ghostOutlineMat = new THREE.LineBasicMaterial({ color: 0xb0aaa2 });
+                pieces.forEach(function(m) {
+                    if (opts.only && m !== opts.only && m.visible) {
+                        m.visible = false;
+                        hidden.push(m);
+                    }
+                });
+                (opts.only ? [opts.only] : pieces).forEach(function(m) {
+                    var mat = m.material;
+                    matState.push({
+                        mat: mat, color: mat.color.getHex(), transparent: mat.transparent,
+                        opacity: mat.opacity, depthWrite: mat.depthWrite
+                    });
+                    var ghost = !!opts.highlight && opts.highlight.indexOf(m) === -1;
+                    mat.color.setHex(opts.highlight && !ghost ? SHEET_HIGHLIGHT_COLOR : WOOD_COLOR);
+                    mat.transparent = ghost;
+                    mat.opacity = ghost ? SHEET_GHOST_OPACITY : 1.0;
+                    mat.depthWrite = !ghost;
+                    if (ghost && m.castShadow) {
+                        m.castShadow = false;
+                        shadowless.push(m);
+                    }
+                    var outline = new THREE.LineSegments(pieceOutlineGeometry(m), ghost ? ghostOutlineMat : outlineMat);
+                    m.add(outline);
+                    outlines.push(outline);
+                });
+            }
+            renderer.render(scene, cam);
+            return renderer.domElement.toDataURL('image/png');
+        } finally {
+            outlines.forEach(function(o) {
+                o.parent.remove(o);
+                o.geometry.dispose();
+            });
+            if (outlineMat) outlineMat.dispose();
+            if (ghostOutlineMat) ghostOutlineMat.dispose();
+            shadowless.forEach(function(m) { m.castShadow = true; });
+            // Reverse order so a material shared by two pieces ends up with its original state
+            for (var i = matState.length - 1; i >= 0; i--) {
+                var s = matState[i];
+                s.mat.color.setHex(s.color);
+                s.mat.transparent = s.transparent;
+                s.mat.opacity = s.opacity;
+                s.mat.depthWrite = s.depthWrite;
+            }
+            hidden.forEach(function(c) { c.visible = true; });
+            renderer.setClearColor(oldClear, oldAlpha);
+            if (resized) {
+                renderer.setPixelRatio(oldRatio);
+                renderer.setSize(oldSize.x, oldSize.y, false);
+            }
+            renderer.render(scene, camera);
+        }
+    }
+
+    function exportPNG() {
+        var a = document.createElement('a');
+        a.href = renderViewToDataURL(camera);
+        a.download = 'model_view.png';
+        a.click();
+    }
+
+    function boxCorners(box) {
+        var pts = [];
+        [box.min.x, box.max.x].forEach(function(x) {
+            [box.min.y, box.max.y].forEach(function(y) {
+                [box.min.z, box.max.z].forEach(function(z) {
+                    pts.push(new THREE.Vector3(x, y, z));
+                });
+            });
+        });
+        return pts;
+    }
+
+    // Orthographic camera looking at `box` from direction `dir`, framed so the box fits a
+    // w x h px image with `margin` px of free space on the tighter axis.
+    // depthRadius: keep geometry this far around the box in the depth range (default: the box itself).
+    function makeSheetCamera(box, dir, up, w, h, margin, depthRadius) {
+        var center = box.getCenter(new THREE.Vector3());
+        var radius = depthRadius || Math.max(box.getSize(new THREE.Vector3()).length() / 2, 1);
+        var cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, radius * 4);
+        cam.up.copy(up);
+        cam.position.copy(center).addScaledVector(dir.clone().normalize(), radius * 2);
+        cam.lookAt(center);
+        cam.updateMatrixWorld();
+        var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        boxCorners(box).forEach(function(p) {
+            p.applyMatrix4(cam.matrixWorldInverse);
+            minX = Math.min(minX, p.x);
+            maxX = Math.max(maxX, p.x);
+            minY = Math.min(minY, p.y);
+            maxY = Math.max(maxY, p.y);
+        });
+        var scale = Math.min(
+            (w - 2 * margin) / Math.max(maxX - minX, 1),
+            (h - 2 * margin) / Math.max(maxY - minY, 1)
+        );
+        var cx = (minX + maxX) / 2;
+        var cy = (minY + maxY) / 2;
+        cam.left = cx - w / 2 / scale;
+        cam.right = cx + w / 2 / scale;
+        cam.top = cy + h / 2 / scale;
+        cam.bottom = cy - h / 2 / scale;
+        cam.updateProjectionMatrix();
+        return cam;
+    }
+
+    // World point → pixel coordinates in a w x h view image
+    function projectToSheetPx(cam, v, w, h) {
+        var p = v.clone().project(cam);
+        return { x: (p.x + 1) / 2 * w, y: (1 - p.y) / 2 * h };
+    }
+
+    // Render each piece in a unique flat color and read back which pixels it actually got.
+    // Returns per piece { count, x, y }: visible pixels and the visible pixel closest to their
+    // centroid, which is where a position number can sit on the part itself.
+    function measureVisibility(cam, w, h) {
+        var rt = new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter });
+        var buf = new Uint8Array(w * h * 4);
+        var oldClear = renderer.getClearColor(new THREE.Color());
+        var oldAlpha = renderer.getClearAlpha();
+        var hidden = [];
+        var materials = pieces.map(function(m) { return m.material; });
+        try {
+            hideNonPieces(hidden);
+            pieces.forEach(function(m, i) {
+                m.material = new THREE.MeshBasicMaterial({ color: i + 1 });
+            });
+            renderer.setClearColor(0x000000, 1);
+            renderer.setRenderTarget(rt);
+            renderer.render(scene, cam);
+            renderer.readRenderTargetPixels(rt, 0, 0, w, h, buf);
+        } finally {
+            renderer.setRenderTarget(null);
+            renderer.setClearColor(oldClear, oldAlpha);
+            pieces.forEach(function(m, i) {
+                m.material.dispose();
+                m.material = materials[i];
+            });
+            hidden.forEach(function(c) { c.visible = true; });
+            rt.dispose();
+        }
+        var stats = pieces.map(function() { return { count: 0, sumX: 0, sumY: 0, best: Infinity, x: 0, y: 0 }; });
+        function forEachPixel(fn) {
+            for (var row = 0; row < h; row++) {
+                for (var col = 0; col < w; col++) {
+                    var o = (row * w + col) * 4;
+                    var id = (buf[o] << 16) | (buf[o + 1] << 8) | buf[o + 2];
+                    // readPixels rows run bottom-up
+                    if (id > 0 && stats[id - 1]) fn(stats[id - 1], col, h - 1 - row);
+                }
+            }
+        }
+        forEachPixel(function(s, x, y) {
+            s.count++;
+            s.sumX += x;
+            s.sumY += y;
+        });
+        forEachPixel(function(s, x, y) {
+            var dx = x - s.sumX / s.count;
+            var dy = y - s.sumY / s.count;
+            var dist = dx * dx + dy * dy;
+            if (dist < s.best) {
+                s.best = dist;
+                s.x = x;
+                s.y = y;
+            }
+        });
+        return stats;
+    }
+
+    // Decide where each part gets its position number: `overviews` lists one opaque view per
+    // needed direction (the first is always the isometric one), `enclosed` the pieces that are
+    // not visible from any direction and need an X-ray detail view.
+    function analyzeVisibility(box) {
+        var up = new THREE.Vector3(0, 1, 0);
+        var results = SHEET_PROBE_DIRS.map(function(dir) {
+            var cam = makeSheetCamera(
+                box, new THREE.Vector3().fromArray(dir), up,
+                SHEET_VIEW_W / 2, SHEET_VIEW_H / 2, SHEET_VIEW_MARGIN / 2
+            );
+            return measureVisibility(cam, SHEET_VIEW_W / 2, SHEET_VIEW_H / 2);
+        });
+        var covered = pieces.map(function() { return false; });
+        function uncoveredIn(stats) {
+            var list = [];
+            stats.forEach(function(s, i) {
+                if (!covered[i] && s.count >= SHEET_MIN_VISIBLE_PX) list.push(i);
+            });
+            return list;
+        }
+        var overviews = [];
+        function take(d) {
+            var items = uncoveredIn(results[d]).map(function(i) {
+                covered[i] = true;
+                return { index: i, x: results[d][i].x * 2, y: results[d][i].y * 2 };
+            });
+            overviews.push({ dir: SHEET_PROBE_DIRS[d], items: items });
+        }
+        take(0);
+        while (true) {
+            var best = -1;
+            var bestCount = 0;
+            results.forEach(function(stats, d) {
+                var n = uncoveredIn(stats).length;
+                if (n > bestCount) {
+                    best = d;
+                    bestCount = n;
+                }
+            });
+            if (best < 0) break;
+            take(best);
+        }
+        var enclosed = [];
+        covered.forEach(function(isCovered, i) {
+            if (!isCovered) enclosed.push(i);
+        });
+        return { overviews: overviews, enclosed: enclosed };
+    }
+
+    function boxGap(a, b) {
+        var dx = Math.max(0, a.min.x - b.max.x, b.min.x - a.max.x);
+        var dy = Math.max(0, a.min.y - b.max.y, b.min.y - a.max.y);
+        var dz = Math.max(0, a.min.z - b.max.z, b.min.z - a.max.z);
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    // Merge enclosed pieces that lie close together so they share one detail view
+    function clusterPieces(indices, maxGap) {
+        var clusters = indices.map(function(i) {
+            return { members: [i], box: new THREE.Box3().setFromObject(pieces[i]) };
+        });
+        var merged = true;
+        while (merged) {
+            merged = false;
+            for (var a = 0; a < clusters.length && !merged; a++) {
+                for (var b = a + 1; b < clusters.length && !merged; b++) {
+                    if (boxGap(clusters[a].box, clusters[b].box) <= maxGap) {
+                        clusters[a].members = clusters[a].members.concat(clusters[b].members).sort(function(x, y) { return x - y; });
+                        clusters[a].box.union(clusters[b].box);
+                        clusters.splice(b, 1);
+                        merged = true;
+                    }
+                }
+            }
+        }
+        return clusters;
+    }
+
+    function formatMm(v) {
+        return String(Math.round(v * 10) / 10);
+    }
+
+    function sheetEl(tag, cls, parent) {
+        var el = document.createElement(tag);
+        if (cls) el.className = cls;
+        if (parent) parent.appendChild(el);
+        return el;
+    }
+
+    function svgEl(tag, attrs, parent) {
+        var el = document.createElementNS(SVG_NS, tag);
+        Object.keys(attrs).forEach(function(k) { el.setAttribute(k, attrs[k]); });
+        if (parent) parent.appendChild(el);
+        return el;
+    }
+
+    function svgText(parent, x, y, size, text, transform) {
+        var attrs = {
+            x: x, y: y, 'text-anchor': 'middle', 'font-size': size,
+            'font-family': 'Arial, sans-serif', fill: '#000', stroke: 'none'
+        };
+        if (transform) attrs.transform = transform;
+        svgEl('text', attrs, parent).textContent = text;
+    }
+
+    // Dimension line from pixel `from` to `to`, drawn 35px outside the model edge at pixel `edge`.
+    // horizontal: line below the model; otherwise right of it.
+    function drawDimension(svg, from, to, edge, horizontal, value) {
+        var g = svgEl('g', { stroke: '#000', 'stroke-width': 1.5, fill: 'none' }, svg);
+        var off = edge + 35;
+        var tick = 7;
+        var mid = (from + to) / 2;
+        var label = formatMm(value) + ' mm';
+        [from, to].forEach(function(p) {
+            if (horizontal) {
+                svgEl('line', { x1: p, y1: edge + 6, x2: p, y2: off + 8 }, g);
+                svgEl('line', { x1: p - tick, y1: off + tick, x2: p + tick, y2: off - tick }, g);
+            } else {
+                svgEl('line', { x1: edge + 6, y1: p, x2: off + 8, y2: p }, g);
+                svgEl('line', { x1: off - tick, y1: p + tick, x2: off + tick, y2: p - tick }, g);
+            }
+        });
+        if (horizontal) {
+            svgEl('line', { x1: from, y1: off, x2: to, y2: off }, g);
+            svgText(svg, mid, off + 30, 26, label);
+        } else {
+            svgEl('line', { x1: off, y1: from, x2: off, y2: to }, g);
+            svgText(svg, off + 30, mid, 26, label, 'rotate(-90 ' + (off + 30) + ' ' + mid + ')');
+        }
+    }
+
+    // Numbered circle; numbers match the Pos. column of the parts list
+    function drawPositionMarker(svg, x, y, number) {
+        svgEl('circle', { cx: x, cy: y, r: 23, fill: '#fff', stroke: '#000', 'stroke-width': 1.5 }, svg);
+        svgText(svg, x, y + 10, 28, String(number));
+    }
+
+    // Figure with the rendered view and an SVG overlay in image pixels; returns the overlay
+    function buildSheetFigure(parent, cam, w, h, renderOpts, caption, cls) {
+        var fig = sheetEl('figure', cls || 'sheet-view', parent);
+        var wrap = sheetEl('div', 'sheet-view-img', fig);
+        var img = sheetEl('img', null, wrap);
+        img.src = renderViewToDataURL(cam, w, h, renderOpts);
+        img.alt = caption;
+        var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + h }, wrap);
+        sheetEl('figcaption', null, fig).textContent = caption;
+        return svg;
+    }
+
+    function buildSheetView(parent, view, box, size) {
+        var cam = makeSheetCamera(
+            box, new THREE.Vector3().fromArray(view.dir), new THREE.Vector3().fromArray(view.up),
+            SHEET_VIEW_W, SHEET_VIEW_H, SHEET_VIEW_MARGIN
+        );
+        var svg = buildSheetFigure(parent, cam, SHEET_VIEW_W, SHEET_VIEW_H, { clean: true }, t(view.key));
+        var px = boxCorners(box).map(function(p) { return projectToSheetPx(cam, p, SHEET_VIEW_W, SHEET_VIEW_H); });
+        var xs = px.map(function(p) { return p.x; });
+        var ys = px.map(function(p) { return p.y; });
+        var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+        var minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+        drawDimension(svg, minX, maxX, maxY, true, size[view.hAxis]);
+        drawDimension(svg, minY, maxY, maxX, false, size[view.vAxis]);
+    }
+
+    // Opaque whole-model view numbering the parts first visible from this direction
+    function buildOverviewFigure(parent, overview, box, h, partNumbers, caption, cls) {
+        var dir = new THREE.Vector3().fromArray(overview.dir);
+        var up = new THREE.Vector3(0, 1, 0);
+        var cam = makeSheetCamera(box, dir, up, SHEET_VIEW_W, h, SHEET_VIEW_MARGIN);
+        var svg = buildSheetFigure(parent, cam, SHEET_VIEW_W, h, { clean: true }, caption, cls);
+        // Item positions were measured in a full-height frame; carry them over to this one
+        var measuredCam = makeSheetCamera(box, dir, up, SHEET_VIEW_W, SHEET_VIEW_H, SHEET_VIEW_MARGIN);
+        overview.items.forEach(function(item) {
+            var world = new THREE.Vector3(item.x / SHEET_VIEW_W * 2 - 1, 1 - item.y / SHEET_VIEW_H * 2, 0).unproject(measuredCam);
+            var c = projectToSheetPx(cam, world, SHEET_VIEW_W, h);
+            drawPositionMarker(svg, c.x, c.y, partNumbers[item.index]);
+        });
+        return { cam: cam, svg: svg };
+    }
+
+    // Numbers for parts close together: push overlapping markers apart, with a leader line
+    // back to the part. targets: [{ x, y, number }] in pixels of a w x h image.
+    function drawSpreadMarkers(svg, targets, w, h) {
+        var minDist = 54;
+        var edge = 30;
+        var spots = targets.map(function(c, i) {
+            // Tiny offset so markers on the exact same spot have a direction to separate in
+            return { x: c.x + i * 0.01, y: c.y };
+        });
+        for (var iter = 0; iter < 30; iter++) {
+            for (var a = 0; a < spots.length; a++) {
+                for (var b = a + 1; b < spots.length; b++) {
+                    var dx = spots[b].x - spots[a].x;
+                    var dy = spots[b].y - spots[a].y;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist >= minDist) continue;
+                    var push = (minDist - dist) / 2 / dist;
+                    spots[a].x -= dx * push;
+                    spots[a].y -= dy * push;
+                    spots[b].x += dx * push;
+                    spots[b].y += dy * push;
+                }
+            }
+            spots.forEach(function(s) {
+                s.x = Math.min(w - edge, Math.max(edge, s.x));
+                s.y = Math.min(h - edge, Math.max(edge, s.y));
+            });
+        }
+        targets.forEach(function(c, i) {
+            svgEl('line', { x1: c.x, y1: c.y, x2: spots[i].x, y2: spots[i].y, stroke: '#000', 'stroke-width': 1.5 }, svg);
+        });
+        targets.forEach(function(c, i) {
+            drawPositionMarker(svg, spots[i].x, spots[i].y, c.number);
+        });
+    }
+
+    // Zoomed X-ray view of one cluster of enclosed pieces, with its frame marked on the overview
+    function buildDetailFigure(parent, cluster, letter, iso, modelRadius, partNumbers) {
+        var size = cluster.box.getSize(new THREE.Vector3());
+        var frame = cluster.box.clone().expandByScalar(Math.max(20, Math.max(size.x, size.y, size.z) / 2));
+        var cam = makeSheetCamera(
+            frame, new THREE.Vector3().fromArray(SHEET_PROBE_DIRS[0]), new THREE.Vector3(0, 1, 0),
+            SHEET_VIEW_W, SHEET_DETAIL_H, 10, modelRadius
+        );
+        var zoom = (iso.cam.right - iso.cam.left) / (cam.right - cam.left);
+        var caption = t('sheet.view.detail', {
+            id: letter,
+            pos: formatPartNumbers(cluster.members, partNumbers),
+            zoom: zoom.toLocaleString(currentLang, { maximumFractionDigits: 1 })
+        });
+        var svg = buildSheetFigure(parent, cam, SHEET_VIEW_W, SHEET_DETAIL_H, {
+            clean: true,
+            highlight: cluster.members.map(function(i) { return pieces[i]; })
+        }, caption, 'sheet-view sheet-detail');
+        drawSpreadMarkers(svg, cluster.members.map(function(i) {
+            var center = new THREE.Box3().setFromObject(pieces[i]).getCenter(new THREE.Vector3());
+            var c = projectToSheetPx(cam, center, SHEET_VIEW_W, SHEET_DETAIL_H);
+            return { x: c.x, y: c.y, number: partNumbers[i] };
+        }), SHEET_VIEW_W, SHEET_DETAIL_H);
+        var px = boxCorners(frame).map(function(p) { return projectToSheetPx(iso.cam, p, SHEET_VIEW_W, SHEET_VIEW_H); });
+        var xs = px.map(function(p) { return p.x; });
+        var ys = px.map(function(p) { return p.y; });
+        var minX = Math.min.apply(null, xs);
+        var minY = Math.min.apply(null, ys);
+        svgEl('rect', {
+            x: minX, y: minY, width: Math.max.apply(null, xs) - minX, height: Math.max.apply(null, ys) - minY,
+            fill: 'none', stroke: '#c8452f', 'stroke-width': 2.5, 'stroke-dasharray': '10 6'
+        }, iso.svg);
+        svgText(iso.svg, minX + 14, minY - 8, 26, letter);
+    }
+
+    // Each part alone in the isometric direction, fitted to the image: not to scale with each other
+    function renderPieceThumbnail(m) {
+        var cam = makeSheetCamera(
+            new THREE.Box3().setFromObject(m), new THREE.Vector3(1, 0.7, 1), new THREE.Vector3(0, 1, 0),
+            SHEET_THUMB_W, SHEET_THUMB_H, SHEET_THUMB_MARGIN
+        );
+        return renderViewToDataURL(cam, SHEET_THUMB_W, SHEET_THUMB_H, { clean: true, only: m });
+    }
+
+    function pieceMiterText(ud) {
+        if (ud.type !== 'Board') return '';
+        var aS = (ud.angleStart === undefined) ? 90 : ud.angleStart;
+        var aE = (ud.angleEnd === undefined) ? 90 : ud.angleEnd;
+        return (aS !== 90 || aE !== 90) ? aS + '° / ' + aE + '°' : '';
+    }
+
+    // Merge identical parts into one parts list row so the list stays short. Cuts are part of
+    // the identity; legacy cut pieces have no recorded csgOps, so they are never merged.
+    function groupIdenticalPieces() {
+        var byKey = {};
+        var rows = [];
+        pieces.forEach(function(m, i) {
+            var ud = m.userData;
+            var legacyCut = ud.csgModified && !Array.isArray(ud.csgOps);
+            // A plain board is the same part however it lies in the model. Miters and cuts are
+            // tied to a specific axis, so those boards keep their dimension order.
+            var hasCuts = Array.isArray(ud.csgOps) && ud.csgOps.length > 0;
+            var sizeKey = (ud.type === 'Board' && !pieceMiterText(ud) && !hasCuts)
+                ? [ud.w, ud.h, ud.d].sort(function(a, b) { return a - b; }).join('x')
+                : pieceSizeText(ud);
+            var key = legacyCut ? 'legacy|' + i : [
+                ud.type, sizeKey, pieceMiterText(ud), ud.notches || 0, JSON.stringify(ud.csgOps || [])
+            ].join('|');
+            if (!byKey[key]) {
+                byKey[key] = { mesh: m, members: [], labels: [] };
+                rows.push(byKey[key]);
+            }
+            byKey[key].members.push(i);
+            if (ud.label) byKey[key].labels.push(ud.label);
+        });
+        return rows;
+    }
+
+    // Leading words shared by all labels: ["Leg FL", "Leg FR"] → "Leg". Empty if there are none.
+    function commonLabel(labels) {
+        if (labels.length === 0) return '';
+        var words = labels[0].split(' ');
+        labels.forEach(function(label) {
+            var other = label.split(' ');
+            var n = 0;
+            while (n < words.length && words[n] === other[n]) n++;
+            words = words.slice(0, n);
+        });
+        return words.join(' ');
+    }
+
+    // Part numbers of the given pieces, each once: numbers 2, 3, 3, 4, 7 → "2–4, 7"
+    function formatPartNumbers(indices, partNumbers) {
+        var positions = [];
+        indices.forEach(function(i) {
+            if (positions.indexOf(partNumbers[i]) === -1) positions.push(partNumbers[i]);
+        });
+        positions.sort(function(a, b) { return a - b; });
+        var parts = [];
+        for (var i = 0; i < positions.length; i++) {
+            var start = positions[i];
+            while (i + 1 < positions.length && positions[i + 1] === positions[i] + 1) i++;
+            parts.push(positions[i] === start ? String(start) : start + '–' + positions[i]);
+        }
+        return parts.join(', ');
+    }
+
+    function buildPartsTable(parent, rows) {
+        var table = sheetEl('table', null, parent);
+        var headRow = sheetEl('tr', null, sheetEl('thead', null, table));
+        ['sheet.col.pos', 'sheet.col.image', 'sheet.col.qty', 'csv.label', 'csv.type', 'sheet.col.dims', 'sheet.col.miter', 'csv.notches'].forEach(function(key) {
+            sheetEl('th', null, headRow).textContent = t(key);
+        });
+        var body = sheetEl('tbody', null, table);
+        rows.forEach(function(group, r) {
+            var ud = group.mesh.userData;
+            var row = sheetEl('tr', null, body);
+            sheetEl('td', 'num', row).textContent = String(r + 1);
+            var thumb = sheetEl('img', null, sheetEl('td', 'sheet-thumb', row));
+            thumb.src = renderPieceThumbnail(group.mesh);
+            thumb.alt = typeName(ud.type);
+            sheetEl('td', 'num', row).textContent = group.members.length + '×';
+            // Labels can come from loaded files — always textContent, never innerHTML
+            sheetEl('td', null, row).textContent = commonLabel(group.labels);
+            sheetEl('td', null, row).textContent = typeName(ud.type);
+            sheetEl('td', 'sheet-dims', row).textContent = pieceSizeText(ud);
+            sheetEl('td', 'sheet-dims', row).textContent = pieceMiterText(ud);
+            sheetEl('td', 'num', row).textContent = String(ud.notches || 0);
+        });
+    }
+
+    // Fill #print-sheet: page 1 with three dimensioned orthographic views plus an isometric
+    // overview, page 2 with the parts list.
+    function buildWorkshopSheet() {
+        printSheet.textContent = '';
+        if (pieces.length === 0) return printSheet;
+        var box = new THREE.Box3();
+        pieces.forEach(function(m) { box.expandByObject(m); });
+        var size = box.getSize(new THREE.Vector3());
+
+        var page = sheetEl('section', 'sheet-page', printSheet);
+        var header = sheetEl('header', 'sheet-header', page);
+        sheetEl('h1', null, header).textContent = t('sheet.title');
+        sheetEl('div', 'sheet-meta', header).textContent =
+            new Date().toLocaleDateString(currentLang) + ' · ' +
+            t('sheet.overall') + ': ' + formatMm(size.x) + ' × ' + formatMm(size.y) + ' × ' + formatMm(size.z) + ' mm · ' +
+            (pieces.length === 1 ? t('sheet.partCountOne') : t('sheet.partCount', { count: pieces.length }));
+        var views = sheetEl('div', 'sheet-views', page);
+        SHEET_VIEWS.forEach(function(view) { buildSheetView(views, view, box, size); });
+        // One number per parts list row: identical parts all carry the same number
+        var rows = groupIdenticalPieces();
+        var partNumbers = [];
+        rows.forEach(function(group, r) {
+            group.members.forEach(function(i) { partNumbers[i] = r + 1; });
+        });
+        var analysis = analyzeVisibility(box);
+        var iso = buildOverviewFigure(views, analysis.overviews[0], box, SHEET_VIEW_H, partNumbers, t('sheet.view.iso'));
+
+        var maxDim = Math.max(size.x, size.y, size.z);
+        var clusters = clusterPieces(analysis.enclosed, maxDim * 0.1);
+        if (analysis.overviews.length > 1 || clusters.length > 0) {
+            var detailsPage = sheetEl('section', 'sheet-page sheet-details', printSheet);
+            sheetEl('h2', null, detailsPage).textContent = t('sheet.details');
+            var details = sheetEl('div', 'sheet-views', detailsPage);
+            analysis.overviews.slice(1).forEach(function(overview) {
+                var caption = t('sheet.view.other', {
+                    pos: formatPartNumbers(overview.items.map(function(item) { return item.index; }), partNumbers)
+                });
+                buildOverviewFigure(details, overview, box, SHEET_DETAIL_H, partNumbers, caption, 'sheet-view sheet-other');
+            });
+            var modelRadius = Math.max(size.length(), 1);
+            clusters.forEach(function(cluster, i) {
+                buildDetailFigure(details, cluster, String.fromCharCode(65 + i % 26), iso, modelRadius, partNumbers);
+            });
+        }
+
+        var partsPage = sheetEl('section', 'sheet-page sheet-parts', printSheet);
+        sheetEl('h2', null, partsPage).textContent = t('sheet.partsList');
+        buildPartsTable(partsPage, rows);
+        return printSheet;
+    }
+
+    function printWorkshopSheet() {
+        if (pieces.length === 0) {
+            alert(t('sheet.empty'));
+            return;
+        }
+        buildWorkshopSheet();
+        var imgs = Array.prototype.slice.call(printSheet.querySelectorAll('img'));
+        Promise.all(imgs.map(function(img) {
+            return img.decode ? img.decode().catch(function() {}) : null;
+        })).then(function() {
+            document.body.classList.add('print-sheet-active');
+            window.print();
+        });
+    }
+
+    window.addEventListener('afterprint', function() {
+        if (!document.body.classList.contains('print-sheet-active')) return;
+        document.body.classList.remove('print-sheet-active');
+        printSheet.textContent = '';
+    });
+
+    // ============================================================
     // Click / Raycasting
     // ============================================================
 
@@ -5143,6 +5959,8 @@ window.addEventListener('load', function() {
         document.getElementById('load-file-input').click();
     });
     document.getElementById('menu-export-csv').addEventListener('click', exportCSV);
+    document.getElementById('menu-print-sheet').addEventListener('click', printWorkshopSheet);
+    document.getElementById('menu-export-png').addEventListener('click', exportPNG);
     document.getElementById('menu-export-templates').addEventListener('click', exportTemplates);
     document.getElementById('menu-import-templates').addEventListener('click', function() {
         document.getElementById('import-templates-input').click();
@@ -5325,7 +6143,10 @@ window.addEventListener('load', function() {
                 camera.lookAt(center);
                 camera.updateProjectionMatrix();
             },
-            forceRender: function() { renderer.render(scene, camera); }
+            forceRender: function() { renderer.render(scene, camera); },
+            // Workshop output: sheet DOM builder and the state-neutral offscreen render
+            buildWorkshopSheet: buildWorkshopSheet,
+            renderViewToDataURL: renderViewToDataURL
         };
         window.dispatchEvent(new Event('app-ready'));
     }

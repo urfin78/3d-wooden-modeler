@@ -140,14 +140,14 @@
       "px": 0.0000, "py": 226.6303, "pz": -87.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
       "w": 275.2040, "h": 95.6584, "d": 14,
       "csgOps": [
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 59.3118, "py": 77.6308, "pz": 0, "rx": 0, "ry": 0, "rz": -0.663225, "w": 56.7813, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -59.3118, "py": 77.6308, "pz": 0, "rx": 0, "ry": 0, "rz": 0.663225, "w": 56.7813, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 81.2223, "py": 62.7513, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -81.2223, "py": 62.7513, "pz": 0, "rx": 0, "ry": 0, "rz": 0.523599, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 106.8895, "py": 49.9695, "pz": 0, "rx": 0, "ry": 0, "rz": -0.383972, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -106.8895, "py": 49.9695, "pz": 0, "rx": 0, "ry": 0, "rz": 0.383972, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 134.0857, "py": 40.8843, "pz": 0, "rx": 0, "ry": 0, "rz": -0.244346, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -134.0857, "py": 40.8843, "pz": 0, "rx": 0, "ry": 0, "rz": 0.244346, "w": 61.1672, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 55.2449, "py": 80.8082, "pz": 0, "rx": 0, "ry": 0, "rz": -0.663225, "w": 46.4594, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -55.2449, "py": 80.8082, "pz": 0, "rx": 0, "ry": 0, "rz": 0.663225, "w": 46.4594, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 82.6900, "py": 61.9039, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 37.1340, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -82.6900, "py": 61.9039, "pz": 0, "rx": 0, "ry": 0, "rz": 0.523599, "w": 37.1340, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 108.4609, "py": 49.3346, "pz": 0, "rx": 0, "ry": 0, "rz": -0.383972, "w": 37.1340, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -108.4609, "py": 49.3346, "pz": 0, "rx": 0, "ry": 0, "rz": 0.383972, "w": 37.1340, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 140.7378, "py": 39.2257, "pz": 0, "rx": 0, "ry": 0, "rz": -0.244346, "w": 47.4556, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -140.7378, "py": 39.2257, "pz": 0, "rx": 0, "ry": 0, "rz": 0.244346, "w": 47.4556, "h": 120, "d": 22 } },
         { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -31.5859, "py": -33.2044, "pz": 0, "rx": 0, "ry": 0, "rz": -0.852484, "w": 41.2973, "h": 120, "d": 22 } },
         { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 31.5859, "py": -33.2044, "pz": 0, "rx": 0, "ry": 0, "rz": 0.852484, "w": 41.2973, "h": 120, "d": 22 } },
         { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 8.2223, "py": -63.6884, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 61.1672, "h": 120, "d": 22 } },
@@ -166,14 +166,14 @@
       "px": 0.0000, "py": 226.6303, "pz": 87.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
       "w": 275.2040, "h": 95.6584, "d": 14,
       "csgOps": [
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 59.3118, "py": 77.6308, "pz": 0, "rx": 0, "ry": 0, "rz": -0.663225, "w": 56.7813, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -59.3118, "py": 77.6308, "pz": 0, "rx": 0, "ry": 0, "rz": 0.663225, "w": 56.7813, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 81.2223, "py": 62.7513, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -81.2223, "py": 62.7513, "pz": 0, "rx": 0, "ry": 0, "rz": 0.523599, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 106.8895, "py": 49.9695, "pz": 0, "rx": 0, "ry": 0, "rz": -0.383972, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -106.8895, "py": 49.9695, "pz": 0, "rx": 0, "ry": 0, "rz": 0.383972, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 134.0857, "py": 40.8843, "pz": 0, "rx": 0, "ry": 0, "rz": -0.244346, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -134.0857, "py": 40.8843, "pz": 0, "rx": 0, "ry": 0, "rz": 0.244346, "w": 61.1672, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 55.2449, "py": 80.8082, "pz": 0, "rx": 0, "ry": 0, "rz": -0.663225, "w": 46.4594, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -55.2449, "py": 80.8082, "pz": 0, "rx": 0, "ry": 0, "rz": 0.663225, "w": 46.4594, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 82.6900, "py": 61.9039, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 37.1340, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -82.6900, "py": 61.9039, "pz": 0, "rx": 0, "ry": 0, "rz": 0.523599, "w": 37.1340, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 108.4609, "py": 49.3346, "pz": 0, "rx": 0, "ry": 0, "rz": -0.383972, "w": 37.1340, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -108.4609, "py": 49.3346, "pz": 0, "rx": 0, "ry": 0, "rz": 0.383972, "w": 37.1340, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 140.7378, "py": 39.2257, "pz": 0, "rx": 0, "ry": 0, "rz": -0.244346, "w": 47.4556, "h": 120, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -140.7378, "py": 39.2257, "pz": 0, "rx": 0, "ry": 0, "rz": 0.244346, "w": 47.4556, "h": 120, "d": 22 } },
         { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -31.5859, "py": -33.2044, "pz": 0, "rx": 0, "ry": 0, "rz": -0.852484, "w": 41.2973, "h": 120, "d": 22 } },
         { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 31.5859, "py": -33.2044, "pz": 0, "rx": 0, "ry": 0, "rz": 0.852484, "w": 41.2973, "h": 120, "d": 22 } },
         { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 8.2223, "py": -63.6884, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 61.1672, "h": 120, "d": 22 } },
@@ -257,44 +257,26 @@
       "angleStart": 78.00, "angleEnd": 90.00
     },
     {
-      "type": "Board", "id": 27, "label": "First Segment 1",
-      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "type": "Board", "id": 27, "label": "First",
+      "notches": 12, "csgModified": true, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 0.0000, "py": 292.6798, "pz": -119.8828, "rx": 0.157080, "ry": 0.000000, "rz": 0.000000,
-      "w": 12, "h": 28, "d": 61.2
-    },
-    {
-      "type": "Board", "id": 28, "label": "First Segment 2",
-      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
-      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
-      "groupId": "grp_1",
-      "px": 0.0000, "py": 285.8715, "pz": -60.1267, "rx": 0.069813, "ry": 0.000000, "rz": 0.000000,
-      "w": 12, "h": 28, "d": 61.2
-    },
-    {
-      "type": "Board", "id": 29, "label": "First Segment 3",
-      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
-      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
-      "groupId": "grp_1",
-      "px": 0.0000, "py": 283.7718, "pz": 0.0000, "rx": -0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 12, "h": 28, "d": 61.2
-    },
-    {
-      "type": "Board", "id": 30, "label": "First Segment 4",
-      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
-      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
-      "groupId": "grp_1",
-      "px": 0.0000, "py": 285.8715, "pz": 60.1267, "rx": -0.069813, "ry": 0.000000, "rz": 0.000000,
-      "w": 12, "h": 28, "d": 61.2
-    },
-    {
-      "type": "Board", "id": 31, "label": "First Segment 5",
-      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
-      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
-      "groupId": "grp_1",
-      "px": 0.0000, "py": 292.6798, "pz": 119.8828, "rx": -0.157080, "ry": 0.000000, "rz": 0.000000,
-      "w": 12, "h": 28, "d": 61.2
+      "px": 0.0000, "py": 290.5331, "pz": 0.0000, "rx": 0.000000, "ry": -1.570796, "rz": 0.000000,
+      "w": 304.5923, "h": 41.5225, "d": 12,
+      "csgOps": [
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -141.6150, "py": 60.2619, "pz": 0, "rx": 0, "ry": 0, "rz": -0.157080, "w": 120.0882, "h": 80.0000, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -128.2756, "py": -51.1971, "pz": 0, "rx": 0, "ry": 0, "rz": -0.157080, "w": 600.0000, "h": 80.0000, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -56.2989, "py": 49.2026, "pz": 0, "rx": 0, "ry": 0, "rz": -0.069813, "w": 59.1008, "h": 80.0000, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -63.9546, "py": -58.5258, "pz": 0, "rx": 0, "ry": 0, "rz": -0.069813, "w": 600.0000, "h": 80.0000, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -0.0000, "py": 47.2387, "pz": 0, "rx": 0, "ry": 0, "rz": -0.000000, "w": 59.2214, "h": 80.0000, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -0.0000, "py": -60.7613, "pz": 0, "rx": 0, "ry": 0, "rz": -0.000000, "w": 600.0000, "h": 80.0000, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 56.2989, "py": 49.2026, "pz": 0, "rx": 0, "ry": 0, "rz": 0.069813, "w": 59.1008, "h": 80.0000, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 63.9546, "py": -58.5258, "pz": 0, "rx": 0, "ry": 0, "rz": 0.069813, "w": 600.0000, "h": 80.0000, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 141.6150, "py": 60.2619, "pz": 0, "rx": 0, "ry": 0, "rz": 0.157080, "w": 120.0882, "h": 80.0000, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 128.2756, "py": -51.1971, "pz": 0, "rx": 0, "ry": 0, "rz": 0.157080, "w": 600.0000, "h": 80.0000, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -179.7367, "py": 11.6267, "pz": 0, "rx": 0, "ry": 0, "rz": -0.157080, "w": 60.0000, "h": 120.0000, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 179.7367, "py": 11.6267, "pz": 0, "rx": 0, "ry": 0, "rz": 0.157080, "w": 60.0000, "h": 120.0000, "d": 22 } }
+      ]
     }
   ],
   "groups": [

@@ -1,0 +1,532 @@
+{
+  "version": 3,
+  "name": "Japanese Lantern",
+  "created": "2026-05-01T00:00:00.000Z",
+  "pieces": [
+    {
+      "type": "Board",
+      "id": 1,
+      "label": "Base Plate",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 10, "pz": 0,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 220, "h": 20, "d": 220
+    },
+    {
+      "type": "Tapered Leg",
+      "id": 2,
+      "label": "Post",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 430, "pz": 0,
+      "rx": 0, "ry": 0, "rz": 0,
+      "rTop": 20, "rBottom": 28, "h": 820
+    },
+
+    {
+      "type": "Board",
+      "id": 3,
+      "label": "Bracket Cross NS",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 848, "pz": 0,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 30, "h": 16, "d": 140
+    },
+    {
+      "type": "Board",
+      "id": 4,
+      "label": "Bracket Cross EW",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 848, "pz": 0,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 140, "h": 16, "d": 30
+    },
+
+    {
+      "type": "Board",
+      "id": 5,
+      "label": "Body Floor",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 860, "pz": 0,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 100, "h": 8, "d": 100
+    },
+
+    {
+      "type": "Board",
+      "id": 6,
+      "label": "Corner Post NW",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -54.5, "py": 1004, "pz": -54.5,
+      "rx": -0.089, "ry": 0, "rz": 0.089,
+      "w": 12, "h": 280, "d": 12
+    },
+    {
+      "type": "Board",
+      "id": 7,
+      "label": "Corner Post NE",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 54.5, "py": 1004, "pz": -54.5,
+      "rx": -0.089, "ry": 0, "rz": -0.089,
+      "w": 12, "h": 280, "d": 12
+    },
+    {
+      "type": "Board",
+      "id": 8,
+      "label": "Corner Post SE",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 54.5, "py": 1004, "pz": 54.5,
+      "rx": 0.089, "ry": 0, "rz": -0.089,
+      "w": 12, "h": 280, "d": 12
+    },
+    {
+      "type": "Board",
+      "id": 9,
+      "label": "Corner Post SW",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -54.5, "py": 1004, "pz": 54.5,
+      "rx": 0.089, "ry": 0, "rz": 0.089,
+      "w": 12, "h": 280, "d": 12
+    },
+
+    {
+      "type": "Board",
+      "id": 10,
+      "label": "Lower Rail N",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 880, "pz": -43,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 82, "h": 10, "d": 10
+    },
+    {
+      "type": "Board",
+      "id": 11,
+      "label": "Lower Rail E",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 43, "py": 880, "pz": 0,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 10, "h": 10, "d": 82
+    },
+    {
+      "type": "Board",
+      "id": 12,
+      "label": "Lower Rail S",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 880, "pz": 43,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 82, "h": 10, "d": 10
+    },
+    {
+      "type": "Board",
+      "id": 13,
+      "label": "Lower Rail W",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -43, "py": 880, "pz": 0,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 10, "h": 10, "d": 82
+    },
+
+    {
+      "type": "Board",
+      "id": 14,
+      "label": "Upper Rail N",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 1130, "pz": -66,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 128, "h": 10, "d": 10
+    },
+    {
+      "type": "Board",
+      "id": 15,
+      "label": "Upper Rail E",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 66, "py": 1130, "pz": 0,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 10, "h": 10, "d": 128
+    },
+    {
+      "type": "Board",
+      "id": 16,
+      "label": "Upper Rail S",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 1130, "pz": 66,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 128, "h": 10, "d": 10
+    },
+    {
+      "type": "Board",
+      "id": 17,
+      "label": "Upper Rail W",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -66, "py": 1130, "pz": 0,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 10, "h": 10, "d": 128
+    },
+
+    {
+      "type": "Board",
+      "id": 18,
+      "label": "Body Ceiling",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 1148, "pz": 0,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 150, "h": 8, "d": 150
+    },
+
+    {
+      "type": "Board",
+      "id": 19,
+      "label": "Roof Slope N",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 1180, "pz": -35,
+      "rx": -0.5, "ry": 0, "rz": 0,
+      "w": 220, "h": 5, "d": 130
+    },
+    {
+      "type": "Board",
+      "id": 20,
+      "label": "Roof Slope S",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 1180, "pz": 35,
+      "rx": 0.5, "ry": 0, "rz": 0,
+      "w": 220, "h": 5, "d": 130
+    },
+    {
+      "type": "Board",
+      "id": 21,
+      "label": "Rafter N1",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -87.5, "py": 1175, "pz": -35,
+      "rx": -0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 22,
+      "label": "Rafter N2",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -62.5, "py": 1175, "pz": -35,
+      "rx": -0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 23,
+      "label": "Rafter N3",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -37.5, "py": 1175, "pz": -35,
+      "rx": -0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 24,
+      "label": "Rafter N4",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -12.5, "py": 1175, "pz": -35,
+      "rx": -0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 25,
+      "label": "Rafter N5",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 12.5, "py": 1175, "pz": -35,
+      "rx": -0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 26,
+      "label": "Rafter N6",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 37.5, "py": 1175, "pz": -35,
+      "rx": -0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 27,
+      "label": "Rafter N7",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 62.5, "py": 1175, "pz": -35,
+      "rx": -0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 28,
+      "label": "Rafter N8",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 87.5, "py": 1175, "pz": -35,
+      "rx": -0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 29,
+      "label": "Rafter S1",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -87.5, "py": 1175, "pz": 35,
+      "rx": 0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 30,
+      "label": "Rafter S2",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -62.5, "py": 1175, "pz": 35,
+      "rx": 0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 31,
+      "label": "Rafter S3",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -37.5, "py": 1175, "pz": 35,
+      "rx": 0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 32,
+      "label": "Rafter S4",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -12.5, "py": 1175, "pz": 35,
+      "rx": 0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 33,
+      "label": "Rafter S5",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 12.5, "py": 1175, "pz": 35,
+      "rx": 0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 34,
+      "label": "Rafter S6",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 37.5, "py": 1175, "pz": 35,
+      "rx": 0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 35,
+      "label": "Rafter S7",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 62.5, "py": 1175, "pz": 35,
+      "rx": 0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 36,
+      "label": "Rafter S8",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 87.5, "py": 1175, "pz": 35,
+      "rx": 0.5, "ry": 0, "rz": 0,
+      "w": 5, "h": 8, "d": 145
+    },
+    {
+      "type": "Board",
+      "id": 37,
+      "label": "Roof Ridge",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 1202, "pz": 0,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 220, "h": 12, "d": 20
+    },
+    {
+      "type": "Board",
+      "id": 38,
+      "label": "Corner Block Lower NW",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -49, "py": 880, "pz": -49,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 16, "h": 16, "d": 16
+    },
+    {
+      "type": "Board",
+      "id": 39,
+      "label": "Corner Block Lower NE",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 49, "py": 880, "pz": -49,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 16, "h": 16, "d": 16
+    },
+    {
+      "type": "Board",
+      "id": 40,
+      "label": "Corner Block Lower SE",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 49, "py": 880, "pz": 49,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 16, "h": 16, "d": 16
+    },
+    {
+      "type": "Board",
+      "id": 41,
+      "label": "Corner Block Lower SW",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -49, "py": 880, "pz": 49,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 16, "h": 16, "d": 16
+    },
+    {
+      "type": "Board",
+      "id": 42,
+      "label": "Corner Block Upper NW",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -72, "py": 1130, "pz": -72,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 16, "h": 16, "d": 16
+    },
+    {
+      "type": "Board",
+      "id": 43,
+      "label": "Corner Block Upper NE",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 72, "py": 1130, "pz": -72,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 16, "h": 16, "d": 16
+    },
+    {
+      "type": "Board",
+      "id": 44,
+      "label": "Corner Block Upper SE",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 72, "py": 1130, "pz": 72,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 16, "h": 16, "d": 16
+    },
+    {
+      "type": "Board",
+      "id": 45,
+      "label": "Corner Block Upper SW",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -72, "py": 1130, "pz": 72,
+      "rx": 0, "ry": 0, "rz": 0,
+      "w": 16, "h": 16, "d": 16
+    },
+    {
+      "type": "Dowel",
+      "id": 46,
+      "label": "Finial",
+      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
+      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0, "py": 1223, "pz": 0,
+      "rx": 0, "ry": 0, "rz": 0,
+      "r": 4, "h": 30
+    }
+  ],
+  "groups": [
+    {
+      "gId": "grp_1",
+      "px": 0,
+      "py": 0,
+      "pz": 0,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0
+    }
+  ],
+  "rulers": []
+}

@@ -376,7 +376,15 @@
     #print-sheet .sheet-view-img img { display: block; width: 100%; height: auto; }
     #print-sheet .sheet-view-img svg { position: absolute; inset: 0; width: 100%; height: 100%; }
     #print-sheet figcaption { font-size: 9pt; font-weight: 600; text-align: center; margin-top: 2pt; }
-    #print-sheet .sheet-parts, #print-sheet .sheet-details { break-before: page; }
+    #print-sheet .sheet-cuts-hint { font-size: 9pt; margin: 0 0 6pt; }
+    #print-sheet .sheet-cut svg { display: block; width: 100%; height: auto; }
+    /* A long table of cuts may continue on the next page instead of leaving this one empty */
+    #print-sheet .sheet-view.sheet-cut-wide { grid-column: 1 / -1; break-inside: auto; }
+    #print-sheet .sheet-cut table { margin-top: 3pt; }
+    #print-sheet .sheet-parts, #print-sheet .sheet-details, #print-sheet .sheet-cuts, #print-sheet .sheet-templates { break-before: page; }
+    #print-sheet .sheet-template-tile { break-inside: avoid; margin-bottom: 4mm; }
+    #print-sheet .sheet-template-tile > svg { display: block; outline: 0.5pt solid #999; outline-offset: -0.5pt; }
+    #print-sheet .sheet-template-head { display: flex; justify-content: space-between; align-items: center; font-size: 9pt; font-weight: 600; }
     #print-sheet .sheet-view { break-inside: avoid; }
     /* Separate borders: collapsed hairlines get dropped in Chrome's print preview */
     #print-sheet table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 9pt; }
@@ -782,6 +790,24 @@ window.addEventListener('load', function() {
             'sheet.col.qty': 'Qty',
             'sheet.col.dims': 'Dimensions',
             'sheet.col.miter': 'Miter',
+            'sheet.cuts': 'Miter and angled cuts',
+            'sheet.cuts.hint': 'Profiles look along the depth, so each cut runs across the full depth of the part. The angle lies inside the part and is measured from the bottom edge; saw is the deviation from a square cut. Boards with swapped start and end angles are the same part, turned by 180°. Outline coordinates start at the lower left corner of the blank. The drawings are not to scale with each other.',
+            'sheet.cuts.caption': 'Pos. {pos} · {qty}× {name} · {size}',
+            'sheet.cuts.start': 'Start {angle}°',
+            'sheet.cuts.end': 'End {angle}°',
+            'sheet.cuts.saw': 'saw {angle}°',
+            'sheet.cuts.top': 'Top',
+            'sheet.cuts.bottom': 'Bottom',
+            'sheet.cuts.col.cut': 'Cut',
+            'sheet.cuts.col.angle': 'Angle to long edge',
+            'sheet.cuts.col.length': 'Length',
+            'sheet.cuts.col.from': 'From (x / y)',
+            'sheet.cuts.col.to': 'To (x / y)',
+            'sheet.cuts.contour': 'Saw along the outline, e.g. with a jigsaw: the full-size template follows on the next pages.',
+            'sheet.template': 'Full-size templates',
+            'sheet.template.hint': 'Print at 100 % scale, not "fit to page", and check the 100 mm line with a ruler. Line up the crosses of neighbouring sheets, glue the template onto the board and saw along the line.',
+            'sheet.template.sheet': 'Pos. {pos} · {name} · sheet {n} of {total}',
+            'sheet.template.check': '100 mm',
             'sheet.empty': 'The model is empty — nothing to print.',
             'toolbar.save': 'Save',
             'toolbar.load': 'Load',
@@ -986,6 +1012,24 @@ window.addEventListener('load', function() {
             'sheet.col.qty': 'Anz.',
             'sheet.col.dims': 'Maße',
             'sheet.col.miter': 'Gehrung',
+            'sheet.cuts': 'Gehrungs- und Schrägschnitte',
+            'sheet.cuts.hint': 'Die Profile blicken entlang der Tiefe, jeder Schnitt läuft also über die ganze Tiefe des Teils. Der Winkel liegt im Teil und wird von der Unterkante gemessen; Säge ist die Abweichung vom rechtwinkligen Schnitt. Bretter mit vertauschtem Start- und Endwinkel sind dasselbe Teil, um 180° gedreht. Die Koordinaten der Konturen beginnen an der linken unteren Ecke des Rohteils. Die Zeichnungen haben untereinander nicht denselben Maßstab.',
+            'sheet.cuts.caption': 'Pos. {pos} · {qty}× {name} · {size}',
+            'sheet.cuts.start': 'Start {angle}°',
+            'sheet.cuts.end': 'Ende {angle}°',
+            'sheet.cuts.saw': 'Säge {angle}°',
+            'sheet.cuts.top': 'Oben',
+            'sheet.cuts.bottom': 'Unten',
+            'sheet.cuts.col.cut': 'Schnitt',
+            'sheet.cuts.col.angle': 'Winkel zur Längskante',
+            'sheet.cuts.col.length': 'Länge',
+            'sheet.cuts.col.from': 'Von (x / y)',
+            'sheet.cuts.col.to': 'Bis (x / y)',
+            'sheet.cuts.contour': 'Entlang der Kontur sägen, z. B. mit der Stichsäge: Die 1:1-Schablone folgt auf den nächsten Seiten.',
+            'sheet.template': 'Schablonen 1:1',
+            'sheet.template.hint': 'Mit 100 % drucken, nicht „an Seite anpassen“, und die 100-mm-Linie mit dem Lineal prüfen. Die Kreuze benachbarter Blätter aufeinanderlegen, die Schablone auf das Brett kleben und entlang der Linie sägen.',
+            'sheet.template.sheet': 'Pos. {pos} · {name} · Blatt {n} von {total}',
+            'sheet.template.check': '100 mm',
             'sheet.empty': 'Das Modell ist leer – nichts zu drucken.',
             'toolbar.save': 'Speichern',
             'toolbar.load': 'Laden',
@@ -4748,6 +4792,32 @@ window.addEventListener('load', function() {
     var SHEET_THUMB_H = 180;
     var SHEET_THUMB_MARGIN = 10;
     var SHEET_DETAIL_H = 800;
+    // Drawings of angled cuts, in SVG units. Height follows the part.
+    var SHEET_CUT_W = 1000;
+    var SHEET_CUT_DRAW_W = 720;
+    var SHEET_CUT_DRAW_H = 260;
+    var SHEET_CUT_OUTLINE_W = 860;
+    var SHEET_CUT_OUTLINE_H = 420;
+    var SHEET_CUT_MARGIN_TOP = 80;
+    var SHEET_CUT_OUTLINE_MARGIN_TOP = 40;
+    var SHEET_CUT_MARGIN_BOTTOM = 130;
+    // A board longer than this many thicknesses is drawn shortened with a break
+    var SHEET_CUT_MAX_RATIO = 6;
+    // Angled edges shorter than this share of the long side get no entry of their own, e.g. small steps
+    var SHEET_CUT_MIN_EDGE = 0.03;
+    // Tools with a curved surface produce facets instead of sawn edges
+    var SHEET_CUT_ROUND_TOOLS = ['Dowel', 'Tapered Leg'];
+    // Guard for cut pieces saved without their tools, where a curve cannot be told from its tool type
+    var SHEET_CUT_MAX_EDGES = 52;
+    // With more angled edges than this a part is a shape: it gets a template instead of a table of cuts
+    var SHEET_CUT_TABLE_MAX_EDGES = 6;
+    // Full-size templates, in mm. The width fills an A4 page inside its 12 mm margins.
+    var SHEET_TEMPLATE_W = 186;
+    var SHEET_TEMPLATE_H = 235;
+    var SHEET_TEMPLATE_MARGIN = 8;
+    var SHEET_TEMPLATE_OVERLAP = 16;
+    // A part needing more sheets than this is too big to print as a template
+    var SHEET_TEMPLATE_MAX_TILES = 12;
     // Faces meeting at less than this do not get an outline, so cylinder facets show no lines
     var SHEET_OUTLINE_ANGLE = 30;
     var SHEET_HIGHLIGHT_COLOR = 0xc8452f;
@@ -5152,16 +5222,18 @@ window.addEventListener('load', function() {
     }
 
     // Dimension line from pixel `from` to `to`, drawn 35px outside the model edge at pixel `edge`.
-    // horizontal: line below the model; otherwise right of it.
-    function drawDimension(svg, from, to, edge, horizontal, value) {
+    // horizontal: line below the model, or above it with `above`; otherwise right of it.
+    // prefix: optional word in front of the value.
+    function drawDimension(svg, from, to, edge, horizontal, value, prefix, above) {
         var g = svgEl('g', { stroke: '#000', 'stroke-width': 1.5, fill: 'none' }, svg);
-        var off = edge + 35;
+        var side = above ? -1 : 1;
+        var off = edge + side * 35;
         var tick = 7;
         var mid = (from + to) / 2;
-        var label = formatMm(value) + ' mm';
+        var label = (prefix ? prefix + ' ' : '') + formatMm(value) + ' mm';
         [from, to].forEach(function(p) {
             if (horizontal) {
-                svgEl('line', { x1: p, y1: edge + 6, x2: p, y2: off + 8 }, g);
+                svgEl('line', { x1: p, y1: edge + side * 6, x2: p, y2: off + side * 8 }, g);
                 svgEl('line', { x1: p - tick, y1: off + tick, x2: p + tick, y2: off - tick }, g);
             } else {
                 svgEl('line', { x1: edge + 6, y1: p, x2: off + 8, y2: p }, g);
@@ -5170,7 +5242,7 @@ window.addEventListener('load', function() {
         });
         if (horizontal) {
             svgEl('line', { x1: from, y1: off, x2: to, y2: off }, g);
-            svgText(svg, mid, off + 30, 26, label);
+            svgText(svg, mid, above ? off - 14 : off + 30, 26, label);
         } else {
             svgEl('line', { x1: off, y1: from, x2: off, y2: to }, g);
             svgText(svg, off + 30, mid, 26, label, 'rotate(-90 ' + (off + 30) + ' ' + mid + ')');
@@ -5313,6 +5385,15 @@ window.addEventListener('load', function() {
         return (aS !== 90 || aE !== 90) ? aS + '° / ' + aE + '°' : '';
     }
 
+    // A board turned by 180° around its height swaps its two ends, so start and end angle may be
+    // swapped on the same part. Cuts sit at a fixed spot on the board, which rules that out.
+    function pieceMiterKey(ud, hasCuts) {
+        if (hasCuts || !pieceMiterText(ud)) return pieceMiterText(ud);
+        var aS = (ud.angleStart === undefined) ? 90 : ud.angleStart;
+        var aE = (ud.angleEnd === undefined) ? 90 : ud.angleEnd;
+        return Math.min(aS, aE) + '/' + Math.max(aS, aE);
+    }
+
     // Merge identical parts into one parts list row so the list stays short. Cuts are part of
     // the identity; legacy cut pieces have no recorded csgOps, so they are never merged.
     function groupIdenticalPieces() {
@@ -5328,7 +5409,7 @@ window.addEventListener('load', function() {
                 ? [ud.w, ud.h, ud.d].sort(function(a, b) { return a - b; }).join('x')
                 : pieceSizeText(ud);
             var key = legacyCut ? 'legacy|' + i : [
-                ud.type, sizeKey, pieceMiterText(ud), ud.notches || 0, JSON.stringify(ud.csgOps || [])
+                ud.type, sizeKey, pieceMiterKey(ud, hasCuts), ud.notches || 0, JSON.stringify(ud.csgOps || [])
             ].join('|');
             if (!byKey[key]) {
                 byKey[key] = { mesh: m, members: [], labels: [] };
@@ -5393,8 +5474,415 @@ window.addEventListener('load', function() {
         });
     }
 
+    // A, B, ... Z, AA, AB, ...
+    function cutLetter(i) {
+        var letter = String.fromCharCode(65 + i % 26);
+        return i < 26 ? letter : String.fromCharCode(64 + Math.floor(i / 26)) + letter;
+    }
+
+    function formatDegrees(v) {
+        return String(Math.round(v * 10) / 10);
+    }
+
+    function cutCaption(group, pos) {
+        var ud = group.mesh.userData;
+        return t('sheet.cuts.caption', {
+            pos: pos,
+            qty: group.members.length,
+            name: commonLabel(group.labels) || typeName(ud.type),
+            size: pieceSizeText(ud)
+        });
+    }
+
+    // Arc and value of the angle between the bottom edge and an end face. dir: +1 at the left
+    // corner, where the bottom edge runs to the right; -1 at the right corner.
+    function drawCornerAngle(svg, cx, cy, dir, angle) {
+        var r = 38;
+        var rad = angle * Math.PI / 180;
+        svgEl('path', {
+            d: 'M ' + (cx + dir * r) + ' ' + cy + ' A ' + r + ' ' + r + ' 0 0 ' + (dir > 0 ? 0 : 1) + ' ' +
+                (cx + dir * r * Math.cos(rad)) + ' ' + (cy - r * Math.sin(rad)),
+            fill: 'none', stroke: '#c8452f', 'stroke-width': 2.5
+        }, svg);
+        var labelR = r + 36;
+        svgText(svg, cx + dir * labelR * Math.cos(rad / 2), cy - labelR * Math.sin(rad / 2) + 9, 26,
+            formatDegrees(angle) + '°');
+    }
+
+    // "Start 94° · saw 4°"; a square end has no saw setting
+    function miterEndText(key, angle) {
+        var text = t(key, { angle: formatDegrees(angle) });
+        return angle === 90 ? text : text + ' · ' + t('sheet.cuts.saw', { angle: formatDegrees(Math.abs(90 - angle)) });
+    }
+
+    // Profile of a mitered board, looking along its depth with the start end on the left
+    function buildMiterFigure(parent, group, pos) {
+        var ud = group.mesh.userData;
+        var aS = (ud.angleStart === undefined) ? 90 : ud.angleStart;
+        var aE = (ud.angleEnd === undefined) ? 90 : ud.angleEnd;
+        // Same corners as boardGeometry()
+        var xLB = -ud.w / 2;
+        var xRB = ud.w / 2;
+        var xLT = xLB + ud.h / Math.tan(aS * Math.PI / 180);
+        var xRT = xRB - ud.h / Math.tan(aE * Math.PI / 180);
+        var minX = Math.min(xLB, xLT);
+        var maxX = Math.max(xRB, xRT);
+        // Take length out of the middle of a long board, so the ends stay large enough to read
+        var removed = Math.max(0, (maxX - minX) - SHEET_CUT_MAX_RATIO * ud.h);
+        if (removed / 2 >= Math.min(-xLB, -xLT, xRB, xRT)) removed = 0;
+        function shorten(x) {
+            return x < 0 ? x + removed / 2 : x - removed / 2;
+        }
+        var scale = Math.min(SHEET_CUT_DRAW_W / (maxX - minX - removed), SHEET_CUT_DRAW_H / ud.h);
+        var centerX = (shorten(minX) + shorten(maxX)) / 2;
+        function px(x) {
+            return SHEET_CUT_W / 2 + (shorten(x) - centerX) * scale;
+        }
+        var top = SHEET_CUT_MARGIN_TOP;
+        var bottom = top + ud.h * scale;
+        var height = bottom + SHEET_CUT_MARGIN_BOTTOM;
+
+        var fig = sheetEl('figure', 'sheet-view sheet-cut', parent);
+        var svg = svgEl('svg', { viewBox: '0 0 ' + SHEET_CUT_W + ' ' + height }, fig);
+        svgEl('polygon', {
+            points: [[xLB, bottom], [xRB, bottom], [xRT, top], [xLT, top]].map(function(c) {
+                return px(c[0]) + ',' + c[1];
+            }).join(' '),
+            fill: '#efe0c4', stroke: '#000', 'stroke-width': 3
+        }, svg);
+        if (removed > 0) {
+            // Break mark: a white gap with zigzag edges, so the shortened length cannot be misread
+            var mid = (px(xLB) + px(xRB)) / 2;
+            svgEl('rect', { x: mid - 12, y: top - 3, width: 24, height: bottom - top + 6, fill: '#fff' }, svg);
+            [-12, 12].forEach(function(dx) {
+                var steps = 6;
+                var points = [];
+                for (var i = 0; i <= steps; i++) {
+                    points.push((mid + dx + (i % 2 ? 5 : -5)) + ',' + (top - 3 + (bottom - top + 6) * i / steps));
+                }
+                svgEl('polyline', { points: points.join(' '), fill: 'none', stroke: '#000', 'stroke-width': 1.5 }, svg);
+            });
+        }
+        drawCornerAngle(svg, px(xLB), bottom, 1, aS);
+        drawCornerAngle(svg, px(xRB), bottom, -1, aE);
+        drawDimension(svg, px(xLT), px(xRT), top, true, xRT - xLT, t('sheet.cuts.top'), true);
+        drawDimension(svg, px(xLB), px(xRB), bottom, true, ud.w, t('sheet.cuts.bottom'));
+        drawDimension(svg, top, bottom, px(maxX), false, ud.h);
+        svgText(svg, SHEET_CUT_W * 0.25, bottom + 110, 28, miterEndText('sheet.cuts.start', aS));
+        svgText(svg, SHEET_CUT_W * 0.75, bottom + 110, 28, miterEndText('sheet.cuts.end', aE));
+        sheetEl('figcaption', null, fig).textContent = cutCaption(group, pos);
+    }
+
+    // Join outline segments lying on one straight line. CSG splits a single sawn edge into many.
+    function mergeCollinearSegments(segments) {
+        var lines = [];
+        segments.forEach(function(s) {
+            var du = s.b[0] - s.a[0];
+            var dv = s.b[1] - s.a[1];
+            var len = Math.hypot(du, dv);
+            if (len < 1e-6) return;
+            // One direction per line, whichever way round the segment was stored
+            var flip = du < -1e-6 || (Math.abs(du) <= 1e-6 && dv < 0);
+            var dir = flip ? [-du / len, -dv / len] : [du / len, dv / len];
+            var line = lines.find(function(l) {
+                return Math.abs(dir[0] * l.dir[1] - dir[1] * l.dir[0]) < 1e-3 &&
+                    Math.abs((s.a[0] - l.origin[0]) * l.dir[1] - (s.a[1] - l.origin[1]) * l.dir[0]) < 0.02;
+            });
+            if (!line) {
+                line = { dir: dir, origin: s.a, spans: [] };
+                lines.push(line);
+            }
+            var t0 = (s.a[0] - line.origin[0]) * line.dir[0] + (s.a[1] - line.origin[1]) * line.dir[1];
+            var t1 = (s.b[0] - line.origin[0]) * line.dir[0] + (s.b[1] - line.origin[1]) * line.dir[1];
+            line.spans.push([Math.min(t0, t1), Math.max(t0, t1)]);
+        });
+        var merged = [];
+        lines.forEach(function(line) {
+            function at(p) {
+                return [line.origin[0] + line.dir[0] * p, line.origin[1] + line.dir[1] * p];
+            }
+            line.spans.sort(function(x, y) { return x[0] - y[0]; });
+            var current = null;
+            line.spans.forEach(function(span) {
+                if (current && span[0] <= current[1] + 0.02) {
+                    current[1] = Math.max(current[1], span[1]);
+                    return;
+                }
+                if (current) merged.push({ a: at(current[0]), b: at(current[1]) });
+                current = span.slice();
+            });
+            merged.push({ a: at(current[0]), b: at(current[1]) });
+        });
+        return merged;
+    }
+
+    // Outline of a cut board on its largest face, in mm from the lower left corner of the blank,
+    // with the long edge horizontal. Returns null unless straight cuts run at an angle to the
+    // edges: a square notch needs no angle, and a round tool would only give a list of facets.
+    // The outline comes from the walls standing on the face. Their edges on the face plane cover
+    // it completely, whereas the triangles of the face itself have T-junctions after CSG.
+    function pieceCutOutline(m) {
+        var ops = m.userData.csgOps || [];
+        var round = ops.some(function(op) {
+            return op.tool && SHEET_CUT_ROUND_TOOLS.indexOf(op.tool.type) !== -1;
+        });
+        if (round) return null;
+        var source = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry;
+        var attr = source.attributes.position;
+        var box = new THREE.Box3().setFromBufferAttribute(attr);
+        var min = box.min.toArray();
+        var max = box.max.toArray();
+        var size = [max[0] - min[0], max[1] - min[1], max[2] - min[2]];
+        var axes = [0, 1, 2].sort(function(a, b) { return size[b] - size[a]; });
+        var uAxis = axes[0];
+        var vAxis = axes[1];
+        var thin = axes[2];
+        var segments = [];
+        var tri = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
+        var ab = new THREE.Vector3();
+        var ac = new THREE.Vector3();
+        for (var i = 0; i + 2 < attr.count; i += 3) {
+            tri[0].fromBufferAttribute(attr, i);
+            tri[1].fromBufferAttribute(attr, i + 1);
+            tri[2].fromBufferAttribute(attr, i + 2);
+            ab.subVectors(tri[1], tri[0]);
+            ac.subVectors(tri[2], tri[0]);
+            var normal = ab.clone().cross(ac);
+            if (normal.lengthSq() < 1e-10) continue;
+            // The face itself and anything parallel to it is not a wall
+            if (Math.abs(normal.normalize().getComponent(thin)) > 0.99) continue;
+            for (var e = 0; e < 3; e++) {
+                var p = tri[e].toArray();
+                var q = tri[(e + 1) % 3].toArray();
+                if (Math.abs(p[thin] - max[thin]) > 0.01 || Math.abs(q[thin] - max[thin]) > 0.01) continue;
+                segments.push({
+                    a: [p[uAxis] - min[uAxis], p[vAxis] - min[vAxis]],
+                    b: [q[uAxis] - min[uAxis], q[vAxis] - min[vAxis]]
+                });
+            }
+        }
+        var edges = mergeCollinearSegments(segments);
+        var minLength = SHEET_CUT_MIN_EDGE * size[uAxis];
+        var cuts = edges.filter(function(edge) {
+            edge.angle = Math.atan2(Math.abs(edge.b[1] - edge.a[1]), Math.abs(edge.b[0] - edge.a[0])) * 180 / Math.PI;
+            edge.length = Math.hypot(edge.b[0] - edge.a[0], edge.b[1] - edge.a[1]);
+            return edge.angle > 0.5 && edge.angle < 89.5 && edge.length >= minLength;
+        });
+        if (cuts.length === 0 || cuts.length > SHEET_CUT_MAX_EDGES) return null;
+        cuts.sort(function(x, y) { return (x.a[0] + x.b[0]) - (y.a[0] + y.b[0]); });
+        return { width: size[uAxis], height: size[vAxis], edges: edges, cuts: cuts };
+    }
+
+    // Even-odd test against the outline edges; used to put a cut's letter outside the part
+    function outlineContains(edges, u, v) {
+        var inside = false;
+        edges.forEach(function(e) {
+            if ((e.a[1] > v) !== (e.b[1] > v) &&
+                u < e.a[0] + (v - e.a[1]) * (e.b[0] - e.a[0]) / (e.b[1] - e.a[1])) {
+                inside = !inside;
+            }
+        });
+        return inside;
+    }
+
+    // Overview of a shape sawn along a full-size template: only the outline and its overall size
+    function buildContourFigure(parent, group, pos, outline) {
+        var scale = Math.min(SHEET_CUT_OUTLINE_W / outline.width, SHEET_CUT_OUTLINE_H / outline.height);
+        var left = (SHEET_CUT_W - outline.width * scale) / 2;
+        var top = SHEET_CUT_OUTLINE_MARGIN_TOP;
+        var bottom = top + outline.height * scale;
+
+        var fig = sheetEl('figure', 'sheet-view sheet-cut sheet-cut-wide sheet-contour', parent);
+        var svg = svgEl('svg', { viewBox: '0 0 ' + SHEET_CUT_W + ' ' + (bottom + 90) }, fig);
+        outline.edges.forEach(function(e) {
+            svgEl('line', {
+                x1: left + e.a[0] * scale, y1: bottom - e.a[1] * scale,
+                x2: left + e.b[0] * scale, y2: bottom - e.b[1] * scale,
+                stroke: '#000', 'stroke-width': 3, 'stroke-linecap': 'round'
+            }, svg);
+        });
+        drawDimension(svg, left, left + outline.width * scale, bottom, true, outline.width);
+        drawDimension(svg, top, bottom, left + outline.width * scale, false, outline.height);
+        sheetEl('p', 'sheet-cuts-hint', fig).textContent = t('sheet.cuts.contour');
+        sheetEl('figcaption', null, fig).textContent = cutCaption(group, pos);
+    }
+
+    // Start positions of the template sheets along one axis, in mm from the part's edge. Neighbours
+    // share an overlap, where their registration crosses coincide.
+    function templateTileStarts(length, tileLength) {
+        var starts = [-SHEET_TEMPLATE_MARGIN];
+        while (starts[starts.length - 1] + tileLength < length + SHEET_TEMPLATE_MARGIN) {
+            starts.push(starts[starts.length - 1] + tileLength - SHEET_TEMPLATE_OVERLAP);
+        }
+        return starts;
+    }
+
+    function templateLayout(outline) {
+        var columns = templateTileStarts(outline.width, SHEET_TEMPLATE_W);
+        // A part that fits gets a sheet only as tall as needed, so several fit on one page
+        var tileH = Math.min(outline.height + 2 * SHEET_TEMPLATE_MARGIN, SHEET_TEMPLATE_H);
+        var rows = templateTileStarts(outline.height, tileH);
+        return { columns: columns, rows: rows, tileH: tileH, count: columns.length * rows.length };
+    }
+
+    function drawRegistrationCross(svg, x, y) {
+        var g = svgEl('g', { stroke: '#666', 'stroke-width': 0.2, fill: 'none' }, svg);
+        svgEl('circle', { cx: x, cy: y, r: 1.5 }, g);
+        svgEl('line', { x1: x - 3, y1: y, x2: x + 3, y2: y }, g);
+        svgEl('line', { x1: x, y1: y - 3, x2: x, y2: y + 3 }, g);
+    }
+
+    // Full-size outline on as many sheets as it takes. The SVG units are mm and the SVG is sized
+    // in mm, so the print comes out at 1:1 as long as the print dialog does not scale it.
+    function buildTemplateTiles(parent, group, pos, outline) {
+        var layout = templateLayout(outline);
+        var name = commonLabel(group.labels) || typeName(group.mesh.userData.type);
+        var number = 0;
+        layout.rows.forEach(function(startV, row) {
+            layout.columns.forEach(function(startU, col) {
+                number++;
+                var tile = sheetEl('div', 'sheet-template-tile', parent);
+                var head = sheetEl('div', 'sheet-template-head', tile);
+                sheetEl('span', null, head).textContent = t('sheet.template.sheet', {
+                    pos: pos, name: name, n: number, total: layout.count
+                });
+                // Control line to check the print scale with a ruler
+                var bar = svgEl('svg', { width: '104mm', height: '6mm', viewBox: '0 0 104 6' }, head);
+                var barLines = svgEl('g', { stroke: '#000', 'stroke-width': 0.3 }, bar);
+                svgEl('line', { x1: 2, y1: 3, x2: 102, y2: 3 }, barLines);
+                svgEl('line', { x1: 2, y1: 1, x2: 2, y2: 5 }, barLines);
+                svgEl('line', { x1: 102, y1: 1, x2: 102, y2: 5 }, barLines);
+                svgEl('text', {
+                    x: 52, y: 2.4, 'text-anchor': 'middle', 'font-size': 2.4, 'font-family': 'Arial, sans-serif'
+                }, bar).textContent = t('sheet.template.check');
+
+                var svg = svgEl('svg', {
+                    width: SHEET_TEMPLATE_W + 'mm', height: layout.tileH + 'mm',
+                    viewBox: startU + ' 0 ' + SHEET_TEMPLATE_W + ' ' + layout.tileH
+                }, tile);
+                // Sheet rows count down from the top of the part
+                var topV = outline.height + SHEET_TEMPLATE_MARGIN - row * (layout.tileH - SHEET_TEMPLATE_OVERLAP);
+                outline.edges.forEach(function(e) {
+                    svgEl('line', {
+                        x1: e.a[0], y1: topV - e.a[1], x2: e.b[0], y2: topV - e.b[1],
+                        stroke: '#000', 'stroke-width': 0.35, 'stroke-linecap': 'round'
+                    }, svg);
+                });
+                // Crosses at the middle of each overlap with a neighbour
+                var endU = startU + SHEET_TEMPLATE_W;
+                var inset = 8;
+                var crossU = [];
+                if (col > 0) crossU.push(startU + SHEET_TEMPLATE_OVERLAP / 2);
+                if (col < layout.columns.length - 1) crossU.push(endU - SHEET_TEMPLATE_OVERLAP / 2);
+                crossU.forEach(function(x) {
+                    drawRegistrationCross(svg, x, inset);
+                    drawRegistrationCross(svg, x, layout.tileH - inset);
+                });
+                var crossY = [];
+                if (row > 0) crossY.push(SHEET_TEMPLATE_OVERLAP / 2);
+                if (row < layout.rows.length - 1) crossY.push(layout.tileH - SHEET_TEMPLATE_OVERLAP / 2);
+                crossY.forEach(function(y) {
+                    drawRegistrationCross(svg, startU + inset, y);
+                    drawRegistrationCross(svg, endU - inset, y);
+                });
+            });
+        });
+    }
+
+    // Outline of a cut board with a letter on each angled cut, plus a table of those cuts
+    function buildCutOutlineFigure(parent, group, pos, outline) {
+        var scale = Math.min(SHEET_CUT_OUTLINE_W / outline.width, SHEET_CUT_OUTLINE_H / outline.height);
+        var left = (SHEET_CUT_W - outline.width * scale) / 2;
+        var top = SHEET_CUT_OUTLINE_MARGIN_TOP;
+        var bottom = top + outline.height * scale;
+        function px(u) { return left + u * scale; }
+        function py(v) { return bottom - v * scale; }
+
+        var fig = sheetEl('figure', 'sheet-view sheet-cut sheet-cut-wide', parent);
+        var svg = svgEl('svg', { viewBox: '0 0 ' + SHEET_CUT_W + ' ' + (bottom + 90) }, fig);
+        outline.edges.forEach(function(e) {
+            svgEl('line', {
+                x1: px(e.a[0]), y1: py(e.a[1]), x2: px(e.b[0]), y2: py(e.b[1]),
+                stroke: outline.cuts.indexOf(e) === -1 ? '#000' : '#c8452f', 'stroke-width': 3, 'stroke-linecap': 'round'
+            }, svg);
+        });
+        outline.cuts.forEach(function(e, i) {
+            var midU = (e.a[0] + e.b[0]) / 2;
+            var midV = (e.a[1] + e.b[1]) / 2;
+            var normalU = -(e.b[1] - e.a[1]) / e.length;
+            var normalV = (e.b[0] - e.a[0]) / e.length;
+            // Probe just beside the edge, in mm
+            var probe = 0.5;
+            var side = outlineContains(outline.edges, midU + normalU * probe, midV + normalV * probe) ? -1 : 1;
+            var offset = 26;
+            var x = px(midU) + side * normalU * offset;
+            var y = py(midV) - side * normalV * offset;
+            svgText(svg, x, y + 9, 26, cutLetter(i));
+        });
+        drawDimension(svg, px(0), px(outline.width), bottom, true, outline.width);
+        drawDimension(svg, top, bottom, px(outline.width), false, outline.height);
+
+        var table = sheetEl('table', null, fig);
+        var headRow = sheetEl('tr', null, sheetEl('thead', null, table));
+        ['sheet.cuts.col.cut', 'sheet.cuts.col.angle', 'sheet.cuts.col.length', 'sheet.cuts.col.from', 'sheet.cuts.col.to'].forEach(function(key) {
+            sheetEl('th', null, headRow).textContent = t(key);
+        });
+        var body = sheetEl('tbody', null, table);
+        outline.cuts.forEach(function(e, i) {
+            var row = sheetEl('tr', null, body);
+            sheetEl('td', null, row).textContent = cutLetter(i);
+            sheetEl('td', 'num', row).textContent = formatDegrees(e.angle) + '°';
+            sheetEl('td', 'num', row).textContent = formatMm(e.length) + ' mm';
+            sheetEl('td', 'num', row).textContent = formatMm(e.a[0]) + ' / ' + formatMm(e.a[1]);
+            sheetEl('td', 'num', row).textContent = formatMm(e.b[0]) + ' / ' + formatMm(e.b[1]);
+        });
+        sheetEl('figcaption', null, fig).textContent = cutCaption(group, pos);
+    }
+
+    // Page with one drawing per parts list row that needs an angled saw cut; no page without any
+    function buildCutsPage(parent, rows) {
+        var page = null;
+        var grid = null;
+        function ensurePage() {
+            if (page) return;
+            page = sheetEl('section', 'sheet-page sheet-cuts', parent);
+            sheetEl('h2', null, page).textContent = t('sheet.cuts');
+            sheetEl('p', 'sheet-cuts-hint', page).textContent = t('sheet.cuts.hint');
+            grid = sheetEl('div', 'sheet-views', page);
+        }
+        var templates = [];
+        rows.forEach(function(group, r) {
+            var ud = group.mesh.userData;
+            if (ud.type !== 'Board') return;
+            if (pieceMiterText(ud)) {
+                ensurePage();
+                buildMiterFigure(grid, group, r + 1);
+            }
+            var outline = ud.csgModified ? pieceCutOutline(group.mesh) : null;
+            if (outline) {
+                ensurePage();
+                // Many angled edges make a shape to saw freehand along a line, not cuts to set a saw to
+                var isContour = outline.cuts.length > SHEET_CUT_TABLE_MAX_EDGES &&
+                    templateLayout(outline).count <= SHEET_TEMPLATE_MAX_TILES;
+                if (isContour) {
+                    buildContourFigure(grid, group, r + 1, outline);
+                    templates.push({ group: group, pos: r + 1, outline: outline });
+                } else {
+                    buildCutOutlineFigure(grid, group, r + 1, outline);
+                }
+            }
+        });
+        if (templates.length === 0) return;
+        var templatePage = sheetEl('section', 'sheet-page sheet-templates', parent);
+        sheetEl('h2', null, templatePage).textContent = t('sheet.template');
+        sheetEl('p', 'sheet-cuts-hint', templatePage).textContent = t('sheet.template.hint');
+        templates.forEach(function(item) {
+            buildTemplateTiles(templatePage, item.group, item.pos, item.outline);
+        });
+    }
+
     // Fill #print-sheet: page 1 with three dimensioned orthographic views plus an isometric
-    // overview, page 2 with the parts list.
+    // overview, then detail views if needed, the parts list and the drawings of angled cuts.
     function buildWorkshopSheet() {
         printSheet.textContent = '';
         if (pieces.length === 0) return printSheet;
@@ -5441,6 +5929,7 @@ window.addEventListener('load', function() {
         var partsPage = sheetEl('section', 'sheet-page sheet-parts', printSheet);
         sheetEl('h2', null, partsPage).textContent = t('sheet.partsList');
         buildPartsTable(partsPage, rows);
+        buildCutsPage(printSheet, rows);
         return printSheet;
     }
 

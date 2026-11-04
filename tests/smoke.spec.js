@@ -159,8 +159,10 @@ test('workshop sheet merges identical parts into one row', async ({ page }) => {
         add('Dowel', 'Pin B');
         add('Dowel', 'Pin C');
         add('Board', 'Apron Left', { w: 18, h: 60, d: 240 });
-        // A miter ties the board to its axis, so it stays separate.
+        // A miter ties the board to its axis, so it stays separate from the plain board.
+        // The same miter on the other end is the same part, turned by 180°.
         add('Board', 'Rafter', { w: 240, h: 60, d: 18, angleStart: 45 });
+        add('Board', 'Rafter B', { w: 240, h: 60, d: 18, angleEnd: 45 });
         const rows = app.buildWorkshopSheet().querySelectorAll('tbody tr');
         return Array.from(rows).map((r) => [r.children[0].textContent, r.children[2].textContent, r.children[3].textContent]);
     });
@@ -168,7 +170,7 @@ test('workshop sheet merges identical parts into one row', async ({ page }) => {
     expect(cells).toEqual([
         ['1', '3×', 'Pin'],
         ['2', '2×', 'Apron'],
-        ['3', '1×', 'Rafter']
+        ['3', '2×', 'Rafter']
     ]);
 });
 
@@ -277,6 +279,95 @@ test('workshop sheet gives enclosed parts a detail view and restores materials',
     expect(result.others).toBe(0);
     expect(result.before).toHaveLength(3);
     expect(result.after).toEqual(result.before);
+});
+
+test('workshop sheet draws miters and angled cuts, but no page without any', async ({ page }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+        const app = window.__app;
+        app.setLanguage('en');
+        const base = { notches: 0, csgModified: false, rx: 0, ry: 0, rz: 0, px: 0, py: 0, pz: 0 };
+        const cut = (id, label, py, tool) => ({
+            ...base, type: 'Board', id, label, py, w: 300, h: 100, d: 18, notches: 1, csgModified: true,
+            csgOps: [{ op: 'subtract', tool: { local: true, pz: 0, rx: 0, ry: 0, ...tool } }]
+        });
+        app.restoreScene(JSON.stringify({
+            pieces: [
+                { ...base, type: 'Board', id: 1, label: 'Rafter', w: 240, h: 60, d: 18, angleStart: 45 },
+                cut(2, 'Corner', 200, { type: 'Board', px: 150, py: 50, rz: Math.PI / 4, w: 100, h: 100, d: 30 }),
+                cut(3, 'Notch', 400, { type: 'Board', px: 0, py: 50, rz: 0, w: 50, h: 40, d: 30 }),
+                cut(4, 'Hole', 600, { type: 'Dowel', px: 0, py: 0, rx: Math.PI / 2, rz: 0, r: 30, h: 40 })
+            ],
+            groups: []
+        }));
+        const sheet = app.buildWorkshopSheet();
+        const figures = Array.from(sheet.querySelectorAll('.sheet-cuts .sheet-cut'));
+        const withCuts = {
+            captions: figures.map((f) => f.querySelector('figcaption').textContent),
+            miterText: Array.from(figures[0].querySelectorAll('svg text')).map((el) => el.textContent),
+            cutRows: Array.from(figures[1].querySelectorAll('tbody tr')).map((r) => Array.from(r.children).map((c) => c.textContent))
+        };
+        app.restoreScene(JSON.stringify({
+            pieces: [{ ...base, type: 'Board', id: 1, label: 'Plain', w: 240, h: 60, d: 18 }],
+            groups: []
+        }));
+        return { withCuts, plainPages: app.buildWorkshopSheet().querySelectorAll('.sheet-cuts').length };
+    });
+
+    // The square notch and the round hole need no angle, so they get no drawing.
+    expect(result.withCuts.captions).toHaveLength(2);
+    expect(result.withCuts.captions[0]).toContain('Rafter');
+    expect(result.withCuts.captions[1]).toContain('Corner');
+    expect(result.withCuts.miterText).toEqual(expect.arrayContaining([
+        '45°', '90°', 'Top 180 mm', 'Bottom 240 mm', '60 mm', 'Start 45° · saw 45°', 'End 90°'
+    ]));
+    expect(result.withCuts.cutRows).toEqual([['A', '45°', '100 mm', '229.3 / 100', '300 / 29.3']]);
+    expect(result.plainPages).toBe(0);
+});
+
+test('workshop sheet prints a shape with many angled edges as a full-size template', async ({ page }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+        const app = window.__app;
+        app.setLanguage('en');
+        // Seven diamond notches along the top edge make 14 angled edges.
+        const csgOps = [-120, -80, -40, 0, 40, 80, 120].map((px) => ({
+            op: 'subtract',
+            tool: { type: 'Board', local: true, px, py: 50, pz: 0, rx: 0, ry: 0, rz: Math.PI / 4, w: 30, h: 30, d: 30 }
+        }));
+        app.restoreScene(JSON.stringify({
+            pieces: [{
+                type: 'Board', id: 1, label: 'Crest', px: 0, py: 0, pz: 0, rx: 0, ry: 0, rz: 0,
+                w: 300, h: 100, d: 18, notches: csgOps.length, csgModified: true, csgOps
+            }],
+            groups: []
+        }));
+        const sheet = app.buildWorkshopSheet();
+        const tiles = Array.from(sheet.querySelectorAll('.sheet-templates .sheet-template-tile'));
+        return {
+            contours: sheet.querySelectorAll('.sheet-cuts .sheet-contour').length,
+            cutTables: sheet.querySelectorAll('.sheet-cuts table').length,
+            heads: tiles.map((tile) => tile.querySelector('.sheet-template-head span').textContent),
+            sizes: tiles.map((tile) => {
+                const svg = tile.querySelector(':scope > svg');
+                return [svg.getAttribute('width'), svg.getAttribute('height'), svg.getAttribute('viewBox')];
+            }),
+            lines: tiles.map((tile) => tile.querySelectorAll(':scope > svg > line').length > 0)
+        };
+    });
+
+    expect(result.contours).toBe(1);
+    expect(result.cutTables).toBe(0);
+    expect(result.heads).toEqual(['Pos. 1 · Crest · sheet 1 of 2', 'Pos. 1 · Crest · sheet 2 of 2']);
+    // Real millimeters on both sides, so the print comes out at 1:1. Sheet 2 starts one sheet
+    // minus the overlap further along.
+    expect(result.sizes).toEqual([
+        ['186mm', '116mm', '-8 0 186 116'],
+        ['186mm', '116mm', '162 0 186 116']
+    ]);
+    expect(result.lines).toEqual([true, true]);
 });
 
 test('tall add menu stays inside the window and scrolls to its last item', async ({ page }) => {

@@ -16,32 +16,32 @@
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 0.0000, "py": 42.0000, "pz": 94.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 200, "h": 60, "d": 12
+      "px": 0.0000, "py": 27.0000, "pz": 94.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 200, "h": 30, "d": 12
     },
     {
       "type": "Board", "id": 3, "label": "Aussenwand hinten",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 0.0000, "py": 42.0000, "pz": -94.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 200, "h": 60, "d": 12
+      "px": 0.0000, "py": 27.0000, "pz": -94.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 200, "h": 30, "d": 12
     },
     {
       "type": "Board", "id": 4, "label": "Aussenwand links",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": -94.0000, "py": 42.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 12, "h": 60, "d": 176
+      "px": -94.0000, "py": 27.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 12, "h": 30, "d": 176
     },
     {
       "type": "Board", "id": 5, "label": "Aussenwand rechts",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 94.0000, "py": 42.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 12, "h": 60, "d": 176
+      "px": 94.0000, "py": 27.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 12, "h": 30, "d": 176
     },
     {
       "type": "Board", "id": 6, "label": "Trograhmen vorn",
@@ -49,7 +49,7 @@
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
       "px": 0.0000, "py": 21.0000, "pz": 67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 160, "h": 18, "d": 25
+      "w": 110, "h": 18, "d": 25
     },
     {
       "type": "Board", "id": 7, "label": "Trograhmen hinten",
@@ -57,7 +57,7 @@
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
       "px": 0.0000, "py": 21.0000, "pz": -67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 160, "h": 18, "d": 25
+      "w": 110, "h": 18, "d": 25
     },
     {
       "type": "Board", "id": 8, "label": "Trograhmen links",
@@ -89,32 +89,32 @@
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": -67.5000, "py": 126.3759, "pz": -67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 25, "h": 192.7518, "d": 25
+      "px": -67.5000, "py": 117.3759, "pz": -67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 25, "h": 210.7518, "d": 25
     },
     {
       "type": "Board", "id": 12, "label": "Pfosten vorn links",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": -67.5000, "py": 126.3759, "pz": 67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 25, "h": 192.7518, "d": 25
+      "px": -67.5000, "py": 117.3759, "pz": 67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 25, "h": 210.7518, "d": 25
     },
     {
       "type": "Board", "id": 13, "label": "Pfosten hinten rechts",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 67.5000, "py": 126.3759, "pz": -67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 25, "h": 192.7518, "d": 25
+      "px": 67.5000, "py": 117.3759, "pz": -67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 25, "h": 210.7518, "d": 25
     },
     {
       "type": "Board", "id": 14, "label": "Pfosten vorn rechts",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 67.5000, "py": 126.3759, "pz": 67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 25, "h": 192.7518, "d": 25
+      "px": 67.5000, "py": 117.3759, "pz": 67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 25, "h": 210.7518, "d": 25
     },
     {
       "type": "Board", "id": 15, "label": "Traufbalken links",

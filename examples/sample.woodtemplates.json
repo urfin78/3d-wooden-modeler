@@ -9,6 +9,7 @@
     "name": "8mm dowel 60mm",
     "type": "Dowel",
     "price": 0.50,
+    "bought": true,
     "r": 4, "h": 60
   },
   {

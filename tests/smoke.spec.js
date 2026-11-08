@@ -482,9 +482,9 @@ test('parts split from one piece of stock stay on it, with the offcut from the s
         const loose = app.makeDefaultForType('Board');
         Object.assign(loose.userData, { label: 'Loose', w: 500, h: 20, d: 100 });
         app.addPiece(loose);
-        // A fixed price and no source: bought at its own size, not packed onto a trade length
+        // Bought ready-made: a piece of stock of its own size, not packed onto a trade length
         const bought = app.makeDefaultForType('Board');
-        Object.assign(bought.userData, { label: 'Lid', w: 340, h: 20, d: 100, price: 3.5, priceMode: 'fixed' });
+        Object.assign(bought.userData, { label: 'Lid', w: 340, h: 20, d: 100, price: 3.5, priceMode: 'fixed', bought: true });
         app.addPiece(bought);
         // The source fields survive a save/load round trip
         app.restoreScene(app.serializeScene());
@@ -505,4 +505,121 @@ test('parts split from one piece of stock stay on it, with the offcut from the s
         ['▸ B · Board 20×100×340 mm', 'B · Board 20×100×340 mm\n1 part'],
         ['▸ C · Board 20×100×2000 mm', 'C · Board 20×100×2000 mm\n1 part · offcut 1497']
     ]);
+});
+
+test('stock packing finds the optimum best fit decreasing misses, and the cheapest mix of lengths', async ({ page }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+        const app = window.__app;
+        const items = (lengths) => lengths.map((length, i) => ({ length, pos: i + 1 }));
+        const bars = (packed) => ({
+            optimal: packed.optimal,
+            bars: packed.bars.map((bar) => [bar.length, bar.price, bar.parts.map((p) => p.length), bar.rest])
+        });
+        return {
+            // Best fit decreasing needs 3 pieces of stock here: 500+400, 300+300+300, 200
+            single: bars(app.packStock(items([500, 400, 300, 300, 300, 200]), [{ length: 1000, price: null }], 0)),
+            // 3 × 1000 costs 9, 2000 + 1000 costs 7
+            mixed: bars(app.packStock(items([900, 900, 400]), [{ length: 1000, price: 3 }, { length: 2000, price: 4 }], 3)),
+            offers: [app.parseStockOffers('2000 = 3,90; 1000'), app.parseStockOffers('2000 mm @ €4.5'), app.parseStockOffers('abc'), app.parseStockOffers('')]
+        };
+    });
+
+    expect(result.single).toEqual({ optimal: true, bars: [[1000, null, [500, 300, 200], 0], [1000, null, [400, 300, 300], 0]] });
+    expect(result.mixed).toEqual({ optimal: true, bars: [[2000, 4, [900, 900], 194], [1000, 3, [400], 597]] });
+    expect(result.offers).toEqual([
+        [{ length: 1000, price: null }, { length: 2000, price: 3.9 }],
+        [{ length: 2000, price: 4.5 }],
+        null,
+        []
+    ]);
+});
+
+test('optimize proposes catalog stock and repacked split parts; apply saves it with the model', async ({ page }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+        const app = window.__app;
+        app.setLanguage('en');
+        app.setStockCatalog([
+            { profile: '12x50', name: 'Batten', offers: [{ length: 1000, price: 2.1 }, { length: 2000, price: 3.9 }] },
+            { profile: 'R6', offers: [{ length: 1000, price: 1.2 }] }
+        ]);
+        const add = (type, label, dims) => {
+            const mesh = app.makeDefaultForType(type);
+            mesh.userData.label = label;
+            Object.assign(mesh.userData, dims);
+            app.addPiece(mesh);
+        };
+        // Two strip widths of one thickness: merged into 12 × 44 by default, which has no price
+        for (let i = 0; i < 4; i++) add('Board', 'Rail', { w: 600, h: 12, d: 37.2 });
+        for (let i = 0; i < 2; i++) add('Board', 'Post', { w: 700, h: 12, d: 44 });
+        // Split from a 2000 mm plank, plus one more part of the same cross-section
+        const source = { sourceId: 'plank-1', sourceLabel: 'Plank 2000', sourceLength: 2000, sourceKerf: 3, sourcePrice: 6, sourcePriceMode: 'fixed', price: 0 };
+        add('Board', 'Shelf', Object.assign({}, source, { w: 400, h: 20, d: 100 }));
+        add('Board', 'Side', Object.assign({}, source, { w: 300, h: 20, d: 100 }));
+        add('Board', 'Loose', { w: 500, h: 20, d: 100, price: 2 });
+        add('Dowel', 'Pin', { r: 3, h: 30, price: 0.2, bought: true });
+        add('Dowel', 'Rod', { r: 3, h: 400 });
+        app.restoreScene(app.serializeScene());
+        const plan = () => app.buildStockPlan().map((entry) => [entry.profile.key, entry.bars.map((bar) => [bar.length, bar.price, bar.parts.map((p) => p.length)])]);
+        const costs = () => Array.from(document.querySelectorAll('#cost-items .cost-row')).map((r) => r.textContent)
+            .concat(document.getElementById('cost-total').textContent);
+        const before = { plan: plan(), costs: costs() };
+        app.openStockModal();
+        app.optimizeStockDraft();
+        const dialog = {
+            proposal: document.querySelector('#stock-rows .stock-proposal').textContent,
+            repack: document.querySelector('#stock-rows .stock-option input').checked
+        };
+        // Nothing is saved before Apply
+        const unchanged = JSON.stringify(plan()) === JSON.stringify(before.plan);
+        document.getElementById('stock-confirm').click();
+        const sheet = app.buildWorkshopSheet();
+        return {
+            before, dialog, unchanged,
+            after: { plan: plan(), costs: costs() },
+            summary: Array.from(sheet.querySelectorAll('.sheet-first .sheet-stock-summary li')).map((li) => li.lastElementChild.textContent),
+            saved: app.serializeStock(),
+            options: app.serializeStockOptions()
+        };
+    });
+
+    expect(result.before.plan).toEqual([
+        ['12x44', [[2000, null, [700, 600, 600]], [2000, null, [700, 600, 600]]]],
+        ['20x100', [[2000, null, [400, 300]], [2000, null, [500]]]],
+        ['R6', [[30, null, [30]], [1000, 1.2, [400]]]]
+    ]);
+    expect(result.dialog).toEqual({
+        proposal: 'Proposal: 4 pieces of stock · offcut 1570 mm · $9.00 + 1 without price. Before: 5 pieces of stock · offcut 3570 mm · $1.20 + 4 without price. Apply saves it.',
+        repack: true
+    });
+    expect(result.unchanged).toBe(true);
+    expect(result.after.plan).toEqual([
+        ['12x50', [[2000, 3.9, [700, 600, 600]], [2000, 3.9, [700, 600, 600]]]],
+        ['20x100', [[2000, null, [500, 400, 300]]]],
+        ['R6', [[30, null, [30]], [1000, 1.2, [400]]]]
+    ]);
+    // Stock with a price costs that price; without one, the parts' own prices count
+    expect(result.after.costs).toEqual([
+        'A · Batten 12×50×2000 mm$3.90',
+        'B · Batten 12×50×2000 mm$3.90',
+        'C · Board 20×100×2000 mm$8.00',
+        'D · Dowel rod Ø6×30 mm$0.20',
+        'E · Dowel rod Ø6×1000 mm$1.20',
+        'Total: $17.20'
+    ]);
+    expect(result.summary).toEqual([
+        '2× Batten 12×50×2000 mm · $7.80',
+        '1× Board 20×100×2000 mm',
+        '1× Dowel rod Ø6×30 mm',
+        '1× Dowel rod Ø6×1000 mm · $1.20'
+    ]);
+    // Catalog offers are written into the file, so it plans the same elsewhere
+    expect(result.saved).toEqual([
+        { profile: '12x50', name: 'Batten', offers: [{ length: 1000, price: 2.1 }, { length: 2000, price: 3.9 }], parts: ['12x37.2', '12x44'] },
+        { profile: 'R6', offers: [{ length: 1000, price: 1.2 }] }
+    ]);
+    expect(result.options).toEqual({ repackSplit: true });
 });

@@ -71,6 +71,11 @@
             "enum": ["fixed", "per_mm"]
           },
 
+          "bought": {
+            "description": "Bought ready-made at its own size (a dowel pin, a turned leg): the cutting plan gives it a piece of stock of its own instead of packing it onto a trade length, and its own price counts. Ignored for split parts and frames. Omitted when false.",
+            "type": "boolean"
+          },
+
           "sourceId": {
             "description": "Shared UUID assigned to all parts produced from the same Split operation ('source group'). Null when not a split part.",
             "type": ["string", "null"]
@@ -292,7 +297,7 @@
     },
 
     "stock": {
-      "description": "Optional stock material settings for the cutting plan on the workshop sheet, set in the print dialog. One entry per stock cross-section; cross-sections without an entry use the defaults (2000 mm, round stock 1000 mm, raised to the longest part; kerf from Split Piece). Not part of the undo history.",
+      "description": "Optional stock material settings for the cutting plan, set under File → Stock Material. One entry per stock cross-section; cross-sections without an entry use the stock catalog of the browser, else the defaults (2000 mm, round stock 1000 mm, raised to the longest part; kerf from Split Piece). Not part of the undo history.",
       "type": "array",
       "items": {
         "type": "object",
@@ -308,9 +313,22 @@
             "type": "string"
           },
           "length": {
-            "description": "Length the stock is bought in, in mm.",
+            "description": "Single length the stock is bought in, in mm, without a price. Older form of offers with one entry; offers wins when both are present.",
             "type": "number",
             "exclusiveMinimum": 0
+          },
+          "offers": {
+            "description": "Lengths the stock is sold in, each with an optional price. The cutting plan packs the parts onto the cheapest mix; when not every offer has a price it minimizes the stock length bought. Written from the stock catalog on save when the project has no own offers, so the file plans the same on another computer. The global stock catalog (browser storage, exported as .woodstock.json) uses the same entry shape: profile, name, offers.",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["length"],
+              "properties": {
+                "length": { "description": "Stock length in mm.", "type": "number", "exclusiveMinimum": 0 },
+                "price": { "description": "Price of one piece of this length, in the currency chosen in the app. Omitted when unknown.", "type": "number", "minimum": 0 }
+              }
+            }
           },
           "kerf": {
             "description": "Saw blade thickness in mm, taken by every cut.",
@@ -325,6 +343,17 @@
               "pattern": "^([0-9]+(\\.[0-9])?x[0-9]+(\\.[0-9])?|R[0-9]+(\\.[0-9])?)$"
             }
           }
+        }
+      }
+    },
+
+    "stockOptions": {
+      "description": "Optional options of the cutting plan, set under File → Stock Material. Not part of the undo history.",
+      "type": "object",
+      "properties": {
+        "repackSplit": {
+          "description": "Pack parts split in the model (Split Piece) onto stock like all other parts, instead of keeping them on the piece they were split from. Omitted when false.",
+          "type": "boolean"
         }
       }
     }

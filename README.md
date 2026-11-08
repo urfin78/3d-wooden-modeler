@@ -24,6 +24,8 @@ Subtract one piece from another to carve notches and dowel holes. Here, two boar
 
 File → Print Workshop Sheet creates a printable A4 sheet, or a PDF through your browser's print dialog. It has front, side, top and isometric views with overall dimensions, detail views of hidden parts, and a numbered parts list. Parts that need angled saw cuts also get a drawing: mitered boards as a profile with end angles, saw settings and top and bottom lengths, cut boards with a few angled cuts as an outline with a table of those cuts. Shapes with many angled edges, the kind you saw with a jigsaw, get a full-size template to print, spread over several sheets if needed.
 
+The side panel groups the model by stock: every piece of stock gets a letter, such as "A · Strip 12×44×2000 mm", and opens to show the number of parts, the offcut and the parts cut from it, so a model with dozens of parts stays readable. Parts you split in the model stay on the piece of stock they were split from, with the offcut worked out from its length and the saw kerf. A part with a fixed price that was not split counts as bought at its own size, with no offcut. All other parts are packed onto stock lengths per cross-section (2000 mm, dowel rod 1000 mm), and strips of the same thickness are cut from one strip in the widest size. File → Stock Material changes lengths, kerf and names, or the size a part is sawn from. The workshop sheet lists the stock on page 1 with the same letters, adds a "From stock" column to the parts list and a cutting plan that shows every piece of stock to scale with its parts and the offcut.
+
 | Views with dimensions | Parts list |
 | --- | --- |
 | ![Workshop sheet with four dimensioned views of a stool](docs/screenshots/workshop-views.png) | ![Parts list with pictures, quantities and dimensions](docs/screenshots/workshop-parts.png) |
@@ -60,7 +62,7 @@ To explore a finished model, download [`examples/stool.woodmodel.json`](examples
 - Snap mode with face contact, edge alignment and dowel axis snapping; falls back to a 10 mm grid
 - Duplicate pieces
 - Group several pieces so they move and snap as a unit; groups persist in save files
-- Split a board or dowel by number of parts or by target length, with configurable saw kerf; split parts stay grouped in the object list and count as one purchase in the costs
+- Split a board or dowel by number of parts or by target length, with configurable saw kerf; split parts stay together as one piece of stock in the object list, the costs and the cutting plan
 - Cut joints with CSG boolean subtraction
 - Undo and redo
 
@@ -91,6 +93,7 @@ To explore a finished model, download [`examples/stool.woodmodel.json`](examples
 - Fixed or per-mm prices, currency selector and live cost summary
 - Save and load projects as `.woodmodel.json`
 - Workshop sheet for printing or PDF; identical parts, including boards with swapped miter angles, are merged into one numbered row of the parts list, with drawings of miters and angled cuts and full-size templates for shapes
+- Object list and cost summary grouped by piece of stock (A, B, …), collapsible; stock list, "From stock" column and to-scale cutting plan on the workshop sheet; split parts keep their source length and kerf for the offcut
 - CSV cut list with dimensions, types, notch counts and costs
 - PNG export of the current view
 

@@ -66,7 +66,9 @@ test('screenshot: main window', async ({ page }) => {
     await gotoApp(page, FULL_APP_SIZE);
     await loadStool(page);
     await setView(page, STOOL_VIEW, STOOL_CENTER);
-    await page.locator('.obj-list-item').nth(1).click();
+    // The object list is grouped by stock piece and starts collapsed: open the first one
+    await page.locator('.obj-group-header.stock-group').first().click();
+    await page.locator('.obj-list-item').first().click();
     await settle(page);
     await page.screenshot({ path: outPath('main-window.png') });
 });

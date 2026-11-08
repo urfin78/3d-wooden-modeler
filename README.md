@@ -22,7 +22,7 @@ Subtract one piece from another to carve notches and dowel holes. Here, two boar
 
 ### Take a plan into the workshop
 
-File → Print Workshop Sheet creates a printable A4 sheet, or a PDF through your browser's print dialog. It has front, side, top and isometric views with overall dimensions, detail views of hidden parts, and a numbered parts list.
+File → Print Workshop Sheet creates a printable A4 sheet, or a PDF through your browser's print dialog. It has front, side, top and isometric views with overall dimensions, detail views of hidden parts, and a numbered parts list. Parts that need angled saw cuts also get a drawing: mitered boards as a profile with end angles, saw settings and top and bottom lengths, cut boards with a few angled cuts as an outline with a table of those cuts. Shapes with many angled edges, the kind you saw with a jigsaw, get a full-size template to print, spread over several sheets if needed.
 
 | Views with dimensions | Parts list |
 | --- | --- |
@@ -90,7 +90,7 @@ To explore a finished model, download [`examples/stool.woodmodel.json`](examples
 
 - Fixed or per-mm prices, currency selector and live cost summary
 - Save and load projects as `.woodmodel.json`
-- Workshop sheet for printing or PDF; identical parts are merged into one numbered row of the parts list
+- Workshop sheet for printing or PDF; identical parts, including boards with swapped miter angles, are merged into one numbered row of the parts list, with drawings of miters and angled cuts and full-size templates for shapes
 - CSV cut list with dimensions, types, notch counts and costs
 - PNG export of the current view
 

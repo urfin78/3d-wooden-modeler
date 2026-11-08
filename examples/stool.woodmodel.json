@@ -491,5 +491,8 @@
       "p1": [180, 0, 180],
       "p2": [180, 460, 180]
     }
+  ],
+  "stock": [
+    { "profile": "R8", "name": "Beech dowel rod", "offers": [{ "length": 1000, "price": 1.49 }, { "length": 2000 }] }
   ]
 }

@@ -24,7 +24,13 @@ Subtract one piece from another to carve notches and dowel holes. Here, two boar
 
 File → Print Workshop Sheet creates a printable A4 sheet, or a PDF through your browser's print dialog. It has front, side, top and isometric views with overall dimensions, detail views of hidden parts, and a numbered parts list. Parts that need angled saw cuts also get a drawing: mitered boards as a profile with end angles, saw settings and top and bottom lengths, cut boards with a few angled cuts as an outline with a table of those cuts. Shapes with many angled edges, the kind you saw with a jigsaw, get a full-size template to print, spread over several sheets if needed.
 
-The side panel groups the model by stock: every piece of stock gets a letter, such as "A · Strip 12×44×2000 mm", and opens to show the number of parts, the offcut and the parts cut from it, so a model with dozens of parts stays readable. Parts you split in the model stay on the piece of stock they were split from, with the offcut worked out from its length and the saw kerf. A part with a fixed price that was not split counts as bought at its own size, with no offcut. All other parts are packed onto stock lengths per cross-section (2000 mm, dowel rod 1000 mm), and strips of the same thickness are cut from one strip in the widest size. File → Stock Material changes lengths, kerf and names, or the size a part is sawn from. The workshop sheet lists the stock on page 1 with the same letters, adds a "From stock" column to the parts list and a cutting plan that shows every piece of stock to scale with its parts and the offcut.
+The side panel groups the model by stock: every piece of stock gets a letter, such as "A · Strip 12×44×2000 mm", and opens to show the number of parts, the offcut and the parts cut from it, so a model with dozens of parts stays readable. Parts you split in the model stay on the piece of stock they were split from, with the offcut worked out from its length and the saw kerf. A part marked as bought ready-made, such as a dowel pin, is a piece of stock of its own size. All other parts are packed onto the lengths the stock is sold in, per cross-section. Strips of the same thickness are cut from one strip in the widest size.
+
+You don't have to plan the shopping list while you model. Enter what you can buy in File → Stock Catalog: per cross-section the lengths and their prices, for example `12x50: 1000 = 2.10; 2000 = 3.90`. The catalog is kept in your browser for all projects and can be exported and imported. The plan then picks the cheapest mix of lengths. Without prices it buys the least wood. Where it cannot prove a plan optimal, the stock dialog says so. Without a catalog, stock is 2000 mm long (dowel rod 1000 mm).
+
+File → Stock Material changes lengths, prices, kerf and names for one project, or the size a part is sawn from. **Optimize** looks for a better plan and shows it before you apply it. It tries the catalog's cross-sections for parts that can be ripped from them, and packing split parts freely instead of keeping them on the piece they were split from. Saving a project writes the catalog lengths it uses into the file, so it plans the same on another computer. Stock with a price counts that price in the cost summary.
+
+The workshop sheet lists the stock to buy on page 1 with the same letters and prices, adds a "From stock" column to the parts list, and adds a cutting plan that shows every piece of stock to scale with its parts and the offcut.
 
 | Views with dimensions | Parts list |
 | --- | --- |
@@ -94,6 +100,8 @@ To explore a finished model, download [`examples/stool.woodmodel.json`](examples
 - Save and load projects as `.woodmodel.json`
 - Workshop sheet for printing or PDF; identical parts, including boards with swapped miter angles, are merged into one numbered row of the parts list, with drawings of miters and angled cuts and full-size templates for shapes
 - Object list and cost summary grouped by piece of stock (A, B, …), collapsible; stock list, "From stock" column and to-scale cutting plan on the workshop sheet; split parts keep their source length and kerf for the offcut
+- Stock catalog with lengths and prices per cross-section, kept in the browser, with JSON export and import (`.woodstock.json`); cutting plan with the cheapest mix of lengths, exact where it can be proven; Optimize proposes catalog cross-sections and repacking split parts
+- Parts can be marked as bought ready-made, so they are not sawn from stock
 - CSV cut list with dimensions, types, notch counts and costs
 - PNG export of the current view
 

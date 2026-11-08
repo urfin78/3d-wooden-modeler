@@ -255,7 +255,7 @@
         background: var(--surface-3); color: var(--text-faint);
         border-color: var(--border); cursor: not-allowed;
     }
-    #stock-modal .modal-box { width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; }
+    #stock-modal .modal-box { width: min(920px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; }
     .stock-hint { margin: 0 0 10px; font-size: 12px; color: var(--text-muted); }
     #stock-modal .modal-buttons { position: sticky; bottom: -18px; background: var(--surface); margin-bottom: -18px; padding: 12px 0 18px; }
     #stock-rows h4 { margin: 12px 0 4px; font-size: 12px; font-weight: 600; color: var(--text); }
@@ -270,6 +270,32 @@
     #stock-rows input[type="number"] { width: 80px; }
     #stock-rows .stock-result { white-space: nowrap; font-weight: 600; }
     #stock-rows .stock-warn { color: var(--danger); font-weight: 400; font-size: 11px; white-space: normal; }
+    #stock-rows .stock-quality { display: block; font-weight: 400; font-size: 11px; color: var(--text-muted); }
+    #stock-rows .stock-option { display: flex; align-items: center; gap: 6px; margin: 4px 0; font-size: 12px; color: var(--text); cursor: pointer; }
+    #stock-rows .stock-option input { width: auto; min-width: 0; margin: 0; }
+    #stock-rows .stock-proposal { margin: 8px 0; padding: 6px 8px; font-size: 12px; color: var(--text); background: var(--surface-2); border-left: 2px solid var(--accent); }
+    #stock-rows button.stock-to-catalog, #catalog-rows button {
+        background: var(--surface); color: var(--text-muted); border: 1px solid var(--border);
+        border-radius: var(--radius-sm); padding: 3px 6px; font-size: 11px; cursor: pointer; white-space: nowrap;
+    }
+    #stock-rows input.stock-offers, #catalog-rows input.stock-offers { min-width: 150px; }
+    #stock-rows table.stock-materials td:nth-child(1) { width: 16%; }
+    #stock-rows table.stock-materials td:nth-child(4) { width: 30%; }
+    #stock-rows table.stock-materials input[type="number"] { width: 64px; }
+    #catalog-rows td:nth-child(1) { width: 110px; }
+    #catalog-rows td:nth-child(2) { width: 30%; }
+    #catalog-rows td:last-child { width: 1%; }
+    .modal-buttons .modal-left { margin-right: auto; }
+    #catalog-modal .modal-box { width: min(680px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; }
+    #catalog-rows table { width: 100%; border-collapse: collapse; font-size: 12px; color: var(--text); }
+    #catalog-rows th { text-align: left; font-weight: 500; color: var(--text-muted); font-size: 11px; padding: 4px; border-bottom: 1px solid var(--border); }
+    #catalog-rows td { padding: 4px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    #catalog-rows input {
+        width: 100%; min-width: 60px; background: var(--surface); color: var(--text);
+        border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 5px 6px; font-size: 12px;
+    }
+    #catalog-rows .stock-warn { color: var(--danger); font-size: 11px; }
+    #catalog-rows .catalog-empty { padding: 8px 4px; font-size: 12px; color: var(--text-muted); font-style: italic; }
     #group-panel { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
     #group-panel h3 { margin: 0 0 6px; color: var(--text); font-size: 12px; }
     #group-member-info { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
@@ -506,6 +532,7 @@
             <div class="menu-item" id="menu-export-csv" data-i18n="toolbar.exportCsv">Export CSV</div>
             <div class="menu-item" id="menu-print-sheet" data-i18n="toolbar.printSheet">Print Workshop Sheet</div>
             <div class="menu-item" id="menu-stock" data-i18n="toolbar.stock">Stock Material…</div>
+            <div class="menu-item" id="menu-catalog" data-i18n="toolbar.catalog">Stock Catalog…</div>
             <div class="menu-item" id="menu-export-png" data-i18n="toolbar.exportPng">Export View as PNG</div>
             <div class="menu-item" id="menu-export-templates" data-i18n="toolbar.exportTemplates">Export Templates</div>
             <div class="menu-item" id="menu-import-templates" data-i18n="toolbar.importTemplates">Import Templates</div>
@@ -676,6 +703,10 @@
             <div><label data-i18n="panel.unitPrice">Unit Price</label><input type="number" id="price-input" step="0.01" min="0" value="0"></div>
             <div><label data-i18n="panel.priceMode">Mode</label><select id="price-mode"><option value="fixed" data-i18n="panel.priceMode.fixed">Fixed</option><option value="per_mm" data-i18n="panel.priceMode.perMm">Per mm</option></select></div>
         </div>
+        <label id="bought-row" style="display:flex; align-items:center; gap:6px; margin-top:8px; cursor:pointer;" data-i18n-title="panel.boughtHint" title="Bought at its own size, not sawn from stock">
+            <input type="checkbox" id="bought-input" style="width:auto; margin:0;">
+            <span data-i18n="panel.bought">Bought ready-made</span>
+        </label>
     </div>
 
     <div id="summary-section">
@@ -748,11 +779,29 @@
         <p class="stock-hint" data-i18n="stock.hint">Optional: nothing needs to be entered.</p>
         <div id="stock-rows"></div>
         <div class="modal-buttons">
+            <button id="stock-open-catalog" class="modal-left" data-i18n="stock.catalog">Catalog…</button>
+            <button id="stock-optimize" data-i18n="stock.optimize">Optimize</button>
             <button id="stock-cancel" data-i18n="stock.cancel">Cancel</button>
             <button id="stock-confirm" class="primary" data-i18n="stock.apply">Apply</button>
         </div>
     </div>
 </div>
+
+<div id="catalog-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 data-i18n="catalog.title">Stock catalog</h3>
+        <p class="stock-hint" data-i18n="catalog.hint">What you can buy, for all projects.</p>
+        <div id="catalog-rows"></div>
+        <div class="modal-buttons">
+            <button id="catalog-add" class="modal-left" data-i18n="catalog.add">Add row</button>
+            <button id="catalog-import" data-i18n="catalog.import">Import</button>
+            <button id="catalog-export" data-i18n="catalog.export">Export</button>
+            <button id="catalog-cancel" data-i18n="stock.cancel">Cancel</button>
+            <button id="catalog-confirm" class="primary" data-i18n="catalog.save">Save</button>
+        </div>
+    </div>
+</div>
+<input type="file" id="catalog-import-input" accept=".woodstock.json,.json" style="display:none">
 
 <div id="print-sheet"></div>
 
@@ -861,7 +910,7 @@ window.addEventListener('load', function() {
             'sheet.stock.summary': 'Stock material:',
             'sheet.stock.item': '{qty}× {name}',
             'sheet.stock.title': 'Cutting plan',
-            'sheet.stock.hint': 'Each bar is one piece of stock, drawn to scale from the left end; its letter is the one in the parts list. Parts split from a piece of stock in the model stay on that piece; all other parts are packed onto stock lengths (2000 mm, dowel rod 1000 mm, adjustable under File → Stock Material). Every cut takes the kerf. Miters and angled cuts are sawn afterwards from the blank.',
+            'sheet.stock.hint': 'Each bar is one piece of stock, drawn to scale from the left end; its letter is the one in the parts list. Parts are packed onto the lengths the stock is sold in (stock catalog or File → Stock Material, else 2000 mm, dowel rod 1000 mm), the cheapest mix where prices are known. Parts split from a piece of stock in the model stay on that piece unless they are repacked. Every cut takes the kerf. Miters and angled cuts are sawn afterwards from the blank.',
             'sheet.stock.heading': '{name} {section} mm',
             'sheet.stock.bar': '{ids} · {name}',
             'sheet.stock.barOversize': '{ids} · {name} — special length {length} mm, longer than the stock',
@@ -872,7 +921,7 @@ window.addEventListener('load', function() {
             'toolbar.stock': 'Stock Material…',
             'sheet.stock.part': 'Pos. {pos}',
             'stock.title': 'Stock material',
-            'stock.hint': 'Optional: nothing needs to be entered. Without entries strips of the same thickness are sawn from one strip in the widest size, and stock is 2000 mm long (dowel rod 1000 mm). Change a value only if you buy something else. Parts split in the model always stay on their own piece of stock.',
+            'stock.hint': 'Optional: nothing needs to be entered. Without entries strips of the same thickness are sawn from one strip in the widest size, and stock comes in the lengths of the stock catalog, else 2000 mm (dowel rod 1000 mm). With several lengths and prices the cheapest mix is planned. Optimize also tries other cross-sections from the catalog and repacking split parts, and shows the result before you apply it.',
             'stock.parts.title': 'Part cross-sections',
             'stock.materials.title': 'Stock to buy',
             'stock.col.partSection': 'Cross-section',
@@ -882,7 +931,37 @@ window.addEventListener('load', function() {
             'stock.col.name': 'Material',
             'stock.col.section': 'Cross-section',
             'stock.col.parts': 'Parts',
-            'stock.col.length': 'Stock length (mm)',
+            'stock.col.offers': 'Sold in (length = price; …)',
+            'stock.offersHint': 'Lengths you can buy, with the price after "=" if you know it, separated by ";", e.g. 1000 = 2.10; 2000 = 3.90. Empty: the catalog or 2000 mm.',
+            'stock.offersFromCatalog': 'From the stock catalog. Enter lengths here to use other ones in this project only.',
+            'stock.offersInvalid': 'Enter lengths such as 2000 = 3.90; 1000',
+            'stock.toCatalog': 'To catalog',
+            'stock.toCatalogHint': 'Save name and lengths of this row in the stock catalog for all projects',
+            'stock.toCatalogDone': 'Saved',
+            'stock.optimal': 'optimal',
+            'stock.approx': 'best found',
+            'stock.catalog': 'Catalog…',
+            'stock.optimize': 'Optimize',
+            'stock.repackSplit': 'Repack split parts (ignore which piece they were split from in the model)',
+            'stock.totals': '{bars} pieces of stock · offcut {offcut} mm',
+            'stock.totalsUnpriced': '+ {count} without price',
+            'stock.proposal': 'Proposal: {after}. Before: {before}. Apply saves it.',
+            'stock.noBetter': 'No better plan found: {totals}.',
+            'stock.proposalApprox': 'Not every cross-section could be proven optimal; this is the best plan found.',
+            'toolbar.catalog': 'Stock Catalog…',
+            'catalog.title': 'Stock catalog',
+            'catalog.hint': 'What you can buy, for all projects: per cross-section the lengths it is sold in and their prices. The stock plan picks the cheapest mix. It is stored in this browser; export it to keep a copy. A project can override a row under File → Stock Material.',
+            'catalog.add': 'Add row',
+            'catalog.import': 'Import',
+            'catalog.export': 'Export',
+            'catalog.save': 'Save',
+            'catalog.empty': 'No entries yet. Add a row, or import a catalog.',
+            'catalog.remove': 'Remove row',
+            'catalog.sectionPlaceholder': '12x50 or Ø6',
+            'catalog.offersPlaceholder': '1000 = 2.10; 2000 = 3.90',
+            'catalog.importNone': 'The file holds no catalog entries that could be read.',
+            'panel.bought': 'Bought ready-made',
+            'panel.boughtHint': 'Bought at its own size, like a dowel pin or a turned leg: not sawn from stock. Its own price counts.',
             'stock.col.kerf': 'Kerf (mm)',
             'stock.col.result': 'Needed',
             'stock.partsNet': '{count} · {net} mm',
@@ -1119,7 +1198,7 @@ window.addEventListener('load', function() {
             'sheet.stock.summary': 'Ausgangsmaterial:',
             'sheet.stock.item': '{qty}× {name}',
             'sheet.stock.title': 'Schneideplan',
-            'sheet.stock.hint': 'Jeder Balken ist ein Stück Rohmaterial, maßstäblich vom linken Ende aus gezeichnet; sein Buchstabe steht auch in der Stückliste. Teile, die im Modell aus einem Rohstück geteilt wurden, bleiben auf diesem Stück; alle anderen werden auf Handelslängen verteilt (2000 mm, Rundstab 1000 mm, änderbar unter Datei → Ausgangsmaterial). Jeder Schnitt kostet die Schnittfuge. Gehrungen und Schrägschnitte werden danach aus dem Rohling gesägt.',
+            'sheet.stock.hint': 'Jeder Balken ist ein Stück Rohmaterial, maßstäblich vom linken Ende aus gezeichnet; sein Buchstabe steht auch in der Stückliste. Die Teile werden auf die erhältlichen Längen verteilt (Materialkatalog oder Datei → Ausgangsmaterial, sonst 2000 mm, Rundstab 1000 mm), bei bekannten Preisen in der günstigsten Mischung. Teile, die im Modell aus einem Rohstück geteilt wurden, bleiben auf diesem Stück, außer sie werden neu verteilt. Jeder Schnitt kostet die Schnittfuge. Gehrungen und Schrägschnitte werden danach aus dem Rohling gesägt.',
             'sheet.stock.heading': '{name} {section} mm',
             'sheet.stock.bar': '{ids} · {name}',
             'sheet.stock.barOversize': '{ids} · {name} — Sonderlänge {length} mm, länger als das Rohmaterial',
@@ -1130,7 +1209,7 @@ window.addEventListener('load', function() {
             'toolbar.stock': 'Ausgangsmaterial …',
             'sheet.stock.part': 'Pos. {pos}',
             'stock.title': 'Ausgangsmaterial',
-            'stock.hint': 'Optional: Eintragen musst du nichts. Ohne Angaben werden gleich dicke Leisten aus einer Leiste in der größten Breite gesägt, und Rohmaterial ist 2000 mm lang (Rundstab 1000 mm). Ändere nur, was du anders kaufst. Im Modell geteilte Teile bleiben immer auf ihrem eigenen Rohstück.',
+            'stock.hint': 'Optional: Eintragen musst du nichts. Ohne Angaben werden gleich dicke Leisten aus einer Leiste in der größten Breite gesägt, und Rohmaterial gibt es in den Längen aus dem Materialkatalog, sonst 2000 mm (Rundstab 1000 mm). Bei mehreren Längen mit Preisen wird die günstigste Mischung geplant. Optimieren probiert zusätzlich andere Querschnitte aus dem Katalog und das Neuverteilen geteilter Teile und zeigt das Ergebnis, bevor du es übernimmst.',
             'stock.parts.title': 'Querschnitte der Teile',
             'stock.materials.title': 'Einzukaufendes Rohmaterial',
             'stock.col.partSection': 'Querschnitt',
@@ -1140,7 +1219,37 @@ window.addEventListener('load', function() {
             'stock.col.name': 'Material',
             'stock.col.section': 'Querschnitt',
             'stock.col.parts': 'Teile',
-            'stock.col.length': 'Handelslänge (mm)',
+            'stock.col.offers': 'Erhältlich (Länge = Preis; …)',
+            'stock.offersHint': 'Längen, die du kaufen kannst, mit Preis nach „=“, falls bekannt, getrennt durch „;“, z. B. 1000 = 2,10; 2000 = 3,90. Leer: Katalog oder 2000 mm.',
+            'stock.offersFromCatalog': 'Aus dem Materialkatalog. Trag hier Längen ein, um nur in diesem Projekt andere zu nutzen.',
+            'stock.offersInvalid': 'Längen eingeben, z. B. 2000 = 3,90; 1000',
+            'stock.toCatalog': 'In Katalog',
+            'stock.toCatalogHint': 'Name und Längen dieser Zeile für alle Projekte im Materialkatalog speichern',
+            'stock.toCatalogDone': 'Gespeichert',
+            'stock.optimal': 'optimal',
+            'stock.approx': 'beste gefundene',
+            'stock.catalog': 'Katalog …',
+            'stock.optimize': 'Optimieren',
+            'stock.repackSplit': 'Geteilte Teile neu verteilen (ignorieren, aus welchem Stück sie im Modell geteilt wurden)',
+            'stock.totals': '{bars} Stück Rohmaterial · Rest {offcut} mm',
+            'stock.totalsUnpriced': '+ {count} ohne Preis',
+            'stock.proposal': 'Vorschlag: {after}. Vorher: {before}. Mit Übernehmen speichern.',
+            'stock.noBetter': 'Keine bessere Planung gefunden: {totals}.',
+            'stock.proposalApprox': 'Nicht jeder Querschnitt ließ sich als optimal nachweisen; das ist die beste gefundene Planung.',
+            'toolbar.catalog': 'Materialkatalog …',
+            'catalog.title': 'Materialkatalog',
+            'catalog.hint': 'Was du kaufen kannst, für alle Projekte: je Querschnitt die erhältlichen Längen und ihre Preise. Die Planung wählt die günstigste Mischung. Der Katalog liegt in diesem Browser; exportiere ihn für eine Kopie. Ein Projekt kann eine Zeile unter Datei → Ausgangsmaterial überschreiben.',
+            'catalog.add': 'Zeile hinzufügen',
+            'catalog.import': 'Importieren',
+            'catalog.export': 'Exportieren',
+            'catalog.save': 'Speichern',
+            'catalog.empty': 'Noch keine Einträge. Füge eine Zeile hinzu oder importiere einen Katalog.',
+            'catalog.remove': 'Zeile entfernen',
+            'catalog.sectionPlaceholder': '12x50 oder Ø6',
+            'catalog.offersPlaceholder': '1000 = 2,10; 2000 = 3,90',
+            'catalog.importNone': 'Die Datei enthält keine lesbaren Katalogeinträge.',
+            'panel.bought': 'Fertig gekauft',
+            'panel.boughtHint': 'In eigener Größe gekauft, wie ein Dübel oder ein gedrechseltes Bein: wird nicht aus Rohmaterial gesägt. Es zählt sein eigener Preis.',
             'stock.col.kerf': 'Schnittfuge (mm)',
             'stock.col.result': 'Bedarf',
             'stock.partsNet': '{count} · {net} mm',
@@ -1776,6 +1885,15 @@ window.addEventListener('load', function() {
     // Cross-section a part cross-section is sawn from, when that is not the part's own: parts
     // ripped to an odd width ('12x37.2') come from a stock size you can buy ('12x50').
     var stockMap = {};
+    // Project options of the stock plan, saved with stockSettings. repackSplit: parts split in
+    // the model are packed like all others instead of staying on the piece they were split from.
+    var stockOptions = { repackSplit: false };
+    // What you can buy, for all projects, kept in the browser like custom templates: one entry
+    // per cross-section with the lengths it is sold in and their prices.
+    var STOCK_CATALOG_KEY = 'woodmodeler_stock_catalog';
+    var stockCatalog = loadStockCatalog();
+    // Search budget of the exact packing per cross-section; past it the plan is the best found
+    var STOCK_SEARCH_NODES = 60000;
     var STOCK_DEFAULT_LENGTH = 2000;
     var STOCK_DEFAULT_ROUND_LENGTH = 1000;
     // A cross-section at least this wide (mm) is called a board rather than a strip
@@ -2560,6 +2678,8 @@ window.addEventListener('load', function() {
     var priceField = document.getElementById('price-field');
     var inputPrice = document.getElementById('price-input');
     var inputPriceMode = document.getElementById('price-mode');
+    var inputBought = document.getElementById('bought-input');
+    var boughtRow = document.getElementById('bought-row');
     var btnSaveTemplate = document.getElementById('btn-save-template');
 
     function selectPiece(mesh) {
@@ -2673,6 +2793,9 @@ window.addEventListener('load', function() {
         inputLabel.value = ud.label || '';
         inputPrice.value = ud.price;
         inputPriceMode.value = ud.priceMode;
+        inputBought.checked = ud.bought === true;
+        // A frame is several members, never one bought piece; a split part comes from its source
+        boughtRow.style.display = ud.type === 'Frame' || ud.sourceId ? 'none' : 'flex';
 
         updateSizeSummary();
         updateObjectList();
@@ -2725,6 +2848,7 @@ window.addEventListener('load', function() {
                     letter: cutLetter(bar.index),
                     name: stockBarName(entry, bar),
                     rest: bar.rest,
+                    price: bar.price,
                     members: members
                 });
             });
@@ -3143,6 +3267,13 @@ window.addEventListener('load', function() {
     inputPrice.addEventListener('change', onPriceChange);
     bindEnter(inputPrice, onPriceChange);
     inputPriceMode.addEventListener('change', onPriceChange);
+    inputBought.addEventListener('change', function() {
+        if (!selectedPiece) return;
+        pushUndo();
+        selectedPiece.userData.bought = inputBought.checked;
+        updateObjectList();
+        updateCostSummary();
+    });
 
     // Currency
     var currencySelect = document.getElementById('currency-select');
@@ -3161,8 +3292,10 @@ window.addEventListener('load', function() {
         return price;
     }
 
-    // One row per piece of stock, as in the object list. A split source with a fixed price counts
-    // its price once; every other piece counts its own cost, a frame on several pieces of stock once.
+    // One row per piece of stock, as in the object list. A piece of stock with a price (catalog
+    // or project) costs that price, and the parts on it add nothing of their own. Otherwise a
+    // split source with a fixed price counts its price once and every other piece its own cost,
+    // a frame on several pieces of stock once.
     function updateCostSummary() {
         var currency = currencySelect.value;
         var costItems = document.getElementById('cost-items');
@@ -3175,21 +3308,31 @@ window.addEventListener('load', function() {
             if (m.userData.price === undefined) m.userData.price = 0;
             if (!m.userData.priceMode) m.userData.priceMode = 'fixed';
         });
-        (pieces.length > 0 ? stockPanelGroups() : []).forEach(function(group) {
-            var cost = 0;
+        var groups = pieces.length > 0 ? stockPanelGroups() : [];
+        groups.forEach(function(group) {
+            if (group.price === null) return;
             group.members.forEach(function(m) {
-                if (counted.has(m)) return;
                 counted.add(m);
-                var ud = m.userData;
-                if (ud.sourceId && ud.sourcePriceMode !== 'per_mm') {
-                    if (!countedSources.has(ud.sourceId)) {
-                        countedSources.add(ud.sourceId);
-                        cost += ud.sourcePrice || 0;
-                    }
-                } else {
-                    cost += computePieceCost(m);
-                }
+                if (m.userData.sourceId) countedSources.add(m.userData.sourceId);
             });
+        });
+        groups.forEach(function(group) {
+            var cost = group.price !== null ? group.price : 0;
+            if (group.price === null) {
+                group.members.forEach(function(m) {
+                    if (counted.has(m)) return;
+                    counted.add(m);
+                    var ud = m.userData;
+                    if (ud.sourceId && ud.sourcePriceMode !== 'per_mm') {
+                        if (!countedSources.has(ud.sourceId)) {
+                            countedSources.add(ud.sourceId);
+                            cost += ud.sourcePrice || 0;
+                        }
+                    } else {
+                        cost += computePieceCost(m);
+                    }
+                });
+            }
             total += cost;
             var row = document.createElement('div');
             row.className = 'cost-row';
@@ -3239,6 +3382,7 @@ window.addEventListener('load', function() {
                 type: ud.type, id: ud.id, label: ud.label, notches: ud.notches,
                 csgModified: ud.csgModified,
                 price: ud.price || 0, priceMode: ud.priceMode || 'fixed',
+                bought: ud.bought === true ? true : undefined,
                 sourceId: ud.sourceId || null,
                 sourcePrice: ud.sourcePrice || 0,
                 sourcePriceMode: ud.sourcePriceMode || null,
@@ -3357,6 +3501,7 @@ window.addEventListener('load', function() {
             if (Array.isArray(entry.csgOps)) mesh.userData.csgOps = entry.csgOps.slice();
             mesh.userData.price = entry.price || 0;
             mesh.userData.priceMode = entry.priceMode || 'fixed';
+            mesh.userData.bought = entry.bought === true;
             mesh.userData.sourceId = entry.sourceId || null;
             mesh.userData.sourcePrice = entry.sourcePrice || 0;
             mesh.userData.sourcePriceMode = entry.sourcePriceMode || null;
@@ -3494,7 +3639,8 @@ window.addEventListener('load', function() {
             pieces: sceneData.pieces,
             groups: sceneData.groups || [],
             rulers: sceneData.rulers || [],
-            stock: serializeStock()
+            stock: serializeStock(),
+            stockOptions: serializeStockOptions()
         };
         var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         var url = URL.createObjectURL(blob);
@@ -3532,7 +3678,7 @@ window.addEventListener('load', function() {
                 if (pieces.length > 0 || groups.length > 0) {
                     if (!confirm(t('load.replace'))) return;
                 }
-                restoreStock(data.stock);
+                restoreStock(data.stock, data.stockOptions);
                 restoreScene(JSON.stringify(scenePayload));
                 updateObjectList();
             } catch (err) {
@@ -3551,11 +3697,11 @@ window.addEventListener('load', function() {
         { nameKey: 'tpl.plank',      type: 'Board',       w: 100, h: 20, d: 2000, price: 4.00 },
         { nameKey: 'tpl.beam',       type: 'Board',       w: 60,  h: 40, d: 2000, price: 5.50 },
         { nameKey: 'tpl.shelfBoard', type: 'Board',       w: 300, h: 18, d: 600,  price: 8.00 },
-        { nameKey: 'tpl.dowel6',     type: 'Dowel',       r: 3, h: 30,   price: 0.20 },
-        { nameKey: 'tpl.dowel8',     type: 'Dowel',       r: 4, h: 35,   price: 0.25 },
+        { nameKey: 'tpl.dowel6',     type: 'Dowel',       r: 3, h: 30,   price: 0.20, bought: true },
+        { nameKey: 'tpl.dowel8',     type: 'Dowel',       r: 4, h: 35,   price: 0.25, bought: true },
         { nameKey: 'tpl.dowelRod10', type: 'Dowel',       r: 5, h: 300,  price: 1.50 },
         { nameKey: 'tpl.cornerBrace',type: 'L-Bracket',   w: 50, h: 50, d: 20,   price: 2.00 },
-        { nameKey: 'tpl.tableLeg',   type: 'Tapered Leg', rTop: 20, rBottom: 30, h: 720, price: 12.00 },
+        { nameKey: 'tpl.tableLeg',   type: 'Tapered Leg', rTop: 20, rBottom: 30, h: 720, price: 12.00, bought: true },
         { nameKey: 'tpl.doorWedge',  type: 'Wedge',       w: 80, h: 30, d: 40,   price: 1.00 },
         { nameKey: 'tpl.frustumBoard', type: 'Frustum Board', wTop: 200, wBottom: 300, h: 600, d: 18, price: 9.00 },
         { nameKey: 'tpl.pyramidRoof', type: 'Pyramid Frustum', wTop: 40, dTop: 40, wBottom: 100, dBottom: 100, h: 60, price: 5.00 },
@@ -3779,6 +3925,7 @@ window.addEventListener('load', function() {
             mesh.userData.label = (tpl.nameKey ? t(tpl.nameKey) : tpl.name) + ' ' + mesh.userData.id;
             mesh.userData.price = tpl.price || 0;
             mesh.userData.priceMode = 'fixed';
+            mesh.userData.bought = tpl.bought === true;
             addPiece(mesh);
         }
     }
@@ -3789,6 +3936,7 @@ window.addEventListener('load', function() {
         var name = prompt(t('template.name'), ud.label || typeName(ud.type));
         if (!name) return;
         var tpl = { name: name, type: ud.type, price: ud.price || 0 };
+        if (ud.bought === true) tpl.bought = true;
         if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
             tpl.w = ud.w; tpl.h = ud.h; tpl.d = ud.d;
             if (ud.type === 'Board') {
@@ -4532,6 +4680,7 @@ window.addEventListener('load', function() {
         if (Array.isArray(ud.csgOps)) mesh.userData.csgOps = ud.csgOps.slice();
         mesh.userData.price = ud.price || 0;
         mesh.userData.priceMode = ud.priceMode || 'fixed';
+        mesh.userData.bought = ud.bought === true;
         if (ud.type === 'Board' || ud.type === 'Wedge' || ud.type === 'L-Bracket') {
             mesh.userData.w = ud.w; mesh.userData.h = ud.h; mesh.userData.d = ud.d;
         } else if (ud.type === 'Dowel') {
@@ -6184,51 +6333,295 @@ window.addEventListener('load', function() {
         return isFinite(saved) && saved >= 0 ? saved : 3;
     }
 
-    // Saved values where set; otherwise the usual trade length, raised to a full 100 mm above
-    // the longest part, and the kerf last used for Split Piece.
+    // Lengths a cross-section is sold in, as [{ length, price }] sorted by length; price is null
+    // where unknown. Duplicate lengths keep the last one.
+    function normalizeStockOffers(list) {
+        var byLength = {};
+        (Array.isArray(list) ? list : []).forEach(function(o) {
+            if (!o || typeof o.length !== 'number' || !(o.length > 0) || !isFinite(o.length)) return;
+            var length = roundTenth(o.length);
+            var price = typeof o.price === 'number' && o.price >= 0 && isFinite(o.price) ? o.price : null;
+            byLength[length] = { length: length, price: price };
+        });
+        return Object.keys(byLength).map(function(k) { return byLength[k]; })
+            .sort(function(p, q) { return p.length - q.length; });
+    }
+
+    // "2000 = 3.90; 1000" → [{ length: 1000, price: null }, { length: 2000, price: 3.9 }]. Entries
+    // are separated by ';' so a decimal comma still works. [] for empty text, null when an
+    // entry cannot be read.
+    function parseStockOffers(text) {
+        var entries = String(text || '').split(/[;\n|]/).map(function(s) { return s.trim(); }).filter(Boolean);
+        var offers = [];
+        for (var i = 0; i < entries.length; i++) {
+            var m = entries[i].match(/^(\d+(?:[.,]\d+)?)\s*(?:mm)?\s*(?:[=@:]\s*[€$£]?\s*(\d+(?:[.,]\d+)?)\s*(?:€|\$|£|eur|chf)?)?$/i);
+            if (!m) return null;
+            var length = parseFloat(m[1].replace(',', '.'));
+            if (!(length > 0)) return null;
+            offers.push({ length: length, price: m[2] !== undefined ? parseFloat(m[2].replace(',', '.')) : null });
+        }
+        return normalizeStockOffers(offers);
+    }
+
+    function formatPrice(v) {
+        var s = v.toFixed(2);
+        return currentLang === 'de' ? s.replace('.', ',') : s;
+    }
+
+    function formatMoney(v) {
+        return currencySelect.value + v.toFixed(2);
+    }
+
+    // Form that parseStockOffers() reads back: "1000; 2000 = 3.90"
+    function formatStockOffers(offers) {
+        return offers.map(function(o) {
+            return formatMm(o.length) + (o.price !== null ? ' = ' + formatPrice(o.price) : '');
+        }).join('; ');
+    }
+
+    // Catalog entries from a file or storage: [{ profile, name?, offers }], also the older
+    // single 'length'. Entries that cannot be read are dropped; a cross-section listed twice
+    // keeps the last entry.
+    function normalizeStockCatalog(list) {
+        if (list && !Array.isArray(list) && Array.isArray(list.stockCatalog)) list = list.stockCatalog;
+        var byKey = {};
+        var order = [];
+        (Array.isArray(list) ? list : []).forEach(function(entry) {
+            var sec = entry && parseStockSection(entry.profile);
+            if (!sec) return;
+            var offers = normalizeStockOffers(Array.isArray(entry.offers) ? entry.offers
+                : typeof entry.length === 'number' ? [{ length: entry.length, price: entry.price }] : []);
+            if (offers.length === 0) return;
+            if (!byKey[sec.key]) order.push(sec.key);
+            byKey[sec.key] = { profile: sec.key, name: typeof entry.name === 'string' && entry.name.trim() ? entry.name.trim() : null, offers: offers };
+        });
+        return order.map(function(key) { return byKey[key]; });
+    }
+
+    function loadStockCatalog() {
+        try {
+            return normalizeStockCatalog(JSON.parse(localStorage.getItem(STOCK_CATALOG_KEY) || '[]'));
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveStockCatalog(list) {
+        stockCatalog = normalizeStockCatalog(list);
+        try {
+            localStorage.setItem(STOCK_CATALOG_KEY, JSON.stringify(stockCatalog));
+        } catch (e) { /* storage full or blocked: the catalog still holds for this session */ }
+    }
+
+    function stockCatalogEntry(key) {
+        for (var i = 0; i < stockCatalog.length; i++) {
+            if (stockCatalog[i].profile === key) return stockCatalog[i];
+        }
+        return null;
+    }
+
+    // Settings of one stock cross-section. Offers come from the project where it has its own,
+    // else from the catalog, else the usual trade length raised to a full 100 mm above the
+    // longest part. The kerf is the project's or the one last used for Split Piece.
+    // source tells where the offers came from: 'project', 'catalog' or 'default'.
     function stockSettingFor(p, settings) {
         var s = (settings || stockSettings)[p.key] || {};
+        var cat = stockCatalogEntry(p.key);
         var base = p.round ? STOCK_DEFAULT_ROUND_LENGTH : STOCK_DEFAULT_LENGTH;
+        var offers;
+        var source;
+        if (Array.isArray(s.offers) && s.offers.length > 0) {
+            offers = s.offers;
+            source = 'project';
+        } else if (s.length > 0) {
+            offers = [{ length: s.length, price: null }];
+            source = 'project';
+        } else if (cat) {
+            offers = cat.offers;
+            source = 'catalog';
+        } else {
+            offers = [{ length: Math.max(base, Math.ceil(stockLongestItem(p) / 100) * 100), price: null }];
+            source = 'default';
+        }
         return {
-            name: s.name || stockDefaultName(p),
-            length: s.length > 0 ? s.length : Math.max(base, Math.ceil(stockLongestItem(p) / 100) * 100),
+            name: s.name || (cat && cat.name) || stockDefaultName(p),
+            offers: offers,
+            source: source,
+            length: offers[offers.length - 1].length,
             kerf: typeof s.kerf === 'number' && s.kerf >= 0 ? s.kerf : stockDefaultKerf()
         };
     }
 
-    // Best fit decreasing: each part, longest first, goes onto the piece of stock it fills most.
-    // A part longer than the stock gets a piece of its own length, marked as oversize.
-    function planStock(items, length, kerf) {
-        var sorted = items.slice().sort(function(p, q) { return (q.length - p.length) || (p.pos - q.pos); });
-        var bars = [];
-        sorted.forEach(function(item) {
-            if (item.length > length + 1e-6) {
-                bars.push({ length: item.length, parts: [item], used: item.length, oversize: true });
-                return;
+    // The offer a piece of stock is bought as, for used mm of it: the cheapest that is long
+    // enough when every offer has a price, else the shortest. null when none is long enough.
+    function cheapestStockOffer(offers, used, priced) {
+        var best = null;
+        offers.forEach(function(o) {
+            if (o.length < used - 1e-6) return;
+            if (!best || (priced ? o.price < best.price - 1e-9 : false)) best = o;
+        });
+        return best;
+    }
+
+    // One-dimensional cutting stock: split the part lengths (longest first) into pieces of stock
+    // that cost least in total, every cut taking the kerf. With prices on every offer the cost is
+    // money, else the stock length bought. Best fit decreasing gives a first plan, once per offer
+    // length; a lower bound proves it optimal in most cases, and where it does not, a
+    // branch-and-bound search improves it within STOCK_SEARCH_NODES. Results are cached, since
+    // the side panel rebuilds the plan after every change.
+    var stockPackCache = new Map();
+
+    function solveStockPacking(lengths, offers, kerf) {
+        var priced = offers.every(function(o) { return o.price !== null; });
+        var key = lengths.join(',') + '|' + offers.map(function(o) { return o.length + ':' + o.price; }).join(',') + '|' + kerf;
+        if (stockPackCache.has(key)) return stockPackCache.get(key);
+        var eps = 1e-6;
+        var maxLen = offers[offers.length - 1].length;
+        var costCache = {};
+        function binCost(used) {
+            if (costCache[used] === undefined) {
+                var o = cheapestStockOffer(offers, used, priced);
+                costCache[used] = priced ? o.price : o.length;
             }
-            var best = null;
-            var bestUsed = 0;
-            bars.forEach(function(bar) {
-                if (bar.oversize) return;
-                var used = bar.used + kerf + item.length;
-                if (used <= length + 1e-6 && used > bestUsed) {
-                    best = bar;
-                    bestUsed = used;
+            return costCache[used];
+        }
+        function sumCost(bins) {
+            return bins.reduce(function(s, b) { return s + binCost(b.used); }, 0);
+        }
+
+        var best = null;
+        offers.forEach(function(offer) {
+            var bins = [];
+            lengths.forEach(function(len, k) {
+                var target = null;
+                var targetUsed = 0;
+                bins.forEach(function(b) {
+                    var u = b.used + kerf + len;
+                    if (u <= b.cap + eps && u > targetUsed) {
+                        target = b;
+                        targetUsed = u;
+                    }
+                });
+                if (target) {
+                    target.items.push(k);
+                    target.used = targetUsed;
+                } else {
+                    bins.push({ cap: len <= offer.length + eps ? offer.length : maxLen, used: len, items: [k] });
                 }
             });
-            if (best) {
-                best.parts.push(item);
-                best.used = bestUsed;
-            } else {
-                bars.push({ length: length, parts: [item], used: item.length, oversize: false });
-            }
+            var cost = sumCost(bins);
+            if (!best || cost < best.cost - 1e-9) best = { cost: cost, bins: bins.map(function(b) { return b.items; }) };
+        });
+
+        // Lower bound. Every cut takes the kerf, so a part takes len + kerf of a stock length
+        // plus one kerf. Parts longer than 1/(q+1) of that fit at most q to a piece of stock.
+        var minOfferCost = Infinity;
+        var minRate = Infinity;
+        offers.forEach(function(o) {
+            var c = priced ? o.price : o.length;
+            minOfferCost = Math.min(minOfferCost, c);
+            minRate = Math.min(minRate, c / o.length);
+        });
+        var total = lengths.reduce(function(s, l) { return s + l; }, 0);
+        var cap = maxLen + kerf;
+        var minBins = Math.ceil((total + kerf * lengths.length) / cap - eps);
+        for (var q = 1; q <= 5; q++) {
+            var count = lengths.filter(function(l) { return (l + kerf) * (q + 1) > cap + eps; }).length;
+            minBins = Math.max(minBins, Math.ceil(count / q));
+        }
+        var lowerBound = Math.max(minBins * minOfferCost, total * minRate);
+        var optimal = best.cost <= lowerBound + 1e-9;
+
+        if (!optimal) {
+            var n = lengths.length;
+            var suffix = [];
+            suffix[n] = 0;
+            for (var k = n - 1; k >= 0; k--) suffix[k] = suffix[k + 1] + lengths[k];
+            var used = [];
+            var assign = [];
+            var nodes = 0;
+            var aborted = false;
+            var search = function(k, cost) {
+                if (aborted) return;
+                if (++nodes > STOCK_SEARCH_NODES) {
+                    aborted = true;
+                    return;
+                }
+                if (k === n) {
+                    if (cost < best.cost - 1e-9) {
+                        var bins = used.map(function() { return []; });
+                        assign.forEach(function(b, i) { bins[b].push(i); });
+                        best = { cost: cost, bins: bins };
+                    }
+                    return;
+                }
+                var slack = 0;
+                used.forEach(function(u) { slack += maxLen - u; });
+                if (cost + Math.max(0, suffix[k] - slack) * minRate >= best.cost - 1e-9) return;
+                var len = lengths[k];
+                // Identical parts go to pieces of stock in order, and two pieces of stock filled
+                // equally are interchangeable: both only cut away mirror images of one plan
+                var minBin = k > 0 && lengths[k - 1] === len ? assign[k - 1] : 0;
+                var order = [];
+                for (var b = minBin; b < used.length; b++) {
+                    if (used[b] + kerf + len <= maxLen + eps) order.push(b);
+                }
+                order.sort(function(p, q) { return (used[q] - used[p]) || (p - q); });
+                var seen = {};
+                order.forEach(function(b) {
+                    if (seen[used[b]]) return;
+                    seen[used[b]] = true;
+                    var old = used[b];
+                    var u = old + kerf + len;
+                    used[b] = u;
+                    assign[k] = b;
+                    search(k + 1, cost - binCost(old) + binCost(u));
+                    used[b] = old;
+                });
+                used.push(len);
+                assign[k] = used.length - 1;
+                search(k + 1, cost + binCost(len));
+                used.pop();
+            };
+            search(0, 0);
+            optimal = !aborted || best.cost <= lowerBound + 1e-9;
+        }
+
+        var result = { bins: best.bins, optimal: optimal };
+        if (stockPackCache.size > 200) stockPackCache.clear();
+        stockPackCache.set(key, result);
+        return result;
+    }
+
+    // Pieces of stock for the parts of one cross-section, each bought as the offer that suits it.
+    // A part longer than every offer gets a piece of its own length, marked as oversize.
+    function packStock(items, offers, kerf) {
+        var eps = 1e-6;
+        var priced = offers.every(function(o) { return o.price !== null; });
+        var maxLen = offers[offers.length - 1].length;
+        var sorted = items.slice().sort(function(p, q) { return (q.length - p.length) || (p.pos - q.pos); });
+        var fit = sorted.filter(function(item) { return item.length <= maxLen + eps; });
+        var bars = [];
+        var optimal = true;
+        if (fit.length > 0) {
+            var solved = solveStockPacking(fit.map(function(item) { return item.length; }), offers, kerf);
+            optimal = solved.optimal;
+            solved.bins.forEach(function(bin) {
+                var parts = bin.map(function(k) { return fit[k]; });
+                var used = parts.reduce(function(s, p) { return s + p.length; }, 0) + kerf * (parts.length - 1);
+                var offer = cheapestStockOffer(offers, used, priced);
+                bars.push({ length: offer.length, price: offer.price, parts: parts, used: used, oversize: false });
+            });
+        }
+        sorted.forEach(function(item) {
+            if (item.length <= maxLen + eps) return;
+            bars.push({ length: item.length, price: null, parts: [item], used: item.length, oversize: true });
         });
         bars.forEach(function(bar) {
             // The cut after the last part takes another kerf; less than that left over is sawdust
             bar.rest = roundTenth(Math.max(0, bar.length - bar.used - kerf));
         });
-        // Regular pieces first, then oversize ones
-        return bars.filter(function(b) { return !b.oversize; }).concat(bars.filter(function(b) { return b.oversize; }));
+        return { bars: bars, optimal: optimal };
     }
 
     // Cross-section typed by the user, or a saved key: '12x50', '12 × 50', '12,5x50' are
@@ -6297,7 +6690,7 @@ window.addEventListener('load', function() {
                     sourceLabel: ud.sourceLabel || typeName(ud.type),
                     length: typeof ud.sourceLength === 'number' ? ud.sourceLength : null,
                     kerf: typeof ud.sourceKerf === 'number' ? ud.sourceKerf : stockDefaultKerf(),
-                    parts: [], oversize: false
+                    parts: [], oversize: false, price: null
                 };
                 bars.push(bySource[ud.sourceId]);
             }
@@ -6312,16 +6705,16 @@ window.addEventListener('load', function() {
         return bars;
     }
 
-    // A part with a fixed price that was not split from anything was bought at its own size: it
-    // is a piece of stock of its own, with no offcut, rather than packed onto a trade length.
+    // A part marked as bought ready-made (a dowel pin, a turned leg) is a piece of stock of its
+    // own, with no offcut, rather than packed onto a trade length. Its cost is its own price.
     // A frame is made of several members, so it is never one bought piece.
     function isBoughtPiece(ud) {
-        return !ud.sourceId && ud.type !== 'Frame' && ud.priceMode === 'fixed' && ud.price > 0;
+        return ud.bought === true && !ud.sourceId && ud.type !== 'Frame';
     }
 
     function boughtStockBars(items) {
         return items.map(function(item) {
-            return { length: item.length, parts: [item], used: item.length, rest: 0, oversize: false, bought: true };
+            return { length: item.length, parts: [item], used: item.length, rest: 0, oversize: false, bought: true, price: null };
         });
     }
 
@@ -6353,11 +6746,12 @@ window.addEventListener('load', function() {
     }
 
     // Stock plan: one entry per stock cross-section, with the parts of every part cross-section
-    // sawn from it planned together. map and settings default to the saved ones. Every piece of
-    // stock gets a letter (A, B, …) across the whole plan; the parts list refers to it.
-    function buildStockPlan(rows, map, settings) {
+    // sawn from it planned together. map, settings and options default to the saved ones. Every
+    // piece of stock gets a letter (A, B, …) across the whole plan; the parts list refers to it.
+    function buildStockPlan(rows, map, settings, options) {
         map = map || stockMap;
         settings = settings || stockSettings;
+        options = options || stockOptions;
         var byKey = {};
         var groups = [];
         var profiles = collectStockProfiles(rows);
@@ -6397,14 +6791,105 @@ window.addEventListener('load', function() {
             var setting = stockSettingFor(g, settings);
             function kind(item) {
                 var ud = pieces[item.index].userData;
-                return ud.sourceId ? 'source' : isBoughtPiece(ud) ? 'bought' : 'free';
+                if (ud.sourceId) return options.repackSplit ? 'free' : 'source';
+                return isBoughtPiece(ud) ? 'bought' : 'free';
             }
+            var packed = packStock(g.items.filter(function(item) { return kind(item) === 'free'; }), setting.offers, setting.kerf);
             var bars = sourceStockBars(g.items.filter(function(item) { return kind(item) === 'source'; }))
                 .concat(boughtStockBars(g.items.filter(function(item) { return kind(item) === 'bought'; })))
-                .concat(planStock(g.items.filter(function(item) { return kind(item) === 'free'; }), setting.length, setting.kerf));
+                .concat(packed.bars);
             bars.forEach(function(bar) { bar.index = next++; });
-            return { profile: g, setting: setting, bars: bars };
+            return { profile: g, setting: setting, bars: bars, optimal: packed.optimal };
         });
+    }
+
+    // What a plan takes to buy. Parts bought ready-made are the same in every plan and left
+    // out. cost sums the pieces of stock with a price; unpricedVolume is the wood bought
+    // without one (default lengths, split sources), volume all wood bought, in mm³.
+    function stockPlanTotals(plan) {
+        var totals = { bars: 0, unpriced: 0, cost: 0, unpricedVolume: 0, volume: 0, offcut: 0, optimal: true };
+        plan.forEach(function(entry) {
+            var p = entry.profile;
+            var area = p.round ? Math.PI * p.a * p.a / 4 : p.a * p.b;
+            if (!entry.optimal) totals.optimal = false;
+            entry.bars.forEach(function(bar) {
+                if (bar.bought) return;
+                var volume = stockBarLength(bar) * area;
+                totals.bars++;
+                totals.volume += volume;
+                if (bar.rest) totals.offcut += bar.rest;
+                if (bar.price === null) {
+                    totals.unpriced++;
+                    totals.unpricedVolume += volume;
+                } else {
+                    totals.cost += bar.price;
+                }
+            });
+        });
+        return totals;
+    }
+
+    // Whether plan totals a are better than b: less wood bought without a known price first,
+    // so stock from the catalog wins over guessed lengths, then less money, less wood, fewer
+    // pieces of stock.
+    function stockTotalsBetter(a, b) {
+        var vEps = 1;
+        if (a.unpricedVolume < b.unpricedVolume - vEps) return true;
+        if (a.unpricedVolume > b.unpricedVolume + vEps) return false;
+        if (a.cost < b.cost - 0.005) return true;
+        if (a.cost > b.cost + 0.005) return false;
+        if (a.volume < b.volume - vEps) return true;
+        if (a.volume > b.volume + vEps) return false;
+        return a.bars < b.bars;
+    }
+
+    // Purchase list optimizer: starting from the given map and options, try packing split parts
+    // freely, and for every part cross-section each stock cross-section with offers in the
+    // project or the catalog that the parts can be ripped from (same thickness, at least as
+    // wide). Changes that make the plan better are kept, until a full pass changes nothing.
+    // Round stock keeps its diameter. The model itself is never touched.
+    function optimizeStock(rows, map, settings, options) {
+        var bestMap = Object.assign({}, map);
+        var bestOptions = Object.assign({}, options);
+        var bestTotals = stockPlanTotals(buildStockPlan(rows, bestMap, settings, bestOptions));
+        function attempt(m, o) {
+            var totals = stockPlanTotals(buildStockPlan(rows, m, settings, o));
+            if (!stockTotalsBetter(totals, bestTotals)) return false;
+            bestMap = m;
+            bestOptions = o;
+            bestTotals = totals;
+            return true;
+        }
+        if (pieces.some(function(m) { return !!m.userData.sourceId; })) {
+            attempt(bestMap, Object.assign({}, bestOptions, { repackSplit: !bestOptions.repackSplit }));
+        }
+        var buyable = {};
+        stockCatalog.forEach(function(entry) { buyable[entry.profile] = true; });
+        Object.keys(settings).forEach(function(key) {
+            var s = settings[key];
+            if (s && ((Array.isArray(s.offers) && s.offers.length > 0) || s.length > 0)) buyable[key] = true;
+        });
+        var sections = Object.keys(buyable).map(parseStockSection).filter(function(sec) { return sec && !sec.round; });
+        var profiles = collectStockProfiles(rows).filter(function(p) { return !p.round; });
+        for (var pass = 0; pass < 4; pass++) {
+            var changed = false;
+            profiles.forEach(function(p) {
+                sections.forEach(function(sec) {
+                    if (sec.a !== p.a || sec.b < p.b || !stockSectionFits(p, sec)) return;
+                    if (bestMap[p.key] === sec.key) return;
+                    var m = Object.assign({}, bestMap);
+                    m[p.key] = sec.key;
+                    if (attempt(m, bestOptions)) changed = true;
+                });
+                if (bestMap[p.key] !== undefined) {
+                    var auto = Object.assign({}, bestMap);
+                    delete auto[p.key];
+                    if (attempt(auto, bestOptions)) changed = true;
+                }
+            });
+            if (!changed) break;
+        }
+        return { map: bestMap, options: bestOptions, totals: bestTotals };
     }
 
     // Stock letters from plan indices, consecutive ones as a range: 1, 2, 3, 5 → "B–D, F"
@@ -6447,7 +6932,8 @@ window.addEventListener('load', function() {
         return entry.setting.kerf;
     }
 
-    // Pieces of stock with the same name, as [name, indices]: "Strip 12 × 44 × 2000 mm" → A, B
+    // Pieces of stock with the same name, as { name, indices, cost }: "Strip 12 × 44 × 2000 mm"
+    // → A, B. cost is the sum of their prices, or null when one has none.
     function stockBarsByName(plan) {
         var byName = {};
         var order = [];
@@ -6455,17 +6941,20 @@ window.addEventListener('load', function() {
             entry.bars.forEach(function(bar) {
                 var name = stockBarName(entry, bar);
                 if (!byName[name]) {
-                    byName[name] = [];
-                    order.push(name);
+                    byName[name] = { name: name, indices: [], cost: 0 };
+                    order.push(byName[name]);
                 }
-                byName[name].push(bar.index);
+                var kind = byName[name];
+                kind.indices.push(bar.index);
+                kind.cost = kind.cost === null || bar.price === null ? null : kind.cost + bar.price;
             });
         });
-        return order.map(function(name) { return [name, byName[name]]; });
+        return order;
     }
 
-    // One entry per kind of stock on page 1, letters first: "A–C  3× Strip 13.5 × 47 × 2000 mm".
-    // The entries run down three columns, so they read in plan order.
+    // One entry per kind of stock on page 1, letters first: "A–C  3× Strip 13.5 × 47 × 2000 mm",
+    // with the price where the stock has one. The entries run down three columns, so they read
+    // in plan order.
     function buildStockSummary(parent, plan) {
         if (plan.length === 0) return;
         var box = sheetEl('div', 'sheet-stock-summary', parent);
@@ -6473,8 +6962,9 @@ window.addEventListener('load', function() {
         var list = sheetEl('ul', null, box);
         stockBarsByName(plan).forEach(function(kind) {
             var item = sheetEl('li', null, list);
-            sheetEl('span', 'sheet-stock-ids', item).textContent = formatStockLetters(kind[1]);
-            sheetEl('span', null, item).textContent = t('sheet.stock.item', { qty: kind[1].length, name: kind[0] });
+            sheetEl('span', 'sheet-stock-ids', item).textContent = formatStockLetters(kind.indices);
+            sheetEl('span', null, item).textContent = t('sheet.stock.item', { qty: kind.indices.length, name: kind.name }) +
+                (kind.cost !== null ? ' · ' + formatMoney(kind.cost) : '');
         });
     }
 
@@ -6564,15 +7054,22 @@ window.addEventListener('load', function() {
         });
     }
 
-    // Print dialog. First table: every part cross-section and the stock cross-section it is sawn
-    // from. Second table: every stock cross-section with name, stock length and kerf, and a live
-    // count of the pieces needed. Edits go into a draft that is saved only on Print.
+    // Stock dialog. First table: every part cross-section and the stock cross-section it is sawn
+    // from. Second table: every stock cross-section with name, the lengths it is sold in (with
+    // prices), kerf and a live count of the pieces needed. Edits go into a draft that is saved
+    // only on Apply; Optimize writes its proposal into the draft as well.
     var stockDraft = null;
 
     function cloneStockSettings(settings) {
         var copy = {};
         Object.keys(settings).forEach(function(key) {
-            copy[key] = { name: settings[key].name, length: settings[key].length, kerf: settings[key].kerf };
+            var s = settings[key];
+            copy[key] = {
+                name: s.name,
+                offers: Array.isArray(s.offers) ? s.offers.map(function(o) { return { length: o.length, price: o.price }; })
+                    : s.length > 0 ? [{ length: s.length, price: null }] : null,
+                kerf: s.kerf
+            };
         });
         return copy;
     }
@@ -6582,13 +7079,32 @@ window.addEventListener('load', function() {
             alert(t('sheet.empty'));
             return;
         }
-        var rows = groupIdenticalPieces();
-        var map = {};
-        Object.keys(stockMap).forEach(function(key) { map[key] = stockMap[key]; });
-        stockDraft = { rows: rows, map: map, settings: cloneStockSettings(stockSettings) };
+        stockDraft = {
+            rows: groupIdenticalPieces(),
+            map: Object.assign({}, stockMap),
+            settings: cloneStockSettings(stockSettings),
+            options: Object.assign({}, stockOptions),
+            proposal: null
+        };
+        renderStockModal();
+        document.getElementById('stock-modal').classList.add('open');
+    }
 
+    function renderStockModal() {
         var container = document.getElementById('stock-rows');
         container.textContent = '';
+        if (stockDraft.proposal) sheetEl('div', 'stock-proposal', container).textContent = stockDraft.proposal;
+        if (pieces.some(function(m) { return !!m.userData.sourceId; })) {
+            var option = sheetEl('label', 'stock-option', container);
+            var repack = sheetEl('input', null, option);
+            repack.type = 'checkbox';
+            repack.checked = !!stockDraft.options.repackSplit;
+            sheetEl('span', null, option).textContent = t('stock.repackSplit');
+            repack.addEventListener('change', function() {
+                stockDraft.options.repackSplit = repack.checked;
+                buildStockMaterialRows(materials);
+            });
+        }
         sheetEl('h4', null, container).textContent = t('stock.parts.title');
         var partsTable = sheetEl('table', null, container);
         var head = sheetEl('tr', null, sheetEl('thead', null, partsTable));
@@ -6599,7 +7115,7 @@ window.addEventListener('load', function() {
         sheetEl('h4', null, container).textContent = t('stock.materials.title');
         var materials = sheetEl('div', null, container);
 
-        var partProfiles = collectStockProfiles(rows);
+        var partProfiles = collectStockProfiles(stockDraft.rows);
         // Placeholder: where the part comes from without an entry (own size or the merged strip)
         var auto = autoStockMap(partProfiles, {});
         partProfiles.forEach(function(p) {
@@ -6611,7 +7127,7 @@ window.addEventListener('load', function() {
             var input = sheetEl('input', null, cell);
             input.type = 'text';
             input.placeholder = auto[p.key] ? stockSectionInput(parseStockSection(auto[p.key])) : stockSectionInput(p);
-            input.value = map[p.key] ? stockSectionInput(parseStockSection(map[p.key]) || p) : '';
+            input.value = stockDraft.map[p.key] ? stockSectionInput(parseStockSection(stockDraft.map[p.key]) || p) : '';
             var warn = sheetEl('div', 'stock-warn', cell);
             function update() {
                 var text = input.value.trim();
@@ -6628,74 +7144,133 @@ window.addEventListener('load', function() {
                 } else {
                     stockDraft.map[p.key] = sec.key;
                 }
-                buildStockMaterialRows(materials);
             }
-            input.addEventListener('input', update);
+            input.addEventListener('input', function() {
+                update();
+                buildStockMaterialRows(materials);
+            });
             input.addEventListener('keydown', stockModalKeydown);
             update();
         });
-        document.getElementById('stock-modal').classList.add('open');
+        buildStockMaterialRows(materials);
     }
 
     function stockModalKeydown(e) {
         if (e.key === 'Enter') confirmStockModal();
     }
 
+    // "3× · €11.70" plus whether the packing is proven optimal, for the Needed column
+    function fillStockResult(cell, entry) {
+        cell.textContent = '';
+        var bars = entry.bars.filter(function(bar) { return !bar.bought; });
+        var priced = bars.length > 0 && bars.every(function(bar) { return bar.price !== null; });
+        var cost = bars.reduce(function(s, bar) { return s + (bar.price || 0); }, 0);
+        cell.appendChild(document.createTextNode(t('stock.result', { qty: entry.bars.length }) + (priced ? ' · ' + formatMoney(cost) : '')));
+        if (bars.length > 1) {
+            sheetEl('span', 'stock-quality', cell).textContent = t(entry.optimal ? 'stock.optimal' : 'stock.approx');
+        }
+        var oversize = entry.bars.filter(function(bar) { return bar.oversize; });
+        if (oversize.length > 0) {
+            var longest = oversize.reduce(function(m, bar) { return Math.max(m, bar.length); }, 0);
+            sheetEl('div', 'stock-warn', cell).textContent = t('stock.tooLong', { length: formatMm(longest) });
+        }
+    }
+
     function buildStockMaterialRows(container) {
         container.textContent = '';
-        var table = sheetEl('table', null, container);
+        var table = sheetEl('table', 'stock-materials', container);
         var head = sheetEl('tr', null, sheetEl('thead', null, table));
-        ['stock.col.name', 'stock.col.section', 'stock.col.parts', 'stock.col.length', 'stock.col.kerf', 'stock.col.result'].forEach(function(key) {
-            sheetEl('th', null, head).textContent = t(key);
+        ['stock.col.name', 'stock.col.section', 'stock.col.parts', 'stock.col.offers', 'stock.col.kerf', 'stock.col.result', null].forEach(function(key) {
+            sheetEl('th', null, head).textContent = key ? t(key) : '';
         });
         var body = sheetEl('tbody', null, table);
-        buildStockPlan(stockDraft.rows, stockDraft.map, stockDraft.settings).forEach(function(entry) {
+        var resultCells = {};
+        function refreshResults() {
+            buildStockPlan(stockDraft.rows, stockDraft.map, stockDraft.settings, stockDraft.options).forEach(function(entry) {
+                if (resultCells[entry.profile.key]) fillStockResult(resultCells[entry.profile.key], entry);
+            });
+        }
+        buildStockPlan(stockDraft.rows, stockDraft.map, stockDraft.settings, stockDraft.options).forEach(function(entry) {
             var p = entry.profile;
             var saved = stockDraft.settings[p.key] || {};
             var row = sheetEl('tr', null, body);
             var nameInput = sheetEl('input', null, sheetEl('td', null, row));
             nameInput.type = 'text';
             nameInput.value = saved.name || '';
-            nameInput.placeholder = stockDefaultName(p);
+            var cat = stockCatalogEntry(p.key);
+            nameInput.placeholder = (cat && cat.name) || stockDefaultName(p);
             sheetEl('td', null, row).textContent = stockSectionText(p) + ' mm';
             var net = p.items.reduce(function(s, item) { return s + item.length; }, 0);
             sheetEl('td', 'num', row).textContent = t('stock.partsNet', { count: p.items.length, net: formatMm(net) });
-            var lengthInput = sheetEl('input', null, sheetEl('td', null, row));
-            lengthInput.type = 'number';
-            lengthInput.min = '1';
-            lengthInput.step = '1';
-            lengthInput.value = entry.setting.length;
+            var offersCell = sheetEl('td', null, row);
+            var offersInput = sheetEl('input', 'stock-offers', offersCell);
+            offersInput.type = 'text';
+            offersInput.value = Array.isArray(saved.offers) && saved.offers.length > 0 ? formatStockOffers(saved.offers) : '';
+            // Without own offers the row follows the catalog, or the default length
+            var fallback = stockSettingFor(p, {});
+            offersInput.placeholder = formatStockOffers(fallback.offers);
+            offersInput.title = t(fallback.source === 'catalog' ? 'stock.offersFromCatalog' : 'stock.offersHint');
+            var offersWarn = sheetEl('div', 'stock-warn', offersCell);
             var kerfInput = sheetEl('input', null, sheetEl('td', null, row));
             kerfInput.type = 'number';
             kerfInput.min = '0';
             kerfInput.step = '0.1';
             kerfInput.value = entry.setting.kerf;
             var result = sheetEl('td', 'stock-result', row);
+            resultCells[p.key] = result;
+            var toCatalog = sheetEl('button', 'stock-to-catalog', sheetEl('td', null, row));
+            toCatalog.type = 'button';
+            toCatalog.textContent = t('stock.toCatalog');
+            toCatalog.title = t('stock.toCatalogHint');
             function update() {
-                var len = parseFloat(lengthInput.value);
+                var offers = parseStockOffers(offersInput.value);
                 var kerf = parseFloat(kerfInput.value);
+                offersWarn.textContent = offers === null ? t('stock.offersInvalid') : '';
                 stockDraft.settings[p.key] = {
                     name: nameInput.value.trim() || null,
-                    length: len > 0 ? len : null,
+                    offers: offers && offers.length > 0 ? offers : null,
                     kerf: kerf >= 0 ? kerf : null
                 };
-                result.textContent = '';
-                if (!(len > 0) || !(kerf >= 0)) {
-                    result.textContent = '–';
-                    return;
-                }
-                result.textContent = t('stock.result', { qty: planStock(p.items, len, kerf).length });
-                var longest = stockLongestItem(p);
-                if (longest > len) {
-                    sheetEl('div', 'stock-warn', result).textContent = t('stock.tooLong', { length: formatMm(longest) });
-                }
+                refreshResults();
             }
-            [nameInput, lengthInput, kerfInput].forEach(function(input) {
+            [nameInput, offersInput, kerfInput].forEach(function(input) {
                 input.addEventListener('input', update);
                 input.addEventListener('keydown', stockModalKeydown);
             });
-            update();
+            toCatalog.addEventListener('click', function() {
+                var setting = stockSettingFor(p, stockDraft.settings);
+                var list = stockCatalog.filter(function(e) { return e.profile !== p.key; });
+                list.push({ profile: p.key, name: nameInput.value.trim() || (cat && cat.name) || null, offers: setting.offers });
+                saveStockCatalog(list);
+                toCatalog.textContent = t('stock.toCatalogDone');
+                toCatalog.disabled = true;
+            });
+            fillStockResult(result, entry);
         });
+    }
+
+    function stockTotalsText(totals) {
+        var text = t('stock.totals', { bars: totals.bars, offcut: formatMm(totals.offcut) });
+        if (totals.bars > totals.unpriced) text += ' · ' + formatMoney(totals.cost);
+        if (totals.unpriced > 0 && totals.unpriced < totals.bars) text += ' ' + t('stock.totalsUnpriced', { count: totals.unpriced });
+        return text;
+    }
+
+    // Optimize: the best plan found from the current draft goes into the draft, with the
+    // totals before and after; Apply saves it like any other edit
+    function optimizeStockDraft() {
+        if (!stockDraft) return;
+        var before = stockPlanTotals(buildStockPlan(stockDraft.rows, stockDraft.map, stockDraft.settings, stockDraft.options));
+        var result = optimizeStock(stockDraft.rows, stockDraft.map, stockDraft.settings, stockDraft.options);
+        if (stockTotalsBetter(result.totals, before)) {
+            stockDraft.map = result.map;
+            stockDraft.options = result.options;
+            stockDraft.proposal = t('stock.proposal', { before: stockTotalsText(before), after: stockTotalsText(result.totals) });
+        } else {
+            stockDraft.proposal = t('stock.noBetter', { totals: stockTotalsText(before) });
+        }
+        if (!result.totals.optimal) stockDraft.proposal += ' ' + t('stock.proposalApprox');
+        renderStockModal();
     }
 
     function closeStockModal() {
@@ -6707,6 +7282,7 @@ window.addEventListener('load', function() {
         if (!stockDraft) return;
         stockMap = stockDraft.map;
         stockSettings = stockDraft.settings;
+        stockOptions = stockDraft.options;
         closeStockModal();
         updateObjectList();
         updateCostSummary();
@@ -6714,14 +7290,26 @@ window.addEventListener('load', function() {
 
     // Model file: one entry per stock cross-section the model uses, with its settings and the
     // part cross-sections sawn from it. Entries for cross-sections no longer in use are dropped.
+    // Offers taken from the catalog are written too, so the file plans the same on another
+    // computer and does not change when catalog prices do: on load they become the project's.
     function serializeStock() {
         var list = [];
         buildStockPlan(groupIdenticalPieces()).forEach(function(entry) {
             var key = entry.profile.key;
             var s = stockSettings[key] || {};
             var item = { profile: key };
-            if (s.name) item.name = s.name;
-            if (s.length > 0) item.length = s.length;
+            var name = s.name || (entry.setting.source === 'catalog' ? stockCatalogEntry(key).name : null);
+            if (name) item.name = name;
+            if (entry.setting.source !== 'default') {
+                var offers = entry.setting.offers;
+                if (offers.length === 1 && offers[0].price === null) {
+                    item.length = offers[0].length;
+                } else {
+                    item.offers = offers.map(function(o) {
+                        return o.price !== null ? { length: o.length, price: o.price } : { length: o.length };
+                    });
+                }
+            }
             if (typeof s.kerf === 'number' && s.kerf >= 0) item.kerf = s.kerf;
             var parts = entry.profile.sources
                 .map(function(p) { return p.key; })
@@ -6733,15 +7321,22 @@ window.addEventListener('load', function() {
         return list;
     }
 
-    function restoreStock(list) {
+    function serializeStockOptions() {
+        return stockOptions.repackSplit ? { repackSplit: true } : undefined;
+    }
+
+    function restoreStock(list, options) {
         stockSettings = {};
         stockMap = {};
+        stockOptions = { repackSplit: !!(options && options.repackSplit === true) };
         (Array.isArray(list) ? list : []).forEach(function(entry) {
             if (!entry || !parseStockSection(entry.profile)) return;
             var key = parseStockSection(entry.profile).key;
+            var offers = normalizeStockOffers(Array.isArray(entry.offers) ? entry.offers
+                : typeof entry.length === 'number' ? [{ length: entry.length }] : []);
             stockSettings[key] = {
                 name: typeof entry.name === 'string' && entry.name ? entry.name : null,
-                length: typeof entry.length === 'number' && entry.length > 0 ? entry.length : null,
+                offers: offers.length > 0 ? offers : null,
                 kerf: typeof entry.kerf === 'number' && entry.kerf >= 0 ? entry.kerf : null
             };
             (Array.isArray(entry.parts) ? entry.parts : []).forEach(function(partKey) {
@@ -6749,6 +7344,146 @@ window.addEventListener('load', function() {
                 if (part) stockMap[part.key] = key;
             });
         });
+    }
+
+    // Catalog dialog: one row per cross-section, edited as text and checked on Save
+    var catalogDraft = null;
+
+    function openCatalogModal() {
+        catalogDraft = stockCatalog.map(function(entry) {
+            return { section: stockSectionInput(parseStockSection(entry.profile)), name: entry.name || '', offers: formatStockOffers(entry.offers) };
+        });
+        renderCatalogModal();
+        document.getElementById('catalog-modal').classList.add('open');
+    }
+
+    function renderCatalogModal() {
+        var container = document.getElementById('catalog-rows');
+        container.textContent = '';
+        if (catalogDraft.length === 0) {
+            sheetEl('div', 'catalog-empty', container).textContent = t('catalog.empty');
+            return;
+        }
+        var table = sheetEl('table', null, container);
+        var head = sheetEl('tr', null, sheetEl('thead', null, table));
+        ['stock.col.section', 'stock.col.name', 'stock.col.offers', null].forEach(function(key) {
+            sheetEl('th', null, head).textContent = key ? t(key) : '';
+        });
+        var body = sheetEl('tbody', null, table);
+        catalogDraft.forEach(function(row, i) {
+            var tr = sheetEl('tr', null, body);
+            [['section', 'catalog.sectionPlaceholder', null], ['name', null, null], ['offers', 'catalog.offersPlaceholder', 'stock-offers']].forEach(function(f) {
+                var cell = sheetEl('td', null, tr);
+                var input = sheetEl('input', f[2], cell);
+                input.type = 'text';
+                input.value = row[f[0]];
+                if (f[1]) input.placeholder = t(f[1]);
+                input.addEventListener('input', function() { row[f[0]] = input.value; });
+                input.addEventListener('keydown', function(e) { if (e.key === 'Enter') confirmCatalogModal(); });
+                sheetEl('div', 'stock-warn catalog-warn-' + f[0], cell);
+            });
+            var remove = sheetEl('button', null, sheetEl('td', null, tr));
+            remove.type = 'button';
+            remove.textContent = '×';
+            remove.title = t('catalog.remove');
+            remove.addEventListener('click', function() {
+                catalogDraft.splice(i, 1);
+                renderCatalogModal();
+            });
+        });
+    }
+
+    // Rows checked and turned into catalog entries; null when a row cannot be read, with the
+    // reason shown under the field. Rows left empty are dropped.
+    function readCatalogDraft() {
+        var list = [];
+        var ok = true;
+        var rows = document.querySelectorAll('#catalog-rows tbody tr');
+        catalogDraft.forEach(function(row, i) {
+            var tr = rows[i];
+            tr.querySelector('.catalog-warn-section').textContent = '';
+            tr.querySelector('.catalog-warn-offers').textContent = '';
+            if (!row.section.trim() && !row.offers.trim() && !row.name.trim()) return;
+            var sec = parseStockSection(row.section);
+            var offers = parseStockOffers(row.offers);
+            if (!sec) {
+                tr.querySelector('.catalog-warn-section').textContent = t('stock.invalid');
+                ok = false;
+            }
+            if (!offers || offers.length === 0) {
+                tr.querySelector('.catalog-warn-offers').textContent = t('stock.offersInvalid');
+                ok = false;
+            }
+            if (sec && offers && offers.length > 0) list.push({ profile: sec.key, name: row.name.trim() || null, offers: offers });
+        });
+        return ok ? list : null;
+    }
+
+    function closeCatalogModal() {
+        document.getElementById('catalog-modal').classList.remove('open');
+        catalogDraft = null;
+    }
+
+    function confirmCatalogModal() {
+        if (!catalogDraft) return;
+        var list = readCatalogDraft();
+        if (!list) return;
+        saveStockCatalog(list);
+        closeCatalogModal();
+        // An open stock dialog shows the catalog as placeholders: refresh it
+        if (stockDraft) renderStockModal();
+        updateObjectList();
+        updateCostSummary();
+    }
+
+    function exportCatalog() {
+        if (!catalogDraft) return;
+        var list = readCatalogDraft();
+        if (!list) return;
+        var data = normalizeStockCatalog(list).map(function(entry) {
+            var item = { profile: entry.profile };
+            if (entry.name) item.name = entry.name;
+            item.offers = entry.offers.map(function(o) {
+                return o.price !== null ? { length: o.length, price: o.price } : { length: o.length };
+            });
+            return item;
+        });
+        var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'stock-catalog.woodstock.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // Imported entries replace draft rows of the same cross-section and add the others
+    function importCatalog(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var imported;
+            try {
+                imported = normalizeStockCatalog(JSON.parse(e.target.result));
+            } catch (err) {
+                imported = [];
+            }
+            if (imported.length === 0) {
+                alert(t('catalog.importNone'));
+                return;
+            }
+            imported.forEach(function(entry) {
+                var row = { section: stockSectionInput(parseStockSection(entry.profile)), name: entry.name || '', offers: formatStockOffers(entry.offers) };
+                var existing = -1;
+                catalogDraft.forEach(function(r, i) {
+                    var sec = parseStockSection(r.section);
+                    if (sec && sec.key === entry.profile) existing = i;
+                });
+                if (existing >= 0) catalogDraft[existing] = row;
+                else catalogDraft.push(row);
+            });
+            renderCatalogModal();
+        };
+        reader.readAsText(file);
     }
 
     // Fill #print-sheet: page 1 with three dimensioned orthographic views plus an isometric
@@ -7351,20 +8086,39 @@ window.addEventListener('load', function() {
     document.getElementById('menu-stock').addEventListener('click', openStockModal);
     document.getElementById('stock-cancel').addEventListener('click', closeStockModal);
     document.getElementById('stock-confirm').addEventListener('click', confirmStockModal);
-    (function() {
-        var modal = document.getElementById('stock-modal');
+    document.getElementById('stock-optimize').addEventListener('click', optimizeStockDraft);
+    document.getElementById('stock-open-catalog').addEventListener('click', openCatalogModal);
+    document.getElementById('menu-catalog').addEventListener('click', openCatalogModal);
+    document.getElementById('catalog-cancel').addEventListener('click', closeCatalogModal);
+    document.getElementById('catalog-confirm').addEventListener('click', confirmCatalogModal);
+    document.getElementById('catalog-export').addEventListener('click', exportCatalog);
+    document.getElementById('catalog-add').addEventListener('click', function() {
+        catalogDraft.push({ section: '', name: '', offers: '' });
+        renderCatalogModal();
+        var inputs = document.querySelectorAll('#catalog-rows tbody tr:last-child input');
+        if (inputs.length) inputs[0].focus();
+    });
+    document.getElementById('catalog-import').addEventListener('click', function() {
+        document.getElementById('catalog-import-input').click();
+    });
+    document.getElementById('catalog-import-input').addEventListener('change', function(e) {
+        if (e.target.files.length > 0 && catalogDraft) importCatalog(e.target.files[0]);
+        e.target.value = '';
+    });
+    [['stock-modal', closeStockModal], ['catalog-modal', closeCatalogModal]].forEach(function(pair) {
+        var modal = document.getElementById(pair[0]);
         var mouseDownOnOverlay = false;
         modal.addEventListener('mousedown', function(e) {
             mouseDownOnOverlay = (e.target === modal);
         });
         modal.addEventListener('mouseup', function(e) {
-            if (mouseDownOnOverlay && e.target === modal) closeStockModal();
+            if (mouseDownOnOverlay && e.target === modal) pair[1]();
             mouseDownOnOverlay = false;
         });
         modal.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeStockModal();
+            if (e.key === 'Escape') pair[1]();
         });
-    })();
+    });
     document.getElementById('menu-export-png').addEventListener('click', exportPNG);
     document.getElementById('menu-export-templates').addEventListener('click', exportTemplates);
     document.getElementById('menu-import-templates').addEventListener('click', function() {
@@ -7565,7 +8319,13 @@ window.addEventListener('load', function() {
             buildStockPlan: function() { return buildStockPlan(groupIdenticalPieces()); },
             setStockSettings: restoreStock,
             serializeStock: serializeStock,
-            openStockModal: openStockModal
+            serializeStockOptions: serializeStockOptions,
+            openStockModal: openStockModal,
+            optimizeStockDraft: optimizeStockDraft,
+            packStock: packStock,
+            parseStockOffers: parseStockOffers,
+            setStockCatalog: saveStockCatalog,
+            getStockCatalog: function() { return stockCatalog; }
         };
         window.dispatchEvent(new Event('app-ready'));
     }

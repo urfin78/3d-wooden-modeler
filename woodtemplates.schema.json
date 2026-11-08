@@ -32,6 +32,11 @@
         "minimum": 0
       },
 
+      "bought": {
+        "description": "Pieces added from this template are marked as bought ready-made: the cutting plan gives each a piece of stock of its own size instead of packing it onto a trade length. Optional; defaults to false.",
+        "type": "boolean"
+      },
+
       "w": {
         "description": "Width in mm. Required for Board, Wedge, L-Bracket.",
         "type": "number", "exclusiveMinimum": 0
@@ -137,6 +142,7 @@
         "name": "8mm dowel 60mm",
         "type": "Dowel",
         "price": 0.50,
+        "bought": true,
         "r": 4, "h": 60
       },
       {

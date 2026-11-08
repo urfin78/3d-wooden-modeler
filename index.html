@@ -105,7 +105,7 @@
     canvas { display: block; }
     #object-list { margin-bottom: 10px; }
     #object-list-items {
-        max-height: 180px; overflow-y: auto;
+        max-height: 280px; overflow-y: auto;
         background: var(--surface); border: 1px solid var(--border);
         border-radius: var(--radius-sm);
     }
@@ -129,12 +129,13 @@
         display: flex; justify-content: space-between; align-items: center;
     }
     .obj-group-header .group-cost { font-size: 10px; color: var(--accent-hover); opacity: .85; }
-    .cost-group-header {
-        display: flex; justify-content: space-between; padding: 4px 0 2px;
-        font-size: 11px; font-weight: 600; color: var(--accent);
-        border-top: 1px solid var(--border); margin-top: 4px;
+    .obj-group-header.stock-group { cursor: pointer; }
+    .obj-group-header.stock-group > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .obj-group-info {
+        padding: 3px 10px 3px 22px; font-size: 10px; color: var(--text-faint);
+        border-left: 2px solid var(--accent); border-bottom: 1px solid var(--border);
     }
-    .cost-row.grouped { padding-left: 14px; color: var(--text-muted); }
+    #cost-items .cost-row > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px; }
     .rot-btn-row { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
     .rot-btn-row button {
         background: var(--surface); color: var(--text);
@@ -254,6 +255,21 @@
         background: var(--surface-3); color: var(--text-faint);
         border-color: var(--border); cursor: not-allowed;
     }
+    #stock-modal .modal-box { width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; }
+    .stock-hint { margin: 0 0 10px; font-size: 12px; color: var(--text-muted); }
+    #stock-modal .modal-buttons { position: sticky; bottom: -18px; background: var(--surface); margin-bottom: -18px; padding: 12px 0 18px; }
+    #stock-rows h4 { margin: 12px 0 4px; font-size: 12px; font-weight: 600; color: var(--text); }
+    #stock-rows table { width: 100%; border-collapse: collapse; font-size: 12px; color: var(--text); }
+    #stock-rows th { text-align: left; font-weight: 500; color: var(--text-muted); font-size: 11px; padding: 4px; border-bottom: 1px solid var(--border); }
+    #stock-rows td { padding: 4px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    #stock-rows td.num { text-align: right; white-space: nowrap; }
+    #stock-rows input {
+        width: 100%; min-width: 60px; background: var(--surface); color: var(--text);
+        border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 5px 6px; font-size: 12px;
+    }
+    #stock-rows input[type="number"] { width: 80px; }
+    #stock-rows .stock-result { white-space: nowrap; font-weight: 600; }
+    #stock-rows .stock-warn { color: var(--danger); font-weight: 400; font-size: 11px; white-space: normal; }
     #group-panel { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
     #group-panel h3 { margin: 0 0 6px; color: var(--text); font-size: 12px; }
     #group-member-info { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
@@ -381,7 +397,27 @@
     /* A long table of cuts may continue on the next page instead of leaving this one empty */
     #print-sheet .sheet-view.sheet-cut-wide { grid-column: 1 / -1; break-inside: auto; }
     #print-sheet .sheet-cut table { margin-top: 3pt; }
-    #print-sheet .sheet-parts, #print-sheet .sheet-details, #print-sheet .sheet-cuts, #print-sheet .sheet-templates { break-before: page; }
+    #print-sheet .sheet-parts, #print-sheet .sheet-details, #print-sheet .sheet-cuts, #print-sheet .sheet-templates, #print-sheet .sheet-stock { break-before: page; }
+    /* Page 1 has a fixed height: the views share what the header and the stock summary leave,
+       so a longer summary shrinks them instead of pushing the bottom row onto the next page.
+       Image and overlay both letterbox the same way (contain / SVG "meet"), so they stay aligned. */
+    #print-sheet .sheet-first { height: 270mm; display: flex; flex-direction: column; }
+    #print-sheet .sheet-first .sheet-views { flex: 1 1 0; min-height: 0; grid-template-rows: repeat(2, minmax(0, 1fr)); }
+    #print-sheet .sheet-first .sheet-view { display: flex; flex-direction: column; min-height: 0; }
+    #print-sheet .sheet-first .sheet-view-img { flex: 1 1 0; min-height: 0; }
+    #print-sheet .sheet-first .sheet-view-img img { width: 100%; height: 100%; object-fit: contain; }
+    #print-sheet .sheet-stock-summary { font-size: 8.5pt; margin: 0 0 6pt; padding-bottom: 4pt; border-bottom: 0.5pt solid #999; }
+    #print-sheet .sheet-stock-summary strong { display: block; font-size: 9pt; margin-bottom: 2pt; }
+    #print-sheet .sheet-stock-summary ul { margin: 0; padding: 0; column-count: 3; column-gap: 8pt; }
+    #print-sheet .sheet-stock-summary li { list-style: none; display: flex; gap: 4pt; break-inside: avoid; line-height: 1.35; }
+    #print-sheet .sheet-stock-summary .sheet-stock-ids { flex: 0 0 auto; min-width: 16pt; font-weight: 700; }
+    #print-sheet .sheet-stock-profile { break-inside: avoid; margin-bottom: 8pt; }
+    #print-sheet .sheet-stock-profile h3 { font-size: 10.5pt; margin: 0 0 3pt; }
+    #print-sheet .sheet-stock-bar { break-inside: avoid; margin-bottom: 4pt; }
+    #print-sheet .sheet-stock-bar svg { display: block; width: 100%; height: auto; }
+    #print-sheet .sheet-stock-bar-title { font-size: 9pt; font-weight: 600; margin-bottom: 1pt; }
+    #print-sheet .sheet-stock-bar-text { font-size: 8.5pt; margin-top: 1pt; }
+    #print-sheet .sheet-stock-warn { color: #c8452f; font-weight: 600; }
     #print-sheet .sheet-template-tile { break-inside: avoid; margin-bottom: 4mm; }
     #print-sheet .sheet-template-tile > svg { display: block; outline: 0.5pt solid #999; outline-offset: -0.5pt; }
     #print-sheet .sheet-template-head { display: flex; justify-content: space-between; align-items: center; font-size: 9pt; font-weight: 600; }
@@ -469,6 +505,7 @@
             <div class="menu-sep"></div>
             <div class="menu-item" id="menu-export-csv" data-i18n="toolbar.exportCsv">Export CSV</div>
             <div class="menu-item" id="menu-print-sheet" data-i18n="toolbar.printSheet">Print Workshop Sheet</div>
+            <div class="menu-item" id="menu-stock" data-i18n="toolbar.stock">Stock Material…</div>
             <div class="menu-item" id="menu-export-png" data-i18n="toolbar.exportPng">Export View as PNG</div>
             <div class="menu-item" id="menu-export-templates" data-i18n="toolbar.exportTemplates">Export Templates</div>
             <div class="menu-item" id="menu-import-templates" data-i18n="toolbar.importTemplates">Import Templates</div>
@@ -705,6 +742,18 @@
     </div>
 </div>
 
+<div id="stock-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 data-i18n="stock.title">Stock material</h3>
+        <p class="stock-hint" data-i18n="stock.hint">Optional: nothing needs to be entered.</p>
+        <div id="stock-rows"></div>
+        <div class="modal-buttons">
+            <button id="stock-cancel" data-i18n="stock.cancel">Cancel</button>
+            <button id="stock-confirm" class="primary" data-i18n="stock.apply">Apply</button>
+        </div>
+    </div>
+</div>
+
 <div id="print-sheet"></div>
 
 <script type="importmap">
@@ -809,6 +858,42 @@ window.addEventListener('load', function() {
             'sheet.template.sheet': 'Pos. {pos} · {name} · sheet {n} of {total}',
             'sheet.template.check': '100 mm',
             'sheet.empty': 'The model is empty — nothing to print.',
+            'sheet.stock.summary': 'Stock material:',
+            'sheet.stock.item': '{qty}× {name}',
+            'sheet.stock.title': 'Cutting plan',
+            'sheet.stock.hint': 'Each bar is one piece of stock, drawn to scale from the left end; its letter is the one in the parts list. Parts split from a piece of stock in the model stay on that piece; all other parts are packed onto stock lengths (2000 mm, dowel rod 1000 mm, adjustable under File → Stock Material). Every cut takes the kerf. Miters and angled cuts are sawn afterwards from the blank.',
+            'sheet.stock.heading': '{name} {section} mm',
+            'sheet.stock.bar': '{ids} · {name}',
+            'sheet.stock.barOversize': '{ids} · {name} — special length {length} mm, longer than the stock',
+            'sheet.stock.rest': 'offcut {length}',
+            'sheet.stock.restUnknown': 'offcut unknown (stock length not saved)',
+            'panel.stock.rest': 'offcut {length}',
+            'sheet.col.stock': 'From stock',
+            'toolbar.stock': 'Stock Material…',
+            'sheet.stock.part': 'Pos. {pos}',
+            'stock.title': 'Stock material',
+            'stock.hint': 'Optional: nothing needs to be entered. Without entries strips of the same thickness are sawn from one strip in the widest size, and stock is 2000 mm long (dowel rod 1000 mm). Change a value only if you buy something else. Parts split in the model always stay on their own piece of stock.',
+            'stock.parts.title': 'Part cross-sections',
+            'stock.materials.title': 'Stock to buy',
+            'stock.col.partSection': 'Cross-section',
+            'stock.col.from': 'Sawn from (e.g. 12x50, Ø6)',
+            'stock.invalid': 'Enter a cross-section such as 12x50 or Ø6',
+            'stock.noFit': 'Not every part fits in {section} mm',
+            'stock.col.name': 'Material',
+            'stock.col.section': 'Cross-section',
+            'stock.col.parts': 'Parts',
+            'stock.col.length': 'Stock length (mm)',
+            'stock.col.kerf': 'Kerf (mm)',
+            'stock.col.result': 'Needed',
+            'stock.partsNet': '{count} · {net} mm',
+            'stock.result': '{qty}×',
+            'stock.tooLong': 'Longest part is {length} mm',
+            'stock.cancel': 'Cancel',
+            'stock.apply': 'Apply',
+            'stock.kind.round': 'Dowel rod',
+            'stock.kind.square': 'Square strip',
+            'stock.kind.board': 'Board',
+            'stock.kind.strip': 'Strip',
             'toolbar.save': 'Save',
             'toolbar.load': 'Load',
             'toolbar.exportTemplates': 'Export Templates',
@@ -1031,6 +1116,42 @@ window.addEventListener('load', function() {
             'sheet.template.sheet': 'Pos. {pos} · {name} · Blatt {n} von {total}',
             'sheet.template.check': '100 mm',
             'sheet.empty': 'Das Modell ist leer – nichts zu drucken.',
+            'sheet.stock.summary': 'Ausgangsmaterial:',
+            'sheet.stock.item': '{qty}× {name}',
+            'sheet.stock.title': 'Schneideplan',
+            'sheet.stock.hint': 'Jeder Balken ist ein Stück Rohmaterial, maßstäblich vom linken Ende aus gezeichnet; sein Buchstabe steht auch in der Stückliste. Teile, die im Modell aus einem Rohstück geteilt wurden, bleiben auf diesem Stück; alle anderen werden auf Handelslängen verteilt (2000 mm, Rundstab 1000 mm, änderbar unter Datei → Ausgangsmaterial). Jeder Schnitt kostet die Schnittfuge. Gehrungen und Schrägschnitte werden danach aus dem Rohling gesägt.',
+            'sheet.stock.heading': '{name} {section} mm',
+            'sheet.stock.bar': '{ids} · {name}',
+            'sheet.stock.barOversize': '{ids} · {name} — Sonderlänge {length} mm, länger als das Rohmaterial',
+            'sheet.stock.rest': 'Rest {length}',
+            'sheet.stock.restUnknown': 'Rest unbekannt (Länge des Rohstücks nicht gespeichert)',
+            'panel.stock.rest': 'Rest {length}',
+            'sheet.col.stock': 'Aus Rohstück',
+            'toolbar.stock': 'Ausgangsmaterial …',
+            'sheet.stock.part': 'Pos. {pos}',
+            'stock.title': 'Ausgangsmaterial',
+            'stock.hint': 'Optional: Eintragen musst du nichts. Ohne Angaben werden gleich dicke Leisten aus einer Leiste in der größten Breite gesägt, und Rohmaterial ist 2000 mm lang (Rundstab 1000 mm). Ändere nur, was du anders kaufst. Im Modell geteilte Teile bleiben immer auf ihrem eigenen Rohstück.',
+            'stock.parts.title': 'Querschnitte der Teile',
+            'stock.materials.title': 'Einzukaufendes Rohmaterial',
+            'stock.col.partSection': 'Querschnitt',
+            'stock.col.from': 'Gesägt aus (z. B. 12x50, Ø6)',
+            'stock.invalid': 'Querschnitt eingeben, z. B. 12x50 oder Ø6',
+            'stock.noFit': 'Nicht alle Teile passen in {section} mm',
+            'stock.col.name': 'Material',
+            'stock.col.section': 'Querschnitt',
+            'stock.col.parts': 'Teile',
+            'stock.col.length': 'Handelslänge (mm)',
+            'stock.col.kerf': 'Schnittfuge (mm)',
+            'stock.col.result': 'Bedarf',
+            'stock.partsNet': '{count} · {net} mm',
+            'stock.result': '{qty}×',
+            'stock.tooLong': 'Längstes Teil ist {length} mm',
+            'stock.cancel': 'Abbrechen',
+            'stock.apply': 'Übernehmen',
+            'stock.kind.round': 'Rundstab',
+            'stock.kind.square': 'Vierkantleiste',
+            'stock.kind.board': 'Brett',
+            'stock.kind.strip': 'Leiste',
             'toolbar.save': 'Speichern',
             'toolbar.load': 'Laden',
             'toolbar.exportTemplates': 'Vorlagen exportieren',
@@ -1647,6 +1768,20 @@ window.addEventListener('load', function() {
     var selectedPiece = null;
     var snapEnabled = false;
     var labelsVisible = false;
+
+    // Stock length, kerf and optional name per cross-section, keyed by profile key ('13.5x47',
+    // 'R6'). Saved with the model but kept out of the undo history: setting it in the print
+    // dialog is not a modelling step.
+    var stockSettings = {};
+    // Cross-section a part cross-section is sawn from, when that is not the part's own: parts
+    // ripped to an odd width ('12x37.2') come from a stock size you can buy ('12x50').
+    var stockMap = {};
+    var STOCK_DEFAULT_LENGTH = 2000;
+    var STOCK_DEFAULT_ROUND_LENGTH = 1000;
+    // A cross-section at least this wide (mm) is called a board rather than a strip
+    var STOCK_BOARD_WIDTH = 80;
+    var STOCK_BAR_W = 1000;
+    var STOCK_BAR_H = 64;
     var xrayMode = false;
     var XRAY_OPACITY = 0.4;
     var cutMode = false;
@@ -2575,8 +2710,37 @@ window.addEventListener('load', function() {
 
     var objectListItems = document.getElementById('object-list-items');
 
+    // Side panel groups: one per piece of stock in the cutting plan, with the pieces cut from it
+    // ("A · Strip 12 × 44 × 2000 mm" → Roof batten 1, Roof batten 2, …). A frame, whose members
+    // lie on several pieces of stock, shows up under each of them.
+    function stockPanelGroups() {
+        var groups = [];
+        buildStockPlan(groupIdenticalPieces()).forEach(function(entry) {
+            entry.bars.forEach(function(bar) {
+                var members = [];
+                bar.parts.forEach(function(part) {
+                    if (members.indexOf(pieces[part.index]) === -1) members.push(pieces[part.index]);
+                });
+                groups.push({
+                    letter: cutLetter(bar.index),
+                    name: stockBarName(entry, bar),
+                    rest: bar.rest,
+                    members: members
+                });
+            });
+        });
+        return groups;
+    }
+
+    function stockPartCount(n) {
+        return n === 1 ? t('sheet.partCountOne') : t('sheet.partCount', { count: n });
+    }
+
+    // Letters of the stock groups the user opened; the group of the selected piece opens by itself
+    var openStockGroups = new Set();
+
     function updateObjectList() {
-        objectListItems.innerHTML = '';
+        objectListItems.textContent = '';
         if (pieces.length === 0) {
             var empty = document.createElement('div');
             empty.style.cssText = 'padding:6px 8px;color:#666;font-size:11px;font-style:italic';
@@ -2584,12 +2748,10 @@ window.addEventListener('load', function() {
             objectListItems.appendChild(empty);
             return;
         }
-        var currency = currencySelect.value;
-        var renderedGroups = new Set();
 
-        function renderPieceItem(mesh, grouped) {
+        function renderPieceItem(mesh) {
             var item = document.createElement('div');
-            item.className = 'obj-list-item' + (grouped ? ' grouped' : '');
+            item.className = 'obj-list-item grouped';
             if (mesh === selectedPiece) item.className += ' selected';
             var nameSpan = document.createElement('span');
             nameSpan.textContent = mesh.userData.label || t('panel.objects.unnamed');
@@ -2602,27 +2764,32 @@ window.addEventListener('load', function() {
             objectListItems.appendChild(item);
         }
 
-        pieces.forEach(function(mesh) {
-            var sid = mesh.userData.sourceId;
-            if (sid) {
-                if (!renderedGroups.has(sid)) {
-                    renderedGroups.add(sid);
-                    var groupPieces = pieces.filter(function(m) { return m.userData.sourceId === sid; });
-                    var header = document.createElement('div');
-                    header.className = 'obj-group-header';
-                    var titleSpan = document.createElement('span');
-                    titleSpan.textContent = (mesh.userData.sourceLabel || typeName(mesh.userData.type)) + ' (' + groupPieces.length + ' ' + t('group.parts') + ')';
-                    var costSpan = document.createElement('span');
-                    costSpan.className = 'group-cost';
-                    costSpan.textContent = currency + (mesh.userData.sourcePrice || 0).toFixed(2);
-                    header.appendChild(titleSpan);
-                    header.appendChild(costSpan);
-                    objectListItems.appendChild(header);
-                    groupPieces.forEach(function(gm) { renderPieceItem(gm, true); });
-                }
-            } else {
-                renderPieceItem(mesh, false);
-            }
+        stockPanelGroups().forEach(function(group) {
+            var open = openStockGroups.has(group.letter) || group.members.indexOf(selectedPiece) !== -1;
+            var header = document.createElement('div');
+            header.className = 'obj-group-header stock-group' + (open ? ' open' : '');
+            var titleSpan = document.createElement('span');
+            titleSpan.textContent = (open ? '▾ ' : '▸ ') + group.letter + ' · ' + group.name;
+            // Part count and offcut would squeeze the name: they show as a tooltip and, once the
+            // group is open, on a line of their own above the parts
+            var rest = group.rest === null ? '' : group.rest > 0 ? ' · ' + t('panel.stock.rest', { length: formatMm(group.rest) }) : '';
+            var info = stockPartCount(group.members.length) + rest;
+            header.title = group.letter + ' · ' + group.name + '\n' + info;
+            header.appendChild(titleSpan);
+            header.addEventListener('click', function() {
+                if (open) openStockGroups.delete(group.letter);
+                else openStockGroups.add(group.letter);
+                // A group closed while it holds the selection would reopen at once
+                if (open && group.members.indexOf(selectedPiece) !== -1) selectPiece(null);
+                updateObjectList();
+            });
+            objectListItems.appendChild(header);
+            if (!open) return;
+            var infoRow = document.createElement('div');
+            infoRow.className = 'obj-group-info';
+            infoRow.textContent = info;
+            objectListItems.appendChild(infoRow);
+            group.members.forEach(renderPieceItem);
         });
     }
 
@@ -2994,41 +3161,48 @@ window.addEventListener('load', function() {
         return price;
     }
 
+    // One row per piece of stock, as in the object list. A split source with a fixed price counts
+    // its price once; every other piece counts its own cost, a frame on several pieces of stock once.
     function updateCostSummary() {
         var currency = currencySelect.value;
         var costItems = document.getElementById('cost-items');
         var costTotal = document.getElementById('cost-total');
         var total = 0;
-        var html = '';
-        var renderedGroups = new Set();
-
+        var counted = new Set();
+        var countedSources = new Set();
+        costItems.textContent = '';
         pieces.forEach(function(m) {
-            var ud = m.userData;
-            if (ud.price === undefined) ud.price = 0;
-            if (!ud.priceMode) ud.priceMode = 'fixed';
-
-            if (ud.sourceId) {
-                if (!renderedGroups.has(ud.sourceId)) {
-                    renderedGroups.add(ud.sourceId);
-                    var groupPieces = pieces.filter(function(p) { return p.userData.sourceId === ud.sourceId; });
-                    var groupCost = ud.sourcePrice || 0;
-                    // Per-mm pieces in a group still contribute their individual costs
-                    if (ud.sourcePriceMode === 'per_mm') {
-                        groupCost = groupPieces.reduce(function(sum, p) { return sum + computePieceCost(p); }, 0);
-                    }
-                    total += groupCost;
-                    html += '<div class="cost-group-header"><span>' + (ud.sourceLabel || typeName(ud.type)) + ' (' + groupPieces.length + ' ' + t('group.parts') + ')</span><span>' + currency + groupCost.toFixed(2) + '</span></div>';
-                    groupPieces.forEach(function(gm) {
-                        html += '<div class="cost-row grouped"><span>' + (gm.userData.label || gm.userData.type) + '</span><span>—</span></div>';
-                    });
-                }
-            } else {
-                var cost = computePieceCost(m);
-                total += cost;
-                html += '<div class="cost-row"><span>' + (ud.label || ud.type) + '</span><span>' + currency + cost.toFixed(2) + '</span></div>';
-            }
+            if (m.userData.price === undefined) m.userData.price = 0;
+            if (!m.userData.priceMode) m.userData.priceMode = 'fixed';
         });
-        costItems.innerHTML = html;
+        (pieces.length > 0 ? stockPanelGroups() : []).forEach(function(group) {
+            var cost = 0;
+            group.members.forEach(function(m) {
+                if (counted.has(m)) return;
+                counted.add(m);
+                var ud = m.userData;
+                if (ud.sourceId && ud.sourcePriceMode !== 'per_mm') {
+                    if (!countedSources.has(ud.sourceId)) {
+                        countedSources.add(ud.sourceId);
+                        cost += ud.sourcePrice || 0;
+                    }
+                } else {
+                    cost += computePieceCost(m);
+                }
+            });
+            total += cost;
+            var row = document.createElement('div');
+            row.className = 'cost-row';
+            var name = document.createElement('span');
+            // Names can come from loaded files — textContent, never innerHTML
+            name.textContent = group.letter + ' · ' + group.name;
+            row.title = name.textContent + '\n' + stockPartCount(group.members.length);
+            var value = document.createElement('span');
+            value.textContent = currency + cost.toFixed(2);
+            row.appendChild(name);
+            row.appendChild(value);
+            costItems.appendChild(row);
+        });
         costTotal.textContent = t('panel.costTotal') + ': ' + currency + total.toFixed(2);
     }
 
@@ -3069,6 +3243,8 @@ window.addEventListener('load', function() {
                 sourcePrice: ud.sourcePrice || 0,
                 sourcePriceMode: ud.sourcePriceMode || null,
                 sourceLabel: ud.sourceLabel || null,
+                sourceLength: typeof ud.sourceLength === 'number' ? ud.sourceLength : undefined,
+                sourceKerf: typeof ud.sourceKerf === 'number' ? ud.sourceKerf : undefined,
                 groupId: ud.groupId || null,
                 px: _wp.x, py: _wp.y, pz: _wp.z,
                 rx: _we.x, ry: _we.y, rz: _we.z
@@ -3185,6 +3361,8 @@ window.addEventListener('load', function() {
             mesh.userData.sourcePrice = entry.sourcePrice || 0;
             mesh.userData.sourcePriceMode = entry.sourcePriceMode || null;
             mesh.userData.sourceLabel = entry.sourceLabel || null;
+            if (typeof entry.sourceLength === 'number') mesh.userData.sourceLength = entry.sourceLength;
+            if (typeof entry.sourceKerf === 'number') mesh.userData.sourceKerf = entry.sourceKerf;
             mesh.userData.groupId = entry.groupId || null;
             if (entry.type === 'Board' || entry.type === 'Wedge' || entry.type === 'L-Bracket') {
                 mesh.userData.w = entry.w; mesh.userData.h = entry.h; mesh.userData.d = entry.d;
@@ -3315,7 +3493,8 @@ window.addEventListener('load', function() {
             created: new Date().toISOString(),
             pieces: sceneData.pieces,
             groups: sceneData.groups || [],
-            rulers: sceneData.rulers || []
+            rulers: sceneData.rulers || [],
+            stock: serializeStock()
         };
         var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         var url = URL.createObjectURL(blob);
@@ -3353,6 +3532,7 @@ window.addEventListener('load', function() {
                 if (pieces.length > 0 || groups.length > 0) {
                     if (!confirm(t('load.replace'))) return;
                 }
+                restoreStock(data.stock);
                 restoreScene(JSON.stringify(scenePayload));
                 updateObjectList();
             } catch (err) {
@@ -4570,10 +4750,15 @@ window.addEventListener('load', function() {
         // For fixed prices: cost stays on the group (sourcePrice), individual pieces get 0.
         // For per-mm prices: each piece keeps its own rate (material cost is length-proportional).
         var newPrice = priceMode === 'per_mm' ? price : 0;
-        var sourceId = priceMode === 'fixed' && price > 0 ? 'sg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7) : null;
-        var sourcePrice = priceMode === 'fixed' ? price : 0;
-        var sourcePriceMode = priceMode;
-        var sourceLabel = baseLabel;
+        // Every split records its stock piece, so the overview and the cutting plan can show which
+        // parts come from it and what is left. Splitting a part again keeps the original stock piece.
+        var inherit = !!ud.sourceId;
+        var sourceId = inherit ? ud.sourceId : 'sg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        var sourcePrice = inherit ? (ud.sourcePrice || 0) : (priceMode === 'fixed' ? price : 0);
+        var sourcePriceMode = inherit ? ud.sourcePriceMode : priceMode;
+        var sourceLabel = inherit ? ud.sourceLabel : baseLabel;
+        var sourceLength = inherit ? ud.sourceLength : p.total;
+        var sourceKerf = inherit ? ud.sourceKerf : p.kerf;
 
         // Local direction of the cut axis
         var localDir;
@@ -4617,6 +4802,8 @@ window.addEventListener('load', function() {
                 mesh.userData.sourcePrice = sourcePrice;
                 mesh.userData.sourcePriceMode = sourcePriceMode;
                 mesh.userData.sourceLabel = sourceLabel;
+                if (typeof sourceLength === 'number') mesh.userData.sourceLength = sourceLength;
+                if (typeof sourceKerf === 'number') mesh.userData.sourceKerf = sourceKerf;
             }
             if (srcParent !== scene && srcParent instanceof THREE.Group) {
                 srcParent.attach(mesh);
@@ -5450,10 +5637,10 @@ window.addEventListener('load', function() {
         return parts.join(', ');
     }
 
-    function buildPartsTable(parent, rows) {
+    function buildPartsTable(parent, rows, stockLetters) {
         var table = sheetEl('table', null, parent);
         var headRow = sheetEl('tr', null, sheetEl('thead', null, table));
-        ['sheet.col.pos', 'sheet.col.image', 'sheet.col.qty', 'csv.label', 'csv.type', 'sheet.col.dims', 'sheet.col.miter', 'csv.notches'].forEach(function(key) {
+        ['sheet.col.pos', 'sheet.col.image', 'sheet.col.qty', 'csv.label', 'csv.type', 'sheet.col.dims', 'sheet.col.miter', 'csv.notches', 'sheet.col.stock'].forEach(function(key) {
             sheetEl('th', null, headRow).textContent = t(key);
         });
         var body = sheetEl('tbody', null, table);
@@ -5471,6 +5658,7 @@ window.addEventListener('load', function() {
             sheetEl('td', 'sheet-dims', row).textContent = pieceSizeText(ud);
             sheetEl('td', 'sheet-dims', row).textContent = pieceMiterText(ud);
             sheetEl('td', 'num', row).textContent = String(ud.notches || 0);
+            sheetEl('td', null, row).textContent = (stockLetters && stockLetters[r + 1]) || '';
         });
     }
 
@@ -5881,6 +6069,688 @@ window.addEventListener('load', function() {
         });
     }
 
+    // ---------- Stock material and cutting plan ----------
+
+    function roundTenth(v) {
+        return Math.round(v * 10) / 10;
+    }
+
+    // Blanks a piece is sawn from: box sizes [x, y, z], or { round, dia, length } for turned
+    // stock. Sizes follow the geometry builders, so a miter that reaches past the bottom edge
+    // makes the blank longer, and a frame yields one blank per member.
+    function pieceBlanks(ud) {
+        if (ud.type === 'Dowel') return [{ round: true, dia: ud.r * 2, length: ud.h }];
+        if (ud.type === 'Tapered Leg') return [{ round: true, dia: Math.max(ud.rTop, ud.rBottom) * 2, length: ud.h }];
+        if (ud.type === 'Board') {
+            // Same corners as boardGeometry()
+            var aS = (ud.angleStart === undefined) ? 90 : ud.angleStart;
+            var aE = (ud.angleEnd === undefined) ? 90 : ud.angleEnd;
+            var xLT = -ud.w / 2 + ud.h / Math.tan(aS * Math.PI / 180);
+            var xRT = ud.w / 2 - ud.h / Math.tan(aE * Math.PI / 180);
+            return [[Math.max(ud.w / 2, xRT) - Math.min(-ud.w / 2, xLT), ud.h, ud.d]];
+        }
+        if (ud.type === 'Wedge' || ud.type === 'L-Bracket') return [[ud.w, ud.h, ud.d]];
+        if (ud.type === 'Frustum Board') return [[Math.max(ud.wTop, ud.wBottom), ud.h, ud.d]];
+        if (ud.type === 'Pyramid Frustum') return [[Math.max(ud.wTop, ud.wBottom), ud.h, Math.max(ud.dTop, ud.dBottom)]];
+        if (ud.type === 'Frame') {
+            // Same members as frameGeometry()
+            var ft = Math.max(0, Math.min(ud.frameThickness, Math.min(ud.wOuter, ud.hOuter) / 2 - 0.5));
+            var bt = Math.max(0, ud.barThickness);
+            var inW = ud.wOuter - 2 * ft;
+            var inH = ud.hOuter - 2 * ft;
+            var blanks = [];
+            if (ft > 0) {
+                blanks.push([ud.wOuter, ft, ud.dOuter], [ud.wOuter, ft, ud.dOuter], [ft, inH, ud.dOuter], [ft, inH, ud.dOuter]);
+            }
+            if (bt > 0 && inW > 0 && inH > 0) {
+                for (var i = 1; i < ud.gridX; i++) blanks.push([bt, inH, ud.dOuter]);
+                for (var j = 1; j < ud.gridY; j++) blanks.push([inW, bt, ud.dOuter]);
+            }
+            return blanks;
+        }
+        return [];
+    }
+
+    // The cross-sections a blank can be sawn from, with the length it takes from each
+    function blankProfileOptions(blank) {
+        if (!Array.isArray(blank)) {
+            var dia = roundTenth(blank.dia);
+            return [{ key: 'R' + dia, round: true, a: dia, b: dia, length: roundTenth(blank.length) }];
+        }
+        var s = blank.map(roundTenth).sort(function(p, q) { return p - q; });
+        return [[0, 1, 2], [0, 2, 1], [1, 2, 0]].map(function(o) {
+            return { key: s[o[0]] + 'x' + s[o[1]], round: false, a: s[o[0]], b: s[o[1]], length: s[o[2]] };
+        });
+    }
+
+    // All parts grouped by the stock cross-section they are sawn from. A box blank fits three
+    // cross-sections; it takes the one that most blanks have as their natural cross-section
+    // (the two smallest sizes), so a short block lands on the strip it is cut from even when it
+    // is shorter than the strip is wide. items carry the parts list position of each part.
+    function collectStockProfiles(rows) {
+        var blanks = [];
+        rows.forEach(function(group, r) {
+            var name = commonLabel(group.labels) || typeName(group.mesh.userData.type);
+            group.members.forEach(function(i) {
+                pieceBlanks(pieces[i].userData).forEach(function(blank) {
+                    var sizes = Array.isArray(blank)
+                        ? blank.map(roundTenth).sort(function(p, q) { return p - q; })
+                        : { dia: roundTenth(blank.dia), length: roundTenth(blank.length) };
+                    blanks.push({ pos: r + 1, index: i, name: name, sizes: sizes, options: blankProfileOptions(blank) });
+                });
+            });
+        });
+        var support = {};
+        blanks.forEach(function(e) {
+            support[e.options[0].key] = (support[e.options[0].key] || 0) + 1;
+        });
+        var byKey = {};
+        var profiles = [];
+        blanks.forEach(function(e) {
+            var best = e.options[0];
+            e.options.forEach(function(o) {
+                if ((support[o.key] || 0) > (support[best.key] || 0)) best = o;
+            });
+            if (best.length <= 0) return;
+            if (!byKey[best.key]) {
+                byKey[best.key] = { key: best.key, round: best.round, a: best.a, b: best.b, items: [] };
+                profiles.push(byKey[best.key]);
+            }
+            byKey[best.key].items.push({ pos: e.pos, index: e.index, name: e.name, length: best.length, sizes: e.sizes });
+        });
+        // Rectangular stock first, thin to thick, then round stock
+        profiles.sort(function(p, q) {
+            return (p.round - q.round) || (p.a - q.a) || (p.b - q.b);
+        });
+        return profiles;
+    }
+
+    function stockDefaultName(p) {
+        if (p.round) return t('stock.kind.round');
+        if (p.a === p.b) return t('stock.kind.square');
+        return t(p.b >= STOCK_BOARD_WIDTH ? 'stock.kind.board' : 'stock.kind.strip');
+    }
+
+    function stockSectionText(p) {
+        return p.round ? 'Ø' + formatMm(p.a) : formatMm(p.a) + ' × ' + formatMm(p.b);
+    }
+
+    function stockLongestItem(p) {
+        return p.items.reduce(function(m, item) { return Math.max(m, item.length); }, 0);
+    }
+
+    function stockDefaultKerf() {
+        var saved = parseFloat(localStorage.getItem(SPLIT_KERF_KEY));
+        return isFinite(saved) && saved >= 0 ? saved : 3;
+    }
+
+    // Saved values where set; otherwise the usual trade length, raised to a full 100 mm above
+    // the longest part, and the kerf last used for Split Piece.
+    function stockSettingFor(p, settings) {
+        var s = (settings || stockSettings)[p.key] || {};
+        var base = p.round ? STOCK_DEFAULT_ROUND_LENGTH : STOCK_DEFAULT_LENGTH;
+        return {
+            name: s.name || stockDefaultName(p),
+            length: s.length > 0 ? s.length : Math.max(base, Math.ceil(stockLongestItem(p) / 100) * 100),
+            kerf: typeof s.kerf === 'number' && s.kerf >= 0 ? s.kerf : stockDefaultKerf()
+        };
+    }
+
+    // Best fit decreasing: each part, longest first, goes onto the piece of stock it fills most.
+    // A part longer than the stock gets a piece of its own length, marked as oversize.
+    function planStock(items, length, kerf) {
+        var sorted = items.slice().sort(function(p, q) { return (q.length - p.length) || (p.pos - q.pos); });
+        var bars = [];
+        sorted.forEach(function(item) {
+            if (item.length > length + 1e-6) {
+                bars.push({ length: item.length, parts: [item], used: item.length, oversize: true });
+                return;
+            }
+            var best = null;
+            var bestUsed = 0;
+            bars.forEach(function(bar) {
+                if (bar.oversize) return;
+                var used = bar.used + kerf + item.length;
+                if (used <= length + 1e-6 && used > bestUsed) {
+                    best = bar;
+                    bestUsed = used;
+                }
+            });
+            if (best) {
+                best.parts.push(item);
+                best.used = bestUsed;
+            } else {
+                bars.push({ length: length, parts: [item], used: item.length, oversize: false });
+            }
+        });
+        bars.forEach(function(bar) {
+            // The cut after the last part takes another kerf; less than that left over is sawdust
+            bar.rest = roundTenth(Math.max(0, bar.length - bar.used - kerf));
+        });
+        // Regular pieces first, then oversize ones
+        return bars.filter(function(b) { return !b.oversize; }).concat(bars.filter(function(b) { return b.oversize; }));
+    }
+
+    // Cross-section typed by the user, or a saved key: '12x50', '12 × 50', '12,5x50' are
+    // rectangular; 'Ø6', '6' and the key form 'R6' are round. null when it cannot be read.
+    function parseStockSection(text) {
+        var s = String(text || '').trim().replace(/,/g, '.');
+        var m = s.match(/^(\d+(?:\.\d+)?)\s*[x×*]\s*(\d+(?:\.\d+)?)$/i);
+        if (m) {
+            var a = roundTenth(parseFloat(m[1]));
+            var b = roundTenth(parseFloat(m[2]));
+            if (a > b) { var tmp = a; a = b; b = tmp; }
+            return a > 0 ? { key: a + 'x' + b, round: false, a: a, b: b } : null;
+        }
+        m = s.match(/^(?:Ø|ø|R)?\s*(\d+(?:\.\d+)?)$/);
+        if (m) {
+            var dia = roundTenth(parseFloat(m[1]));
+            return dia > 0 ? { key: 'R' + dia, round: true, a: dia, b: dia } : null;
+        }
+        return null;
+    }
+
+    // Form that parseStockSection() reads back, for the dialog inputs
+    function stockSectionInput(sec) {
+        return sec.round ? 'Ø' + sec.a : sec.a + 'x' + sec.b;
+    }
+
+    // Length a part blank takes from a stock cross-section, or null when it does not fit. Of the
+    // ways a box fits, the shortest is taken: crosscutting a wide board beats ripping a long one.
+    // Round parts fit in round stock or in square stock at least as thick (turned from it).
+    function lengthInStock(sizes, sec) {
+        var eps = 1e-6;
+        if (!Array.isArray(sizes)) return sizes.dia <= sec.a + eps ? sizes.length : null;
+        if (sec.round) return null;
+        var best = null;
+        [[0, 1, 2], [0, 2, 1], [1, 2, 0]].forEach(function(o) {
+            if (sizes[o[0]] <= sec.a + eps && sizes[o[1]] <= sec.b + eps && (best === null || sizes[o[2]] < best)) {
+                best = sizes[o[2]];
+            }
+        });
+        return best;
+    }
+
+    function stockSectionFits(p, sec) {
+        return p.items.every(function(item) { return lengthInStock(item.sizes, sec) !== null; });
+    }
+
+    // Stock cross-section a part cross-section is sawn from: the mapped one when every part of
+    // it fits, else its own.
+    function stockSectionFor(p, map) {
+        var sec = map[p.key] ? parseStockSection(map[p.key]) : null;
+        var own = { key: p.key, round: p.round, a: p.a, b: p.b };
+        if (!sec || sec.key === p.key) return own;
+        return stockSectionFits(p, sec) ? sec : own;
+    }
+
+    // Parts split from one stock piece (Split Piece) stay on that piece, in the order they were
+    // cut. The offcut needs the stock length the split recorded; without it (older files) the
+    // offcut stays unknown (rest null) rather than guessed. A missing kerf is the Split Piece one.
+    function sourceStockBars(items) {
+        var bySource = {};
+        var bars = [];
+        items.forEach(function(item) {
+            var ud = pieces[item.index].userData;
+            if (!bySource[ud.sourceId]) {
+                bySource[ud.sourceId] = {
+                    sourceLabel: ud.sourceLabel || typeName(ud.type),
+                    length: typeof ud.sourceLength === 'number' ? ud.sourceLength : null,
+                    kerf: typeof ud.sourceKerf === 'number' ? ud.sourceKerf : stockDefaultKerf(),
+                    parts: [], oversize: false
+                };
+                bars.push(bySource[ud.sourceId]);
+            }
+            bySource[ud.sourceId].parts.push(item);
+        });
+        bars.forEach(function(bar) {
+            var net = bar.parts.reduce(function(s, p) { return s + p.length; }, 0);
+            bar.used = net + bar.kerf * (bar.parts.length - 1);
+            bar.rest = bar.length !== null
+                ? roundTenth(Math.max(0, bar.length - bar.used - bar.kerf)) : null;
+        });
+        return bars;
+    }
+
+    // A part with a fixed price that was not split from anything was bought at its own size: it
+    // is a piece of stock of its own, with no offcut, rather than packed onto a trade length.
+    // A frame is made of several members, so it is never one bought piece.
+    function isBoughtPiece(ud) {
+        return !ud.sourceId && ud.type !== 'Frame' && ud.priceMode === 'fixed' && ud.price > 0;
+    }
+
+    function boughtStockBars(items) {
+        return items.map(function(item) {
+            return { length: item.length, parts: [item], used: item.length, rest: 0, oversize: false, bought: true };
+        });
+    }
+
+    // Name of one piece of stock: the label of a split source, else "Strip 12×44×2000 mm"
+    function stockBarName(entry, bar) {
+        if (bar.sourceLabel) return bar.sourceLabel;
+        var section = entry.profile.round ? 'Ø' + formatMm(entry.profile.a) : formatMm(entry.profile.a) + '×' + formatMm(entry.profile.b);
+        return entry.setting.name + ' ' + section + '×' + formatMm(bar.length) + ' mm';
+    }
+
+    // Strips of the same thickness are sawn from one stock size, so a model full of odd widths
+    // does not need one stock item per width: 12x30, 12x37.2 and 12x43.6 all come from 12x44
+    // (the widest, rounded up to a full mm). Boards, round stock and cross-sections the user
+    // mapped themselves are left alone.
+    function autoStockMap(profiles, map) {
+        var byThickness = {};
+        profiles.forEach(function(p) {
+            if (p.round || p.b >= STOCK_BOARD_WIDTH || map[p.key]) return;
+            (byThickness[p.a] = byThickness[p.a] || []).push(p);
+        });
+        var auto = {};
+        Object.keys(byThickness).forEach(function(a) {
+            var list = byThickness[a];
+            if (list.length < 2) return;
+            var width = Math.ceil(list.reduce(function(m, p) { return Math.max(m, p.b); }, 0) - 1e-6);
+            list.forEach(function(p) { auto[p.key] = a + 'x' + width; });
+        });
+        return auto;
+    }
+
+    // Stock plan: one entry per stock cross-section, with the parts of every part cross-section
+    // sawn from it planned together. map and settings default to the saved ones. Every piece of
+    // stock gets a letter (A, B, …) across the whole plan; the parts list refers to it.
+    function buildStockPlan(rows, map, settings) {
+        map = map || stockMap;
+        settings = settings || stockSettings;
+        var byKey = {};
+        var groups = [];
+        var profiles = collectStockProfiles(rows);
+        // Bought parts keep their own cross-section, so they take no part in merging strips
+        var auto = autoStockMap(profiles.filter(function(p) {
+            return p.items.some(function(item) { return !isBoughtPiece(pieces[item.index].userData); });
+        }), map);
+        var effective = {};
+        Object.keys(auto).forEach(function(key) { effective[key] = auto[key]; });
+        Object.keys(map).forEach(function(key) { effective[key] = map[key]; });
+        function groupFor(sec) {
+            if (!byKey[sec.key]) {
+                byKey[sec.key] = { key: sec.key, round: sec.round, a: sec.a, b: sec.b, items: [], sources: [] };
+                groups.push(byKey[sec.key]);
+            }
+            return byKey[sec.key];
+        }
+        profiles.forEach(function(p) {
+            var sec = stockSectionFor(p, effective);
+            var own = { key: p.key, round: p.round, a: p.a, b: p.b };
+            p.items.forEach(function(item) {
+                var bought = isBoughtPiece(pieces[item.index].userData);
+                var target = bought ? own : sec;
+                var g = groupFor(target);
+                if (g.sources.indexOf(p) === -1) g.sources.push(p);
+                g.items.push({
+                    pos: item.pos, index: item.index, name: item.name, sizes: item.sizes,
+                    length: target.key === p.key ? item.length : lengthInStock(item.sizes, target)
+                });
+            });
+        });
+        groups.sort(function(p, q) {
+            return (p.round - q.round) || (p.a - q.a) || (p.b - q.b);
+        });
+        var next = 0;
+        return groups.map(function(g) {
+            var setting = stockSettingFor(g, settings);
+            function kind(item) {
+                var ud = pieces[item.index].userData;
+                return ud.sourceId ? 'source' : isBoughtPiece(ud) ? 'bought' : 'free';
+            }
+            var bars = sourceStockBars(g.items.filter(function(item) { return kind(item) === 'source'; }))
+                .concat(boughtStockBars(g.items.filter(function(item) { return kind(item) === 'bought'; })))
+                .concat(planStock(g.items.filter(function(item) { return kind(item) === 'free'; }), setting.length, setting.kerf));
+            bars.forEach(function(bar) { bar.index = next++; });
+            return { profile: g, setting: setting, bars: bars };
+        });
+    }
+
+    // Stock letters from plan indices, consecutive ones as a range: 1, 2, 3, 5 → "B–D, F"
+    function formatStockLetters(indices) {
+        var sorted = indices.slice().sort(function(p, q) { return p - q; });
+        var parts = [];
+        for (var i = 0; i < sorted.length; i++) {
+            var start = sorted[i];
+            while (i + 1 < sorted.length && sorted[i + 1] === sorted[i] + 1) i++;
+            parts.push(sorted[i] === start ? cutLetter(start) : cutLetter(start) + '–' + cutLetter(sorted[i]));
+        }
+        return parts.join(', ');
+    }
+
+    // Parts list position → letters of the stock pieces its parts are cut from
+    function stockLettersByPos(plan) {
+        var byPos = {};
+        plan.forEach(function(entry) {
+            entry.bars.forEach(function(bar) {
+                bar.parts.forEach(function(part) {
+                    var list = byPos[part.pos] = byPos[part.pos] || [];
+                    if (list.indexOf(bar.index) === -1) list.push(bar.index);
+                });
+            });
+        });
+        var text = {};
+        Object.keys(byPos).forEach(function(pos) { text[pos] = formatStockLetters(byPos[pos]); });
+        return text;
+    }
+
+    // Drawn length of a piece of stock: its own length, or what its parts take when a split
+    // source did not record one
+    function stockBarLength(bar) {
+        return bar.length !== null ? bar.length : bar.used;
+    }
+
+    // Kerf between the parts of a piece of stock: the split's for a split source, else the plan's
+    function stockBarKerf(entry, bar) {
+        if (bar.sourceLabel) return bar.kerf;
+        return entry.setting.kerf;
+    }
+
+    // Pieces of stock with the same name, as [name, indices]: "Strip 12 × 44 × 2000 mm" → A, B
+    function stockBarsByName(plan) {
+        var byName = {};
+        var order = [];
+        plan.forEach(function(entry) {
+            entry.bars.forEach(function(bar) {
+                var name = stockBarName(entry, bar);
+                if (!byName[name]) {
+                    byName[name] = [];
+                    order.push(name);
+                }
+                byName[name].push(bar.index);
+            });
+        });
+        return order.map(function(name) { return [name, byName[name]]; });
+    }
+
+    // One entry per kind of stock on page 1, letters first: "A–C  3× Strip 13.5 × 47 × 2000 mm".
+    // The entries run down three columns, so they read in plan order.
+    function buildStockSummary(parent, plan) {
+        if (plan.length === 0) return;
+        var box = sheetEl('div', 'sheet-stock-summary', parent);
+        sheetEl('strong', null, box).textContent = t('sheet.stock.summary');
+        var list = sheetEl('ul', null, box);
+        stockBarsByName(plan).forEach(function(kind) {
+            var item = sheetEl('li', null, list);
+            sheetEl('span', 'sheet-stock-ids', item).textContent = formatStockLetters(kind[1]);
+            sheetEl('span', null, item).textContent = t('sheet.stock.item', { qty: kind[1].length, name: kind[0] });
+        });
+    }
+
+    // Identical pieces of stock (same parts in the same order) share one drawing: "B–D · Strip …"
+    function groupIdenticalBars(entry) {
+        var byKey = {};
+        var groups = [];
+        entry.bars.forEach(function(bar) {
+            var key = stockBarName(entry, bar) + '|' + bar.rest + '|' +
+                bar.parts.map(function(p) { return p.pos + ':' + p.length; }).join(',');
+            if (!byKey[key]) {
+                byKey[key] = { bar: bar, indices: [] };
+                groups.push(byKey[key]);
+            }
+            byKey[key].indices.push(bar.index);
+        });
+        return groups;
+    }
+
+    // One piece of stock drawn to scale: parts left to right with the kerf between them, then
+    // the offcut. scale is px per mm, shared by all pieces of one cross-section.
+    function buildStockBar(parent, entry, group, scale) {
+        var bar = group.bar;
+        var kerf = stockBarKerf(entry, bar);
+        var wrap = sheetEl('div', 'sheet-stock-bar', parent);
+        var title = sheetEl('div', 'sheet-stock-bar-title', wrap);
+        var params = { name: stockBarName(entry, bar), ids: formatStockLetters(group.indices), length: formatMm(stockBarLength(bar)) };
+        title.textContent = bar.oversize
+            ? t('sheet.stock.barOversize', params)
+            : t('sheet.stock.bar', params) + (group.indices.length > 1 ? ' (' + group.indices.length + '×)' : '');
+        if (bar.oversize) title.classList.add('sheet-stock-warn');
+        var svg = svgEl('svg', { viewBox: '0 0 ' + STOCK_BAR_W + ' ' + STOCK_BAR_H }, wrap);
+        var top = 2;
+        var h = STOCK_BAR_H - 4;
+        svgEl('rect', { x: 1, y: top, width: stockBarLength(bar) * scale - 2, height: h, fill: '#fff', stroke: '#000', 'stroke-width': 1.5, 'stroke-dasharray': '6 4' }, svg);
+        var x = 0;
+        bar.parts.forEach(function(part, i) {
+            if (i > 0) x += kerf;
+            var px = x * scale;
+            var pw = part.length * scale;
+            svgEl('rect', { x: px + 1, y: top, width: Math.max(1, pw - 2), height: h, fill: '#efe0c4', stroke: '#000', 'stroke-width': 2 }, svg);
+            // Labels only where they fit; the text line below names every part anyway
+            var posText = t('sheet.stock.part', { pos: part.pos });
+            if (pw > posText.length * 13 + 8) {
+                svgText(svg, px + pw / 2, top + 26, 22, posText);
+                svgText(svg, px + pw / 2, top + 52, 20, formatMm(part.length));
+            } else if (pw > String(part.pos).length * 13 + 6) {
+                svgText(svg, px + pw / 2, top + 38, 22, String(part.pos));
+            }
+            x += part.length;
+        });
+        sheetEl('div', 'sheet-stock-bar-text', wrap).textContent = stockBarPartsText(bar);
+    }
+
+    // "3× Pos. 1 Frame (340) · offcut 23 mm", neighbouring identical parts merged
+    function stockBarPartsText(bar) {
+        var runs = [];
+        bar.parts.forEach(function(part) {
+            var last = runs[runs.length - 1];
+            if (last && last.part.pos === part.pos && last.part.length === part.length) last.qty++;
+            else runs.push({ part: part, qty: 1 });
+        });
+        var rest = bar.rest === null ? t('sheet.stock.restUnknown')
+            : bar.rest > 0 ? t('sheet.stock.rest', { length: formatMm(bar.rest) }) + ' mm' : '';
+        return runs.map(function(run) {
+            return (run.qty > 1 ? run.qty + '× ' : '') + t('sheet.stock.part', { pos: run.part.pos }) + ' ' +
+                run.part.name + ' (' + formatMm(run.part.length) + ')';
+        }).join(' · ') + (rest ? ' · ' + rest : '');
+    }
+
+    function buildStockPage(parent, plan) {
+        if (plan.length === 0) return;
+        var page = sheetEl('section', 'sheet-page sheet-stock', parent);
+        sheetEl('h2', null, page).textContent = t('sheet.stock.title');
+        sheetEl('p', 'sheet-cuts-hint', page).textContent = t('sheet.stock.hint');
+        plan.forEach(function(entry) {
+            var block = sheetEl('div', 'sheet-stock-profile', page);
+            sheetEl('h3', null, block).textContent = t('sheet.stock.heading', {
+                name: entry.setting.name,
+                section: stockSectionText(entry.profile)
+            });
+            var maxLen = entry.bars.reduce(function(m, b) { return Math.max(m, stockBarLength(b)); }, 0);
+            var scale = (STOCK_BAR_W - 2) / maxLen;
+            groupIdenticalBars(entry).forEach(function(group) {
+                buildStockBar(block, entry, group, scale);
+            });
+        });
+    }
+
+    // Print dialog. First table: every part cross-section and the stock cross-section it is sawn
+    // from. Second table: every stock cross-section with name, stock length and kerf, and a live
+    // count of the pieces needed. Edits go into a draft that is saved only on Print.
+    var stockDraft = null;
+
+    function cloneStockSettings(settings) {
+        var copy = {};
+        Object.keys(settings).forEach(function(key) {
+            copy[key] = { name: settings[key].name, length: settings[key].length, kerf: settings[key].kerf };
+        });
+        return copy;
+    }
+
+    function openStockModal() {
+        if (pieces.length === 0) {
+            alert(t('sheet.empty'));
+            return;
+        }
+        var rows = groupIdenticalPieces();
+        var map = {};
+        Object.keys(stockMap).forEach(function(key) { map[key] = stockMap[key]; });
+        stockDraft = { rows: rows, map: map, settings: cloneStockSettings(stockSettings) };
+
+        var container = document.getElementById('stock-rows');
+        container.textContent = '';
+        sheetEl('h4', null, container).textContent = t('stock.parts.title');
+        var partsTable = sheetEl('table', null, container);
+        var head = sheetEl('tr', null, sheetEl('thead', null, partsTable));
+        ['stock.col.partSection', 'stock.col.parts', 'stock.col.from'].forEach(function(key) {
+            sheetEl('th', null, head).textContent = t(key);
+        });
+        var partsBody = sheetEl('tbody', null, partsTable);
+        sheetEl('h4', null, container).textContent = t('stock.materials.title');
+        var materials = sheetEl('div', null, container);
+
+        var partProfiles = collectStockProfiles(rows);
+        // Placeholder: where the part comes from without an entry (own size or the merged strip)
+        var auto = autoStockMap(partProfiles, {});
+        partProfiles.forEach(function(p) {
+            var row = sheetEl('tr', null, partsBody);
+            sheetEl('td', null, row).textContent = stockSectionText(p) + ' mm';
+            var net = p.items.reduce(function(s, item) { return s + item.length; }, 0);
+            sheetEl('td', 'num', row).textContent = t('stock.partsNet', { count: p.items.length, net: formatMm(net) });
+            var cell = sheetEl('td', null, row);
+            var input = sheetEl('input', null, cell);
+            input.type = 'text';
+            input.placeholder = auto[p.key] ? stockSectionInput(parseStockSection(auto[p.key])) : stockSectionInput(p);
+            input.value = map[p.key] ? stockSectionInput(parseStockSection(map[p.key]) || p) : '';
+            var warn = sheetEl('div', 'stock-warn', cell);
+            function update() {
+                var text = input.value.trim();
+                var sec = text ? parseStockSection(text) : null;
+                warn.textContent = '';
+                if (!text) {
+                    delete stockDraft.map[p.key];
+                } else if (!sec) {
+                    delete stockDraft.map[p.key];
+                    warn.textContent = t('stock.invalid');
+                } else if (!stockSectionFits(p, sec)) {
+                    delete stockDraft.map[p.key];
+                    warn.textContent = t('stock.noFit', { section: stockSectionText(sec) });
+                } else {
+                    stockDraft.map[p.key] = sec.key;
+                }
+                buildStockMaterialRows(materials);
+            }
+            input.addEventListener('input', update);
+            input.addEventListener('keydown', stockModalKeydown);
+            update();
+        });
+        document.getElementById('stock-modal').classList.add('open');
+    }
+
+    function stockModalKeydown(e) {
+        if (e.key === 'Enter') confirmStockModal();
+    }
+
+    function buildStockMaterialRows(container) {
+        container.textContent = '';
+        var table = sheetEl('table', null, container);
+        var head = sheetEl('tr', null, sheetEl('thead', null, table));
+        ['stock.col.name', 'stock.col.section', 'stock.col.parts', 'stock.col.length', 'stock.col.kerf', 'stock.col.result'].forEach(function(key) {
+            sheetEl('th', null, head).textContent = t(key);
+        });
+        var body = sheetEl('tbody', null, table);
+        buildStockPlan(stockDraft.rows, stockDraft.map, stockDraft.settings).forEach(function(entry) {
+            var p = entry.profile;
+            var saved = stockDraft.settings[p.key] || {};
+            var row = sheetEl('tr', null, body);
+            var nameInput = sheetEl('input', null, sheetEl('td', null, row));
+            nameInput.type = 'text';
+            nameInput.value = saved.name || '';
+            nameInput.placeholder = stockDefaultName(p);
+            sheetEl('td', null, row).textContent = stockSectionText(p) + ' mm';
+            var net = p.items.reduce(function(s, item) { return s + item.length; }, 0);
+            sheetEl('td', 'num', row).textContent = t('stock.partsNet', { count: p.items.length, net: formatMm(net) });
+            var lengthInput = sheetEl('input', null, sheetEl('td', null, row));
+            lengthInput.type = 'number';
+            lengthInput.min = '1';
+            lengthInput.step = '1';
+            lengthInput.value = entry.setting.length;
+            var kerfInput = sheetEl('input', null, sheetEl('td', null, row));
+            kerfInput.type = 'number';
+            kerfInput.min = '0';
+            kerfInput.step = '0.1';
+            kerfInput.value = entry.setting.kerf;
+            var result = sheetEl('td', 'stock-result', row);
+            function update() {
+                var len = parseFloat(lengthInput.value);
+                var kerf = parseFloat(kerfInput.value);
+                stockDraft.settings[p.key] = {
+                    name: nameInput.value.trim() || null,
+                    length: len > 0 ? len : null,
+                    kerf: kerf >= 0 ? kerf : null
+                };
+                result.textContent = '';
+                if (!(len > 0) || !(kerf >= 0)) {
+                    result.textContent = '–';
+                    return;
+                }
+                result.textContent = t('stock.result', { qty: planStock(p.items, len, kerf).length });
+                var longest = stockLongestItem(p);
+                if (longest > len) {
+                    sheetEl('div', 'stock-warn', result).textContent = t('stock.tooLong', { length: formatMm(longest) });
+                }
+            }
+            [nameInput, lengthInput, kerfInput].forEach(function(input) {
+                input.addEventListener('input', update);
+                input.addEventListener('keydown', stockModalKeydown);
+            });
+            update();
+        });
+    }
+
+    function closeStockModal() {
+        document.getElementById('stock-modal').classList.remove('open');
+        stockDraft = null;
+    }
+
+    function confirmStockModal() {
+        if (!stockDraft) return;
+        stockMap = stockDraft.map;
+        stockSettings = stockDraft.settings;
+        closeStockModal();
+        updateObjectList();
+        updateCostSummary();
+    }
+
+    // Model file: one entry per stock cross-section the model uses, with its settings and the
+    // part cross-sections sawn from it. Entries for cross-sections no longer in use are dropped.
+    function serializeStock() {
+        var list = [];
+        buildStockPlan(groupIdenticalPieces()).forEach(function(entry) {
+            var key = entry.profile.key;
+            var s = stockSettings[key] || {};
+            var item = { profile: key };
+            if (s.name) item.name = s.name;
+            if (s.length > 0) item.length = s.length;
+            if (typeof s.kerf === 'number' && s.kerf >= 0) item.kerf = s.kerf;
+            var parts = entry.profile.sources
+                .map(function(p) { return p.key; })
+                // A part cross-section mapped to itself opts out of the automatic strip merge
+                .filter(function(partKey) { return partKey !== key || stockMap[partKey] === key; });
+            if (parts.length > 0) item.parts = parts;
+            if (Object.keys(item).length > 1) list.push(item);
+        });
+        return list;
+    }
+
+    function restoreStock(list) {
+        stockSettings = {};
+        stockMap = {};
+        (Array.isArray(list) ? list : []).forEach(function(entry) {
+            if (!entry || !parseStockSection(entry.profile)) return;
+            var key = parseStockSection(entry.profile).key;
+            stockSettings[key] = {
+                name: typeof entry.name === 'string' && entry.name ? entry.name : null,
+                length: typeof entry.length === 'number' && entry.length > 0 ? entry.length : null,
+                kerf: typeof entry.kerf === 'number' && entry.kerf >= 0 ? entry.kerf : null
+            };
+            (Array.isArray(entry.parts) ? entry.parts : []).forEach(function(partKey) {
+                var part = parseStockSection(partKey);
+                if (part) stockMap[part.key] = key;
+            });
+        });
+    }
+
     // Fill #print-sheet: page 1 with three dimensioned orthographic views plus an isometric
     // overview, then detail views if needed, the parts list and the drawings of angled cuts.
     function buildWorkshopSheet() {
@@ -5890,17 +6760,19 @@ window.addEventListener('load', function() {
         pieces.forEach(function(m) { box.expandByObject(m); });
         var size = box.getSize(new THREE.Vector3());
 
-        var page = sheetEl('section', 'sheet-page', printSheet);
+        var page = sheetEl('section', 'sheet-page sheet-first', printSheet);
         var header = sheetEl('header', 'sheet-header', page);
         sheetEl('h1', null, header).textContent = t('sheet.title');
         sheetEl('div', 'sheet-meta', header).textContent =
             new Date().toLocaleDateString(currentLang) + ' · ' +
             t('sheet.overall') + ': ' + formatMm(size.x) + ' × ' + formatMm(size.y) + ' × ' + formatMm(size.z) + ' mm · ' +
             (pieces.length === 1 ? t('sheet.partCountOne') : t('sheet.partCount', { count: pieces.length }));
-        var views = sheetEl('div', 'sheet-views', page);
-        SHEET_VIEWS.forEach(function(view) { buildSheetView(views, view, box, size); });
         // One number per parts list row: identical parts all carry the same number
         var rows = groupIdenticalPieces();
+        var stockPlan = buildStockPlan(rows);
+        buildStockSummary(page, stockPlan);
+        var views = sheetEl('div', 'sheet-views', page);
+        SHEET_VIEWS.forEach(function(view) { buildSheetView(views, view, box, size); });
         var partNumbers = [];
         rows.forEach(function(group, r) {
             group.members.forEach(function(i) { partNumbers[i] = r + 1; });
@@ -5928,7 +6800,8 @@ window.addEventListener('load', function() {
 
         var partsPage = sheetEl('section', 'sheet-page sheet-parts', printSheet);
         sheetEl('h2', null, partsPage).textContent = t('sheet.partsList');
-        buildPartsTable(partsPage, rows);
+        buildPartsTable(partsPage, rows, stockLettersByPos(stockPlan));
+        buildStockPage(printSheet, stockPlan);
         buildCutsPage(printSheet, rows);
         return printSheet;
     }
@@ -6475,6 +7348,23 @@ window.addEventListener('load', function() {
     });
     document.getElementById('menu-export-csv').addEventListener('click', exportCSV);
     document.getElementById('menu-print-sheet').addEventListener('click', printWorkshopSheet);
+    document.getElementById('menu-stock').addEventListener('click', openStockModal);
+    document.getElementById('stock-cancel').addEventListener('click', closeStockModal);
+    document.getElementById('stock-confirm').addEventListener('click', confirmStockModal);
+    (function() {
+        var modal = document.getElementById('stock-modal');
+        var mouseDownOnOverlay = false;
+        modal.addEventListener('mousedown', function(e) {
+            mouseDownOnOverlay = (e.target === modal);
+        });
+        modal.addEventListener('mouseup', function(e) {
+            if (mouseDownOnOverlay && e.target === modal) closeStockModal();
+            mouseDownOnOverlay = false;
+        });
+        modal.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeStockModal();
+        });
+    })();
     document.getElementById('menu-export-png').addEventListener('click', exportPNG);
     document.getElementById('menu-export-templates').addEventListener('click', exportTemplates);
     document.getElementById('menu-import-templates').addEventListener('click', function() {
@@ -6670,7 +7560,12 @@ window.addEventListener('load', function() {
             },
             // Workshop output: sheet DOM builder and the state-neutral offscreen render
             buildWorkshopSheet: buildWorkshopSheet,
-            renderViewToDataURL: renderViewToDataURL
+            renderViewToDataURL: renderViewToDataURL,
+            // Stock material: cutting plan per cross-section and the settings the dialog writes
+            buildStockPlan: function() { return buildStockPlan(groupIdenticalPieces()); },
+            setStockSettings: restoreStock,
+            serializeStock: serializeStock,
+            openStockModal: openStockModal
         };
         window.dispatchEvent(new Event('app-ready'));
     }

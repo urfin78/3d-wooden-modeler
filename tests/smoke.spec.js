@@ -394,3 +394,115 @@ test('tall add menu stays inside the window and scrolls to its last item', async
     const box = await lastItem.boundingBox();
     expect(box.y + box.height).toBeLessThanOrEqual(smaller.windowHeight);
 });
+
+test('cutting plan assigns every part to a lettered piece of stock', async ({ page }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+        const app = window.__app;
+        app.setLanguage('en');
+        const add = (type, label, dims) => {
+            const mesh = app.makeDefaultForType(type);
+            mesh.userData.label = label;
+            Object.assign(mesh.userData, dims);
+            app.addPiece(mesh);
+        };
+        for (let i = 0; i < 8; i++) add('Board', 'Rail', { w: 340, h: 47, d: 13.5 });
+        // Shorter than the strip is wide: still sawn from the 13.5 × 47 strip
+        add('Board', 'Block', { w: 47, h: 30, d: 13.5 });
+        add('Board', 'Long rail', { w: 1200, h: 47, d: 13.5 });
+        add('Dowel', 'Pin', { r: 3, h: 60 });
+        add('Dowel', 'Pin', { r: 3, h: 60 });
+        // Ripped to an odd width, sawn from 12 × 50 stock
+        add('Board', 'Batten', { w: 265, h: 12, d: 37.2 });
+        add('Board', 'Batten', { w: 265, h: 12, d: 37.2 });
+        app.setStockSettings([
+            { profile: '13.5x47', length: 1000, kerf: 3 },
+            { profile: '12x50', name: 'Batten stock', length: 600, kerf: 4, parts: ['12x37.2'] }
+        ]);
+        const plan = app.buildStockPlan().map((entry) => ({
+            key: entry.profile.key,
+            bars: entry.bars.map((bar) => ({
+                index: bar.index,
+                length: bar.length,
+                parts: bar.parts.map((p) => p.length),
+                rest: bar.rest,
+                oversize: bar.oversize
+            }))
+        }));
+        const sheet = app.buildWorkshopSheet();
+        return {
+            plan,
+            summary: Array.from(sheet.querySelectorAll('.sheet-first .sheet-stock-summary li')).map((li) => Array.from(li.children).map((c) => c.textContent)),
+            barDrawings: sheet.querySelectorAll('.sheet-stock .sheet-stock-bar').length,
+            fromStock: Array.from(sheet.querySelectorAll('.sheet-parts tbody tr')).map((r) => r.lastElementChild.textContent),
+            saved: app.serializeStock()
+        };
+    });
+
+    const regular = (index) => ({ index, length: 1000, parts: [340, 340], rest: 314, oversize: false });
+    expect(result.plan).toEqual([
+        { key: '12x50', bars: [{ index: 0, length: 600, parts: [265, 265], rest: 62, oversize: false }] },
+        { key: '13.5x47', bars: [
+            { index: 1, length: 1000, parts: [340, 340, 30], rest: 281, oversize: false },
+            regular(2), regular(3), regular(4),
+            { index: 5, length: 1200, parts: [1200], rest: 0, oversize: true }
+        ] },
+        { key: 'R6', bars: [{ index: 6, length: 1000, parts: [60, 60], rest: 874, oversize: false }] }
+    ]);
+    expect(result.summary).toEqual([
+        ['A', '1× Batten stock 12×50×600 mm'],
+        ['B–E', '4× Strip 13.5×47×1000 mm'],
+        ['F', '1× Strip 13.5×47×1200 mm'],
+        ['G', '1× Dowel rod Ø6×1000 mm']
+    ]);
+    // Bars C–E of the 13.5 × 47 strip are identical and share one drawing
+    expect(result.barDrawings).toBe(5);
+    // Rail, Block, Long rail, Pin, Batten
+    expect(result.fromStock).toEqual(['B–E', 'B', 'F', 'G', 'A']);
+    expect(result.saved).toEqual([
+        { profile: '12x50', name: 'Batten stock', length: 600, kerf: 4, parts: ['12x37.2'] },
+        { profile: '13.5x47', length: 1000, kerf: 3 }
+    ]);
+});
+
+test('parts split from one piece of stock stay on it, with the offcut from the saved length', async ({ page }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+        const app = window.__app;
+        app.setLanguage('en');
+        const source = { sourceId: 'plank-1', sourceLabel: 'Plank 2000', sourceLength: 1000, sourceKerf: 3, sourcePrice: 0, sourcePriceMode: 'fixed' };
+        [['Shelf', 400], ['Side', 300]].forEach(([label, w]) => {
+            const mesh = app.makeDefaultForType('Board');
+            Object.assign(mesh.userData, source, { label, w, h: 20, d: 100 });
+            app.addPiece(mesh);
+        });
+        // Same cross-section without a source: planned onto its own piece of stock
+        const loose = app.makeDefaultForType('Board');
+        Object.assign(loose.userData, { label: 'Loose', w: 500, h: 20, d: 100 });
+        app.addPiece(loose);
+        // A fixed price and no source: bought at its own size, not packed onto a trade length
+        const bought = app.makeDefaultForType('Board');
+        Object.assign(bought.userData, { label: 'Lid', w: 340, h: 20, d: 100, price: 3.5, priceMode: 'fixed' });
+        app.addPiece(bought);
+        // The source fields survive a save/load round trip
+        app.restoreScene(app.serializeScene());
+        const plan = app.buildStockPlan();
+        return {
+            bars: plan[0].bars.map((bar) => ({ length: bar.length, parts: bar.parts.map((p) => p.length), rest: bar.rest })),
+            panel: Array.from(document.querySelectorAll('#object-list-items .stock-group')).map((h) => [h.textContent, h.title])
+        };
+    });
+
+    expect(result.bars).toEqual([
+        { length: 1000, parts: [400, 300], rest: 294 },
+        { length: 340, parts: [340], rest: 0 },
+        { length: 2000, parts: [500], rest: 1497 }
+    ]);
+    expect(result.panel).toEqual([
+        ['▸ A · Plank 2000', 'A · Plank 2000\n2 parts · offcut 294'],
+        ['▸ B · Board 20×100×340 mm', 'B · Board 20×100×340 mm\n1 part'],
+        ['▸ C · Board 20×100×2000 mm', 'C · Board 20×100×2000 mm\n1 part · offcut 1497']
+    ]);
+});

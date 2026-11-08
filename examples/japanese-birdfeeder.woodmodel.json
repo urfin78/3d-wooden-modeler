@@ -76,15 +76,6 @@
       "w": 25, "h": 18, "d": 110
     },
     {
-      "type": "Frame", "id": 10, "label": "Bodengitter",
-      "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
-      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
-      "groupId": "grp_1",
-      "px": 0.0000, "py": 16.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "wOuter": 110, "hOuter": 6, "dOuter": 110,
-      "frameThickness": 4, "barThickness": 2, "gridX": 14, "gridY": 14
-    },
-    {
       "type": "Board", "id": 11, "label": "Pfosten hinten links",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
@@ -284,5 +275,8 @@
   ],
   "rulers": [
     { "p1": [-100, 0, 100], "p2": [100, 0, 100] }
+  ],
+  "stock": [
+    { "profile": "12x50", "name": "Leiste", "length": 2000, "kerf": 3, "parts": ["12x30", "12x37.2", "12x38", "12x41.5", "12x47.4"] }
   ]
 }

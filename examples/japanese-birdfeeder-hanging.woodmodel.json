@@ -79,18 +79,6 @@
       "w": 25, "h": 18, "d": 110
     },
     {
-      "type": "Frame", "id": 10, "label": "Bodengitter",
-      "notches": 1, "csgModified": true, "price": 0, "priceMode": "fixed",
-      "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
-      "groupId": "grp_1",
-      "px": 0.0000, "py": 16.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "wOuter": 110, "hOuter": 6, "dOuter": 110,
-      "frameThickness": 4, "barThickness": 2, "gridX": 14, "gridY": 14,
-      "csgOps": [
-        { "op": "subtract", "tool": { "type": "Dowel", "local": true, "px": 0, "py": 0, "pz": 0, "rx": 0, "ry": 0, "rz": 0, "r": 3, "h": 40 } }
-      ]
-    },
-    {
       "type": "Board", "id": 11, "label": "Pfosten hinten links",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,

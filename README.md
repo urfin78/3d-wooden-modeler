@@ -1,8 +1,8 @@
-# 3D Wooden Modeler
+<h1><img src="docs/logo/mokuplan-logo.png" alt="Mokuplan" width="360"></h1>
 
 Plan your next woodworking project in 3D, then take the dimensions, parts list and costs into the workshop. Free and open source, and it runs in your browser with nothing to install.
 
-**[▶ Try it live](https://urfin78.github.io/3d-wooden-modeler/)**
+**[▶ Try it live](https://urfin78.github.io/mokuplan/)**
 
 ![The modeler showing a stool in the 3D view, with the object list, editable dimensions and cost summary in the side panel](docs/screenshots/main-window.png)
 
@@ -50,7 +50,7 @@ The `+ Add` menu has metric stock parts such as battens, planks and dowel pins, 
 
 ## Get started
 
-1. Open the [live app](https://urfin78.github.io/3d-wooden-modeler/), or download `index.html` and open it in a modern browser. It needs an internet connection to load Three.js.
+1. Open the [live app](https://urfin78.github.io/mokuplan/), or download `index.html` and open it in a modern browser. It needs an internet connection to load Three.js.
 2. Add pieces with `+ Add`.
 3. Click a piece to edit its dimensions, position and rotation in the side panel, or drag it in the 3D view.
 4. Save your project from the **File** menu. Less frequent actions such as Cut Joint and Split are in the **Tools** menu.
@@ -129,7 +129,7 @@ Projects are saved as files on your computer, and custom templates stay in your 
 
 ## Development
 
-[![Schema validation](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/schema.yml) [![JS syntax](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/js-syntax.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/js-syntax.yml) [![Playwright smoke](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/playwright.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/playwright.yml) [![Consistency lint](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/consistency-lint.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/consistency-lint.yml) [![Visual regression](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/visual-regression.yml/badge.svg?branch=main)](https://github.com/urfin78/3d-wooden-modeler/actions/workflows/visual-regression.yml)
+[![Schema validation](https://github.com/urfin78/mokuplan/actions/workflows/schema.yml/badge.svg?branch=main)](https://github.com/urfin78/mokuplan/actions/workflows/schema.yml) [![JS syntax](https://github.com/urfin78/mokuplan/actions/workflows/js-syntax.yml/badge.svg?branch=main)](https://github.com/urfin78/mokuplan/actions/workflows/js-syntax.yml) [![Playwright smoke](https://github.com/urfin78/mokuplan/actions/workflows/playwright.yml/badge.svg?branch=main)](https://github.com/urfin78/mokuplan/actions/workflows/playwright.yml) [![Consistency lint](https://github.com/urfin78/mokuplan/actions/workflows/consistency-lint.yml/badge.svg?branch=main)](https://github.com/urfin78/mokuplan/actions/workflows/consistency-lint.yml) [![Visual regression](https://github.com/urfin78/mokuplan/actions/workflows/visual-regression.yml/badge.svg?branch=main)](https://github.com/urfin78/mokuplan/actions/workflows/visual-regression.yml)
 
 This project was fully created using [Claude Code](https://claude.ai/claude-code) by Anthropic.
 
@@ -157,3 +157,5 @@ The CI tooling lives under [`.github/package.json`](.github/package.json) — ke
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+The "Mokuplan" name and logo are not covered by the MIT license and may not be used to identify other products. The logo was created with Google Gemini (gemini-3-pro-image) and edited by hand.

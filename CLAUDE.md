@@ -4,9 +4,11 @@ Guidance for Claude Code working in this repo. Auto-loaded every session — kee
 
 ## Project
 
-Browser-based 3D woodworking modeler. Single self-contained `index.html` — no build step, no framework, no local toolchain. Three.js 0.187.0 (ES module) via CDN, pinned with an import map. Open `index.html` in a browser to run.
+Mokuplan, a browser-based 3D woodworking modeler (formerly "3D Wooden Modeler", repo `urfin78/3d-wooden-modeler`; the localStorage keys `woodmodeler.*` and the `.woodmodel.json` / `.woodtemplates.json` extensions keep the old naming on purpose, so saved settings and existing files keep working). Single self-contained `index.html` — no build step, no framework, no local toolchain. Three.js 0.187.0 (ES module) via CDN, pinned with an import map. Open `index.html` in a browser to run.
 
 The full app lives inside one `window.addEventListener('load', …)` closure in `index.html`, organized into comment-delimited sections. Use those comments to navigate.
+
+The logo lives under `docs/logo/`. The favicon is an inline SVG data URI in the `<head>` of `index.html`, because only `index.html` is deployed; its readable source is `docs/logo/mokuplan-icon.svg`, so change both together.
 
 CI workflows live under `.github/workflows/`. The CI tooling manifest is `.github/package.json` (CI-only — Node is not assumed locally).
 

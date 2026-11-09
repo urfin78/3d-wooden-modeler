@@ -1,4 +1,4 @@
-// Smoke tests for the 3D Wooden Modeler.
+// Smoke tests for Mokuplan.
 // Drives the app through the test hook attached when ?__test=1 is set.
 // Each test loads a fresh page so global state stays isolated.
 const { test, expect } = require('@playwright/test');

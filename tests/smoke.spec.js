@@ -571,6 +571,9 @@ test('optimize proposes catalog stock and repacked split parts; apply saves it w
         app.optimizeStockDraft();
         const dialog = {
             proposal: document.querySelector('#stock-rows .stock-proposal').textContent,
+            changes: Array.from(document.querySelectorAll('#stock-rows .stock-proposal-changes li')).map((li) => li.textContent),
+            // Entries the proposal moved parts to are opened
+            open: Array.from(document.querySelectorAll('#stock-rows details.stock-entry[open]')).map((d) => d.dataset.key),
             repack: document.querySelector('#stock-rows .stock-option input').checked
         };
         // Nothing is saved before Apply
@@ -592,7 +595,9 @@ test('optimize proposes catalog stock and repacked split parts; apply saves it w
         ['R6', [[30, null, [30]], [1000, 1.2, [400]]]]
     ]);
     expect(result.dialog).toEqual({
-        proposal: 'Proposal: 4 pieces of stock · offcut 1570 mm · $9.00 + 1 without price. Before: 5 pieces of stock · offcut 3570 mm · $1.20 + 4 without price. Apply saves it.',
+        proposal: 'Proposal: 4 pieces of stock · offcut 1570 mm · $9.00 + 1 without price, instead of 5 pieces of stock · offcut 3570 mm · $1.20 + 4 without price. Apply saves it.',
+        changes: ['12 × 37.2 mm parts from 12 × 50 mm', '12 × 44 mm parts from 12 × 50 mm', 'Split parts packed freely'],
+        open: ['12x50'],
         repack: true
     });
     expect(result.unchanged).toBe(true);
@@ -622,4 +627,80 @@ test('optimize proposes catalog stock and repacked split parts; apply saves it w
         { profile: 'R6', offers: [{ length: 1000, price: 1.2 }] }
     ]);
     expect(result.options).toEqual({ repackSplit: true });
+});
+
+test('stock dialog lists what to buy and moves parts to other stock', async ({ page }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+        const app = window.__app;
+        app.setLanguage('en');
+        app.setStockCatalog([{ profile: '12x50', name: 'Batten', offers: [{ length: 2000, price: 3.9 }] }]);
+        const add = (type, label, dims) => {
+            const mesh = app.makeDefaultForType(type);
+            mesh.userData.label = label;
+            Object.assign(mesh.userData, dims);
+            app.addPiece(mesh);
+        };
+        for (let i = 0; i < 3; i++) add('Board', 'Rail', { w: 600, h: 12, d: 37.2 });
+        add('Board', 'Post', { w: 700, h: 12, d: 44 });
+        app.restoreScene(app.serializeScene());
+        app.openStockModal();
+        const rows = () => document.getElementById('stock-rows');
+        const heads = () => Array.from(rows().querySelectorAll('details.stock-entry')).map((d) => ({
+            key: d.dataset.key,
+            name: d.querySelector('.stock-entry-title strong').textContent,
+            buy: d.querySelector('.stock-entry-buy').textContent,
+            cost: d.querySelector('.stock-entry-cost').textContent,
+            rest: d.querySelector('.stock-entry-rest').textContent
+        }));
+        const summary = () => rows().querySelector('.stock-summary').textContent;
+        const first = { summary: summary(), heads: heads() };
+
+        // Rails sawn from the catalog batten instead of the merged 12 × 44 strip
+        const select = rows().querySelector('details[data-key="12x44"] .stock-part-row select');
+        const options = Array.from(select.options).map((o) => o.textContent);
+        select.value = '12x50';
+        select.dispatchEvent(new Event('change'));
+        const moved = {
+            heads: heads(),
+            open: Array.from(rows().querySelectorAll('details.stock-entry[open]')).map((d) => d.dataset.key)
+        };
+
+        // Lengths typed for the post's own size: the head and totals follow, the list becomes the project's
+        const entry = rows().querySelector('details[data-key="12x44"]');
+        const price = entry.querySelector('.stock-offer-price');
+        price.value = '2.5';
+        price.dispatchEvent(new Event('input'));
+        const priced = {
+            summary: summary(),
+            cost: entry.querySelector('.stock-entry-cost').textContent,
+            source: entry.querySelector('.stock-badge').textContent
+        };
+        document.getElementById('stock-confirm').click();
+        return { first, options, moved, priced, saved: app.serializeStock() };
+    });
+
+    // Without entries the rails are ripped from the strip merged with the post
+    expect(result.first.summary).toBe('Buy 2 pieces of stockno prices known yetoffcuts 1488 mm in total · proven best split');
+    expect(result.first.heads).toEqual([
+        { key: '12x44', name: 'Strip', buy: '2 × 2000 mm', cost: 'no price', rest: 'offcut 1488 mm' }
+    ]);
+    expect(result.options).toEqual([
+        'Automatic: 12 × 44 mm', 'Own size: 12 × 37.2 mm', '12 × 50 mm · in catalog', 'Other cross-section…'
+    ]);
+    expect(result.moved.heads).toEqual([
+        { key: '12x44', name: 'Strip', buy: '1 × 2000 mm', cost: 'no price', rest: 'offcut 1297 mm' },
+        { key: '12x50', name: 'Batten', buy: '1 × 2000 mm', cost: '$3.90', rest: 'offcut 191 mm' }
+    ]);
+    expect(result.moved.open).toEqual(['12x50']);
+    expect(result.priced).toEqual({
+        summary: 'Buy 2 pieces of stock$6.40offcuts 1488 mm in total · proven best split',
+        cost: '$2.50',
+        source: 'Set in this project'
+    });
+    expect(result.saved).toEqual([
+        { profile: '12x44', offers: [{ length: 2000, price: 2.5 }] },
+        { profile: '12x50', name: 'Batten', offers: [{ length: 2000, price: 3.9 }], parts: ['12x37.2'] }
+    ]);
 });

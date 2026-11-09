@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <style>
+        .w { stroke: #1f1d1b; }
+        @media (prefers-color-scheme: dark) {
+            .w { stroke: #ece8e1; }
+        }
+    </style>
+    <!-- Solid lower two thirds of the post, lit from the upper right -->
+    <polygon points="32,17 48,25 32,33 16,25" fill="#b8763a"/>
+    <polygon points="16,25 32,33 32,62 16,54" fill="#8a5326"/>
+    <polygon points="32,33 48,25 48,54 32,62" fill="#c98a4b"/>
+    <path d="M16,25 L32,17 L48,25 L48,54 L32,62 L16,54 Z M16,25 L32,33 L48,25 M32,33 L32,62" fill="none" stroke="#4a2f18" stroke-width="2" stroke-linejoin="miter" stroke-miterlimit="2"/>
+    <!-- 木 on the right face, mapped onto its isometric plane -->
+    <g transform="matrix(1,-0.5,0,1,32,33)" fill="none" stroke="#5a3a1e" stroke-width="1.8" stroke-linecap="square">
+        <path d="M3.5,12.5 H12.5 M8,9 V20 M8,13.5 L4,18.5 M8,13.5 L12,18.5"/>
+    </g>
+    <!-- Wireframe upper third; the hidden back edge is dashed -->
+    <g class="w" fill="none" stroke-width="2" stroke-linejoin="miter" stroke-miterlimit="2">
+        <path d="M16,10 L32,2 L48,10 L32,18 Z M16,10 V25 M48,10 V25 M32,18 V33"/>
+        <path d="M32,4 V17" stroke-dasharray="3 2.5"/>
+    </g>
+</svg>

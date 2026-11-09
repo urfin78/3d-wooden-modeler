@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "woodmodel.schema.json",
-  "title": "3D Wooden Modeler — Model File (.woodmodel.json)",
+  "title": "Mokuplan — Model File (.woodmodel.json)",
   "description": "Saved scene produced by saveModel(). Current version: 3. Backwards-compatible loaders handle v1 (no groups), v2 (groups, no rulers) and v3 (groups + rulers).",
   "type": "object",
   "required": ["version", "name", "created", "pieces"],

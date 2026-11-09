@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "woodtemplates.schema.json",
-  "title": "3D Wooden Modeler — Template Library File (.woodtemplates.json)",
+  "title": "Mokuplan — Template Library File (.woodtemplates.json)",
   "description": "Exported custom template library produced by exportTemplates(). An array of template objects; the same format is stored in localStorage under 'woodmodeler_templates'. Built-in templates follow the same shape but also carry a nameKey for i18n translation.",
   "type": "array",
   "items": {

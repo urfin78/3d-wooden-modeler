@@ -1,4 +1,4 @@
-// Visual regression tests for the 3D Wooden Modeler.
+// Visual regression tests for Mokuplan.
 // One screenshot per default ADD_TYPES primitive plus one CSG-cut composition,
 // each compared against a baseline PNG under tests/visual.spec.js-snapshots/.
 //

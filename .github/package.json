@@ -1,5 +1,5 @@
 {
-  "name": "3d-wooden-modeler-ci",
+  "name": "mokuplan-ci",
   "private": true,
   "description": "CI-only manifest. The app itself is a single self-contained index.html with no build step. This file exists only so GitHub Actions can install validation/test tooling.",
   "scripts": {

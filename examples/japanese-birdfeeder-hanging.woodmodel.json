@@ -19,138 +19,138 @@
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 0.0000, "py": 27.0000, "pz": 94.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 200, "h": 30, "d": 12
+      "px": 0.0000, "py": 27.0000, "pz": 93.2500, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 200, "h": 30, "d": 13.5
     },
     {
       "type": "Board", "id": 3, "label": "Aussenwand hinten",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 0.0000, "py": 27.0000, "pz": -94.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 200, "h": 30, "d": 12
+      "px": 0.0000, "py": 27.0000, "pz": -93.2500, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 200, "h": 30, "d": 13.5
     },
     {
       "type": "Board", "id": 4, "label": "Aussenwand links",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": -94.0000, "py": 27.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 12, "h": 30, "d": 176
+      "px": -93.2500, "py": 27.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 13.5, "h": 30, "d": 173
     },
     {
       "type": "Board", "id": 5, "label": "Aussenwand rechts",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 94.0000, "py": 27.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 12, "h": 30, "d": 176
+      "px": 93.2500, "py": 27.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 13.5, "h": 30, "d": 173
     },
     {
       "type": "Board", "id": 6, "label": "Trograhmen vorn",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 0.0000, "py": 21.0000, "pz": 67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 110, "h": 18, "d": 25
+      "px": 0.0000, "py": 22.0000, "pz": 67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 107, "h": 20, "d": 25
     },
     {
       "type": "Board", "id": 7, "label": "Trograhmen hinten",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 0.0000, "py": 21.0000, "pz": -67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 110, "h": 18, "d": 25
+      "px": 0.0000, "py": 22.0000, "pz": -67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 107, "h": 20, "d": 25
     },
     {
       "type": "Board", "id": 8, "label": "Trograhmen links",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": -67.5000, "py": 21.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 25, "h": 18, "d": 110
+      "px": -67.5000, "py": 22.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 25, "h": 20, "d": 107
     },
     {
       "type": "Board", "id": 9, "label": "Trograhmen rechts",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 67.5000, "py": 21.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 25, "h": 18, "d": 110
+      "px": 67.5000, "py": 22.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 25, "h": 20, "d": 107
     },
     {
       "type": "Board", "id": 11, "label": "Pfosten hinten links",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": -67.5000, "py": 117.3759, "pz": -67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 25, "h": 210.7518, "d": 25
+      "px": -67.5000, "py": 119.5000, "pz": -67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 28, "h": 215, "d": 28
     },
     {
       "type": "Board", "id": 12, "label": "Pfosten vorn links",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": -67.5000, "py": 117.3759, "pz": 67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 25, "h": 210.7518, "d": 25
+      "px": -67.5000, "py": 119.5000, "pz": 67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 28, "h": 215, "d": 28
     },
     {
       "type": "Board", "id": 13, "label": "Pfosten hinten rechts",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 67.5000, "py": 117.3759, "pz": -67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 25, "h": 210.7518, "d": 25
+      "px": 67.5000, "py": 119.5000, "pz": -67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 28, "h": 215, "d": 28
     },
     {
       "type": "Board", "id": 14, "label": "Pfosten vorn rechts",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 67.5000, "py": 117.3759, "pz": 67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 25, "h": 210.7518, "d": 25
+      "px": 67.5000, "py": 119.5000, "pz": 67.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 28, "h": 215, "d": 28
     },
     {
       "type": "Board", "id": 15, "label": "Traufbalken links",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": -67.5000, "py": 213.7518, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 25, "h": 18, "d": 110
+      "px": -67.5000, "py": 217.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 25, "h": 20, "d": 107
     },
     {
       "type": "Board", "id": 16, "label": "Traufbalken rechts",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 67.5000, "py": 213.7518, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 25, "h": 18, "d": 110
+      "px": 67.5000, "py": 217.0000, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 25, "h": 20, "d": 107
     },
     {
       "type": "Board", "id": 17, "label": "Giebel hinten",
       "notches": 17, "csgModified": true, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 0.0000, "py": 226.6303, "pz": -87.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 275.2040, "h": 95.6584, "d": 14,
+      "px": 0.0000, "py": 229.9919, "pz": -86.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 285, "h": 96, "d": 10,
       "csgOps": [
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 55.2449, "py": 80.8082, "pz": 0, "rx": 0, "ry": 0, "rz": -0.663225, "w": 46.4594, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -55.2449, "py": 80.8082, "pz": 0, "rx": 0, "ry": 0, "rz": 0.663225, "w": 46.4594, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 82.6900, "py": 61.9039, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 37.1340, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -82.6900, "py": 61.9039, "pz": 0, "rx": 0, "ry": 0, "rz": 0.523599, "w": 37.1340, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 108.4609, "py": 49.3346, "pz": 0, "rx": 0, "ry": 0, "rz": -0.383972, "w": 37.1340, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -108.4609, "py": 49.3346, "pz": 0, "rx": 0, "ry": 0, "rz": 0.383972, "w": 37.1340, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 140.7378, "py": 39.2257, "pz": 0, "rx": 0, "ry": 0, "rz": -0.244346, "w": 47.4556, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -140.7378, "py": 39.2257, "pz": 0, "rx": 0, "ry": 0, "rz": 0.244346, "w": 47.4556, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -31.5859, "py": -33.2044, "pz": 0, "rx": 0, "ry": 0, "rz": -0.852484, "w": 41.2973, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 31.5859, "py": -33.2044, "pz": 0, "rx": 0, "ry": 0, "rz": 0.852484, "w": 41.2973, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 8.2223, "py": -63.6884, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -8.2223, "py": -63.6884, "pz": 0, "rx": 0, "ry": 0, "rz": 0.523599, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 52.1969, "py": -85.3993, "pz": 0, "rx": 0, "ry": 0, "rz": -0.383972, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -52.1969, "py": -85.3993, "pz": 0, "rx": 0, "ry": 0, "rz": 0.383972, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 98.7651, "py": -100.7789, "pz": 0, "rx": 0, "ry": 0, "rz": -0.244346, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -98.7651, "py": -100.7789, "pz": 0, "rx": 0, "ry": 0, "rz": 0.244346, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 0, "py": 64.2528, "pz": 0, "rx": 0, "ry": 0, "rz": 0, "w": 40, "h": 40, "d": 22 } }
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 52.9229, "py": 82.7932, "pz": 0, "rx": 0, "ry": 0, "rz": -0.663225, "w": 40.5659, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -52.9229, "py": 82.7932, "pz": 0, "rx": 0, "ry": 0, "rz": 0.663225, "w": 40.5659, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 79.2869, "py": 64.9867, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 40.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -79.2869, "py": 64.9867, "pz": 0, "rx": 0, "ry": 0, "rz": 0.523599, "w": 40.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 107.6274, "py": 51.1641, "pz": 0, "rx": 0, "ry": 0, "rz": -0.383972, "w": 40.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -107.6274, "py": 51.1641, "pz": 0, "rx": 0, "ry": 0, "rz": 0.383972, "w": 40.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 143.4377, "py": 39.9687, "pz": 0, "rx": 0, "ry": 0, "rz": -0.244346, "w": 52.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -143.4377, "py": 39.9687, "pz": 0, "rx": 0, "ry": 0, "rz": 0.244346, "w": 52.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -14.2841, "py": -44.7706, "pz": 0, "rx": 0, "ry": 0, "rz": -0.717980, "w": 66.8876, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 14.2841, "py": -44.7706, "pz": 0, "rx": 0, "ry": 0, "rz": 0.717980, "w": 66.8876, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 15.1567, "py": -66.0901, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 90.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -15.1567, "py": -66.0901, "pz": 0, "rx": 0, "ry": 0, "rz": 0.523599, "w": 90.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 62.3637, "py": -87.5623, "pz": 0, "rx": 0, "ry": 0, "rz": -0.383972, "w": 90.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -62.3637, "py": -87.5623, "pz": 0, "rx": 0, "ry": 0, "rz": 0.383972, "w": 90.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 112.0997, "py": -102.2555, "pz": 0, "rx": 0, "ry": 0, "rz": -0.244346, "w": 90.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -112.0997, "py": -102.2555, "pz": 0, "rx": 0, "ry": 0, "rz": 0.244346, "w": 90.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 0.0000, "py": 63.8275, "pz": 0, "rx": 0, "ry": 0, "rz": 0.000000, "w": 30.6812, "h": 40.0000, "d": 18 } }
       ]
     },
     {
@@ -158,26 +158,26 @@
       "notches": 17, "csgModified": true, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 0.0000, "py": 226.6303, "pz": 87.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
-      "w": 275.2040, "h": 95.6584, "d": 14,
+      "px": 0.0000, "py": 229.9919, "pz": 86.5000, "rx": 0.000000, "ry": 0.000000, "rz": 0.000000,
+      "w": 285, "h": 96, "d": 10,
       "csgOps": [
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 55.2449, "py": 80.8082, "pz": 0, "rx": 0, "ry": 0, "rz": -0.663225, "w": 46.4594, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -55.2449, "py": 80.8082, "pz": 0, "rx": 0, "ry": 0, "rz": 0.663225, "w": 46.4594, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 82.6900, "py": 61.9039, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 37.1340, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -82.6900, "py": 61.9039, "pz": 0, "rx": 0, "ry": 0, "rz": 0.523599, "w": 37.1340, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 108.4609, "py": 49.3346, "pz": 0, "rx": 0, "ry": 0, "rz": -0.383972, "w": 37.1340, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -108.4609, "py": 49.3346, "pz": 0, "rx": 0, "ry": 0, "rz": 0.383972, "w": 37.1340, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 140.7378, "py": 39.2257, "pz": 0, "rx": 0, "ry": 0, "rz": -0.244346, "w": 47.4556, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -140.7378, "py": 39.2257, "pz": 0, "rx": 0, "ry": 0, "rz": 0.244346, "w": 47.4556, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -31.5859, "py": -33.2044, "pz": 0, "rx": 0, "ry": 0, "rz": -0.852484, "w": 41.2973, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 31.5859, "py": -33.2044, "pz": 0, "rx": 0, "ry": 0, "rz": 0.852484, "w": 41.2973, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 8.2223, "py": -63.6884, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -8.2223, "py": -63.6884, "pz": 0, "rx": 0, "ry": 0, "rz": 0.523599, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 52.1969, "py": -85.3993, "pz": 0, "rx": 0, "ry": 0, "rz": -0.383972, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -52.1969, "py": -85.3993, "pz": 0, "rx": 0, "ry": 0, "rz": 0.383972, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 98.7651, "py": -100.7789, "pz": 0, "rx": 0, "ry": 0, "rz": -0.244346, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -98.7651, "py": -100.7789, "pz": 0, "rx": 0, "ry": 0, "rz": 0.244346, "w": 61.1672, "h": 120, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 0, "py": 64.2528, "pz": 0, "rx": 0, "ry": 0, "rz": 0, "w": 40, "h": 40, "d": 22 } }
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 52.9229, "py": 82.7932, "pz": 0, "rx": 0, "ry": 0, "rz": -0.663225, "w": 40.5659, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -52.9229, "py": 82.7932, "pz": 0, "rx": 0, "ry": 0, "rz": 0.663225, "w": 40.5659, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 79.2869, "py": 64.9867, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 40.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -79.2869, "py": 64.9867, "pz": 0, "rx": 0, "ry": 0, "rz": 0.523599, "w": 40.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 107.6274, "py": 51.1641, "pz": 0, "rx": 0, "ry": 0, "rz": -0.383972, "w": 40.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -107.6274, "py": 51.1641, "pz": 0, "rx": 0, "ry": 0, "rz": 0.383972, "w": 40.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 143.4377, "py": 39.9687, "pz": 0, "rx": 0, "ry": 0, "rz": -0.244346, "w": 52.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -143.4377, "py": 39.9687, "pz": 0, "rx": 0, "ry": 0, "rz": 0.244346, "w": 52.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -14.2841, "py": -44.7706, "pz": 0, "rx": 0, "ry": 0, "rz": -0.717980, "w": 66.8876, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 14.2841, "py": -44.7706, "pz": 0, "rx": 0, "ry": 0, "rz": 0.717980, "w": 66.8876, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 15.1567, "py": -66.0901, "pz": 0, "rx": 0, "ry": 0, "rz": -0.523599, "w": 90.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -15.1567, "py": -66.0901, "pz": 0, "rx": 0, "ry": 0, "rz": 0.523599, "w": 90.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 62.3637, "py": -87.5623, "pz": 0, "rx": 0, "ry": 0, "rz": -0.383972, "w": 90.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -62.3637, "py": -87.5623, "pz": 0, "rx": 0, "ry": 0, "rz": 0.383972, "w": 90.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 112.0997, "py": -102.2555, "pz": 0, "rx": 0, "ry": 0, "rz": -0.244346, "w": 90.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -112.0997, "py": -102.2555, "pz": 0, "rx": 0, "ry": 0, "rz": 0.244346, "w": 90.0000, "h": 120.0000, "d": 18 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 0.0000, "py": 63.8275, "pz": 0, "rx": 0, "ry": 0, "rz": 0.000000, "w": 30.6812, "h": 40.0000, "d": 18 } }
       ]
     },
     {
@@ -185,93 +185,93 @@
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": -25.8381, "py": 261.8867, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.663225,
-      "w": 33.3601, "h": 12, "d": 265,
-      "angleStart": 94.00, "angleEnd": 128.00
+      "px": -24.0125, "py": 265.5763, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.663225,
+      "w": 28, "h": 10, "d": 265,
+      "angleStart": 86.00, "angleEnd": 128.00
     },
     {
       "type": "Board", "id": 20, "label": "Dachlatte links 2",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": -54.2223, "py": 242.6162, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.523599,
-      "w": 37.1672, "h": 12, "d": 265,
-      "angleStart": 94.00, "angleEnd": 78.00
+      "px": -51.7869, "py": 247.3471, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.523599,
+      "w": 40, "h": 10, "d": 265,
+      "angleStart": 86.00, "angleEnd": 86.00
     },
     {
       "type": "Board", "id": 21, "label": "Dachlatte links 3",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": -86.6607, "py": 226.5319, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.383972,
-      "w": 37.1672, "h": 12, "d": 265,
-      "angleStart": 94.00, "angleEnd": 78.00
+      "px": -87.0241, "py": 230.1608, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.383972,
+      "w": 40, "h": 10, "d": 265,
+      "angleStart": 86.00, "angleEnd": 86.00
     },
     {
       "type": "Board", "id": 22, "label": "Dachlatte links 4",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": -121.0219, "py": 215.1186, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.244346,
-      "w": 37.1672, "h": 12, "d": 265,
-      "angleStart": 90.00, "angleEnd": 78.00
+      "px": -124.3102, "py": 218.0458, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": 0.244346,
+      "w": 40, "h": 10, "d": 265,
+      "angleStart": 90.00, "angleEnd": 86.00
     },
     {
       "type": "Board", "id": 23, "label": "Dachlatte rechts 1",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 25.8381, "py": 261.8867, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": -0.663225,
-      "w": 33.3601, "h": 12, "d": 265,
-      "angleStart": 128.00, "angleEnd": 94.00
+      "px": 24.0125, "py": 265.5763, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": -0.663225,
+      "w": 28, "h": 10, "d": 265,
+      "angleStart": 128.00, "angleEnd": 86.00
     },
     {
       "type": "Board", "id": 24, "label": "Dachlatte rechts 2",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 54.2223, "py": 242.6162, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": -0.523599,
-      "w": 37.1672, "h": 12, "d": 265,
-      "angleStart": 78.00, "angleEnd": 94.00
+      "px": 51.7869, "py": 247.3471, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": -0.523599,
+      "w": 40, "h": 10, "d": 265,
+      "angleStart": 86.00, "angleEnd": 86.00
     },
     {
       "type": "Board", "id": 25, "label": "Dachlatte rechts 3",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 86.6607, "py": 226.5319, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": -0.383972,
-      "w": 37.1672, "h": 12, "d": 265,
-      "angleStart": 78.00, "angleEnd": 94.00
+      "px": 87.0241, "py": 230.1608, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": -0.383972,
+      "w": 40, "h": 10, "d": 265,
+      "angleStart": 86.00, "angleEnd": 86.00
     },
     {
       "type": "Board", "id": 26, "label": "Dachlatte rechts 4",
       "notches": 0, "csgModified": false, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 121.0219, "py": 215.1186, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": -0.244346,
-      "w": 37.1672, "h": 12, "d": 265,
-      "angleStart": 78.00, "angleEnd": 90.00
+      "px": 124.3102, "py": 218.0458, "pz": 0.0000, "rx": 0.000000, "ry": 0.000000, "rz": -0.244346,
+      "w": 40, "h": 10, "d": 265,
+      "angleStart": 86.00, "angleEnd": 90.00
     },
     {
       "type": "Board", "id": 27, "label": "First",
       "notches": 13, "csgModified": true, "price": 0, "priceMode": "fixed",
       "sourceId": null, "sourcePrice": 0, "sourcePriceMode": null, "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 0.0000, "py": 288.1892, "pz": 0.0000, "rx": 0.000000, "ry": -1.570796, "rz": 0.000000,
-      "w": 304.5923, "h": 41.5225, "d": 18,
+      "px": 0.0000, "py": 290.2555, "pz": 0.0000, "rx": 0.000000, "ry": -1.570796, "rz": 0.000000,
+      "w": 304, "h": 40, "d": 20,
       "csgOps": [
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -141.6150, "py": 60.2619, "pz": 0, "rx": 0, "ry": 0, "rz": -0.157080, "w": 120.0882, "h": 80.0000, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -128.2756, "py": -51.1971, "pz": 0, "rx": 0, "ry": 0, "rz": -0.157080, "w": 600.0000, "h": 80.0000, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -56.2989, "py": 49.2026, "pz": 0, "rx": 0, "ry": 0, "rz": -0.069813, "w": 59.1008, "h": 80.0000, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -63.9546, "py": -58.5258, "pz": 0, "rx": 0, "ry": 0, "rz": -0.069813, "w": 600.0000, "h": 80.0000, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -0.0000, "py": 47.2387, "pz": 0, "rx": 0, "ry": 0, "rz": -0.000000, "w": 59.2214, "h": 80.0000, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -0.0000, "py": -60.7613, "pz": 0, "rx": 0, "ry": 0, "rz": -0.000000, "w": 600.0000, "h": 80.0000, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 56.2989, "py": 49.2026, "pz": 0, "rx": 0, "ry": 0, "rz": 0.069813, "w": 59.1008, "h": 80.0000, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 63.9546, "py": -58.5258, "pz": 0, "rx": 0, "ry": 0, "rz": 0.069813, "w": 600.0000, "h": 80.0000, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 141.6150, "py": 60.2619, "pz": 0, "rx": 0, "ry": 0, "rz": 0.157080, "w": 120.0882, "h": 80.0000, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 128.2756, "py": -51.1971, "pz": 0, "rx": 0, "ry": 0, "rz": 0.157080, "w": 600.0000, "h": 80.0000, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -179.7367, "py": 11.6267, "pz": 0, "rx": 0, "ry": 0, "rz": -0.157080, "w": 60.0000, "h": 120.0000, "d": 22 } },
-        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 179.7367, "py": 11.6267, "pz": 0, "rx": 0, "ry": 0, "rz": 0.157080, "w": 60.0000, "h": 120.0000, "d": 22 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 0.0000, "py": 46.4871, "pz": 0, "rx": 0, "ry": 0, "rz": 0.000000, "w": 59.2214, "h": 80.0000, "d": 30 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 0.0000, "py": -60.0000, "pz": 0, "rx": 0, "ry": 0, "rz": 0.000000, "w": 600.0000, "h": 80.0000, "d": 30 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -56.3002, "py": 48.4511, "pz": 0, "rx": 0, "ry": 0, "rz": -0.069813, "w": 59.1035, "h": 80.0000, "d": 30 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -34.2486, "py": -59.8380, "pz": 0, "rx": 0, "ry": 0, "rz": -0.069813, "w": 600.0000, "h": 80.0000, "d": 30 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -141.5991, "py": 59.5075, "pz": 0, "rx": 0, "ry": 0, "rz": -0.157080, "w": 120.0506, "h": 80.0000, "d": 30 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -98.9711, "py": -55.0586, "pz": 0, "rx": 0, "ry": 0, "rz": -0.157080, "w": 600.0000, "h": 80.0000, "d": 30 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 56.3002, "py": 48.4511, "pz": 0, "rx": 0, "ry": 0, "rz": 0.069813, "w": 59.1035, "h": 80.0000, "d": 30 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 34.2486, "py": -59.8380, "pz": 0, "rx": 0, "ry": 0, "rz": 0.069813, "w": 600.0000, "h": 80.0000, "d": 30 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 141.5991, "py": 59.5075, "pz": 0, "rx": 0, "ry": 0, "rz": 0.157080, "w": 120.0506, "h": 80.0000, "d": 30 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 98.9711, "py": -55.0586, "pz": 0, "rx": 0, "ry": 0, "rz": 0.157080, "w": 600.0000, "h": 80.0000, "d": 30 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": -179.5589, "py": 11.6125, "pz": 0, "rx": 0, "ry": 0, "rz": -0.157080, "w": 60.0000, "h": 120.0000, "d": 30 } },
+        { "op": "subtract", "tool": { "type": "Board", "local": true, "px": 179.5589, "py": 11.6125, "pz": 0, "rx": 0, "ry": 0, "rz": 0.157080, "w": 60.0000, "h": 120.0000, "d": 30 } },
         { "op": "subtract", "tool": { "type": "Dowel", "local": true, "px": 0, "py": 0, "pz": 0, "rx": 0, "ry": 0, "rz": 0, "r": 3, "h": 80 } }
       ]
     },
@@ -289,5 +289,13 @@
   ],
   "rulers": [
     { "p1": [-100, 0, 100], "p2": [100, 0, 100] }
+  ],
+  "stock": [
+    { "profile": "10x40", "name": "Leiste", "length": 2000, "kerf": 3, "parts": ["10x35.8"] },
+    { "profile": "10x96", "name": "Leiste", "length": 2000, "kerf": 3 },
+    { "profile": "13.5x30", "name": "Leiste", "length": 2000, "kerf": 3 },
+    { "profile": "20x25", "name": "Leiste", "length": 2000, "kerf": 3, "parts": ["20x25"] },
+    { "profile": "20x40", "name": "Leiste", "length": 2000, "kerf": 3, "parts": ["20x40"] },
+    { "profile": "28x28", "name": "Vierkantleiste", "length": 2000, "kerf": 3 }
   ]
 }

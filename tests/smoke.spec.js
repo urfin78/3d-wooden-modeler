@@ -704,3 +704,60 @@ test('stock dialog lists what to buy and moves parts to other stock', async ({ p
         { profile: '12x50', name: 'Batten', offers: [{ length: 2000, price: 3.9 }], parts: ['12x37.2'] }
     ]);
 });
+
+test('optimize swaps project lengths without prices for the catalog, but keeps cheaper ones', async ({ page }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+        const app = window.__app;
+        app.setLanguage('en');
+        app.setStockCatalog([
+            { profile: '12x50', name: 'Batten', offers: [{ length: 1000, price: 2.1 }, { length: 2000, price: 3.9 }] },
+            { profile: '20x100', name: 'Board', offers: [{ length: 2000, price: 5 }] }
+        ]);
+        // As saved before the catalog had prices: a length of its own, without one
+        app.setStockSettings([
+            { profile: '12x50', length: 2000, parts: ['12x37.2'] },
+            { profile: '20x100', offers: [{ length: 2000, price: 4 }] }
+        ]);
+        const add = (label, dims) => {
+            const mesh = app.makeDefaultForType('Board');
+            mesh.userData.label = label;
+            Object.assign(mesh.userData, dims);
+            app.addPiece(mesh);
+        };
+        for (let i = 0; i < 4; i++) add('Rail', { w: 600, h: 12, d: 37.2 });
+        add('Shelf', { w: 500, h: 20, d: 100 });
+        app.restoreScene(app.serializeScene());
+        const plan = () => app.buildStockPlan().map((entry) => [entry.profile.key, entry.bars.map((bar) => [bar.length, bar.price])]);
+        const before = plan();
+        app.openStockModal();
+        app.optimizeStockDraft();
+        const dialog = {
+            changes: Array.from(document.querySelectorAll('#stock-rows .stock-proposal-changes li')).map((li) => li.textContent),
+            open: Array.from(document.querySelectorAll('#stock-rows details.stock-entry[open]')).map((d) => d.dataset.key),
+            badges: Array.from(document.querySelectorAll('#stock-rows details.stock-entry')).map((d) => d.querySelector('.stock-badge').textContent)
+        };
+        document.getElementById('stock-confirm').click();
+        return { before, dialog, after: plan(), saved: app.serializeStock() };
+    });
+
+    expect(result.before).toEqual([
+        ['12x50', [[2000, null], [2000, null]]],
+        ['20x100', [[2000, 4]]]
+    ]);
+    expect(result.dialog).toEqual({
+        changes: ['Batten 12 × 50 mm: lengths and prices from the stock catalog'],
+        open: ['12x50'],
+        badges: ['From the stock catalog', 'Set in this project']
+    });
+    expect(result.after).toEqual([
+        ['12x50', [[2000, 3.9], [1000, 2.1]]],
+        ['20x100', [[2000, 4]]]
+    ]);
+    // The catalog's lengths go into the file, so it plans the same elsewhere
+    expect(result.saved).toEqual([
+        { profile: '12x50', name: 'Batten', offers: [{ length: 1000, price: 2.1 }, { length: 2000, price: 3.9 }], parts: ['12x37.2'] },
+        { profile: '20x100', offers: [{ length: 2000, price: 4 }] }
+    ]);
+});

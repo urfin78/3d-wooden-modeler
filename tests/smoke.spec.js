@@ -704,3 +704,21 @@ test('stock dialog lists what to buy and moves parts to other stock', async ({ p
         { profile: '12x50', name: 'Batten', offers: [{ length: 2000, price: 3.9 }], parts: ['12x37.2'] }
     ]);
 });
+
+test('language and currency selects in the settings menu keep it open', async ({ page }) => {
+    await gotoApp(page);
+    await page.evaluate(() => window.__app.setLanguage('de'));
+    const menu = page.locator('#settings-dropdown');
+    await menu.locator('button').first().click();
+    await expect(menu).toHaveClass(/\bopen\b/);
+    // Clicking the select used to close the menu, and the select's list with it
+    await page.locator('#lang-select').click();
+    await expect(menu).toHaveClass(/\bopen\b/);
+    await page.locator('#lang-select').selectOption('en');
+    expect(await page.evaluate(() => window.__app.getLanguage())).toBe('en');
+    await page.locator('#currency-select').click();
+    await expect(menu).toHaveClass(/\bopen\b/);
+    // A click outside still closes it
+    await page.mouse.click(5, 400);
+    await expect(menu).not.toHaveClass(/\bopen\b/);
+});

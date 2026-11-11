@@ -761,3 +761,42 @@ test('optimize swaps project lengths without prices for the catalog, but keeps c
         { profile: '20x100', offers: [{ length: 2000, price: 4 }] }
     ]);
 });
+
+test('optimize moves parts back to their own size when the catalog makes it cheaper', async ({ page }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+        const app = window.__app;
+        app.setLanguage('en');
+        app.setStockCatalog([
+            { profile: '13.5x40', name: 'Wide', offers: [{ length: 2000, price: 8.5 }] },
+            { profile: '13.5x30', name: 'Narrow', offers: [{ length: 900, price: 3.45 }, { length: 2000, price: 5.5 }] }
+        ]);
+        // An earlier plan put the walls on the wide strip, while their own size still has a
+        // project length without a price: neither going back nor the catalog lengths alone win
+        app.setStockSettings([
+            { profile: '13.5x30', length: 2000 },
+            { profile: '13.5x40', parts: ['13.5x30'] }
+        ]);
+        for (const w of [200, 200, 173, 173]) {
+            const mesh = app.makeDefaultForType('Board');
+            Object.assign(mesh.userData, { label: 'Wall', w, h: 30, d: 13.5 });
+            app.addPiece(mesh);
+        }
+        app.restoreScene(app.serializeScene());
+        const plan = () => app.buildStockPlan().map((entry) => [entry.profile.key, entry.bars.map((bar) => [bar.length, bar.price])]);
+        const before = plan();
+        app.openStockModal();
+        app.optimizeStockDraft();
+        const changes = Array.from(document.querySelectorAll('#stock-rows .stock-proposal-changes li')).map((li) => li.textContent);
+        document.getElementById('stock-confirm').click();
+        return { before, changes, after: plan() };
+    });
+
+    expect(result.before).toEqual([['13.5x40', [[2000, 8.5]]]]);
+    expect(result.changes).toEqual([
+        'Narrow 13.5 × 30 mm: lengths and prices from the stock catalog',
+        '13.5 × 30 mm parts from their own size'
+    ]);
+    expect(result.after).toEqual([['13.5x30', [[900, 3.45]]]]);
+});

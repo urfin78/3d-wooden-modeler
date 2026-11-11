@@ -1007,6 +1007,7 @@ window.addEventListener('load', function() {
             'stock.proposalApprox': 'Not every cross-section could be proven optimal; this is the best plan found.',
             'stock.optimizeHint': 'Tries other cross-sections from the catalog and repacking split parts, and shows the result before you apply it.',
             'stock.proposal.move': '{part} mm parts from {stock} mm',
+            'stock.proposal.own': '{part} mm parts from their own size',
             'stock.proposal.repack': 'Split parts packed freely',
             'stock.proposal.keepSplit': 'Split parts kept on their source',
             'stock.proposal.catalog': '{name} {section} mm: lengths and prices from the stock catalog',
@@ -1325,6 +1326,7 @@ window.addEventListener('load', function() {
             'stock.proposalApprox': 'Nicht jeder Querschnitt ließ sich als optimal nachweisen; das ist die beste gefundene Planung.',
             'stock.optimizeHint': 'Probiert andere Querschnitte aus dem Katalog und das Neuverteilen geteilter Teile und zeigt das Ergebnis, bevor du es übernimmst.',
             'stock.proposal.move': 'Teile {part} mm aus {stock} mm',
+            'stock.proposal.own': 'Teile {part} mm aus eigenem Querschnitt',
             'stock.proposal.repack': 'Geteilte Teile frei verteilt',
             'stock.proposal.keepSplit': 'Geteilte Teile bleiben auf ihrem Rohstück',
             'stock.proposal.catalog': '{name} {section} mm: Längen und Preise aus dem Materialkatalog',
@@ -6992,19 +6994,33 @@ window.addEventListener('load', function() {
             bestTotals = totals;
             return true;
         }
+        // Settings s with the catalog's lengths for key instead of the project's, keeping name
+        // and kerf; null when the project has no lengths of its own there or the catalog lacks it
+        function withCatalogOffers(s, key) {
+            var own = s[key];
+            if (!own || !stockCatalogEntry(key)) return null;
+            if (!((Array.isArray(own.offers) && own.offers.length > 0) || own.length > 0)) return null;
+            var copy = Object.assign({}, s);
+            copy[key] = Object.assign({}, own, { offers: null, length: null });
+            return copy;
+        }
         // Project lengths (often saved without prices before the catalog had any) give way to
-        // the catalog's where that makes the plan better; the name and kerf stay
+        // the catalog's where that makes the plan better
         function tryCatalogOffers() {
             var changed = false;
             Object.keys(bestSettings).forEach(function(key) {
-                var s = bestSettings[key];
-                if (!s || !stockCatalogEntry(key)) return;
-                if (!((Array.isArray(s.offers) && s.offers.length > 0) || s.length > 0)) return;
-                var copy = Object.assign({}, bestSettings);
-                copy[key] = Object.assign({}, s, { offers: null, length: null });
-                if (attempt(bestMap, copy, bestOptions)) changed = true;
+                var copy = withCatalogOffers(bestSettings, key);
+                if (copy && attempt(bestMap, copy, bestOptions)) changed = true;
             });
             return changed;
+        }
+        // Moving parts to stock that still has project lengths without prices can lose on its
+        // own, while the catalog's lengths there change nothing as long as no parts are on it:
+        // so a move is also tried together with the catalog's lengths of the stock it goes to
+        function tryMove(m, target) {
+            if (attempt(m, bestSettings, bestOptions)) return true;
+            var copy = withCatalogOffers(bestSettings, target);
+            return !!copy && attempt(m, copy, bestOptions);
         }
         if (pieces.some(function(m) { return !!m.userData.sourceId; })) {
             attempt(bestMap, bestSettings, Object.assign({}, bestOptions, { repackSplit: !bestOptions.repackSplit }));
@@ -7026,12 +7042,12 @@ window.addEventListener('load', function() {
                     if (bestMap[p.key] === sec.key) return;
                     var m = Object.assign({}, bestMap);
                     m[p.key] = sec.key;
-                    if (attempt(m, bestSettings, bestOptions)) changed = true;
+                    if (tryMove(m, sec.key)) changed = true;
                 });
                 if (bestMap[p.key] !== undefined) {
                     var auto = Object.assign({}, bestMap);
                     delete auto[p.key];
-                    if (attempt(auto, bestSettings, bestOptions)) changed = true;
+                    if (tryMove(auto, stockAutoKey(profiles, auto, p))) changed = true;
                 }
             });
             // Parts that moved can make the catalog's lengths pay off for the stock they moved to
@@ -7783,7 +7799,9 @@ window.addEventListener('load', function() {
             var now = stockSourcesOf(afterPlan);
             Object.keys(now).forEach(function(section) {
                 if (was[section] === now[section]) return;
-                stockDraft.changes.push(t('stock.proposal.move', { part: stockKeyText(section), stock: stockKeyText(now[section]) }));
+                stockDraft.changes.push(now[section] === section
+                    ? t('stock.proposal.own', { part: stockKeyText(section) })
+                    : t('stock.proposal.move', { part: stockKeyText(section), stock: stockKeyText(now[section]) }));
                 stockDraft.open.add(now[section]);
             });
             if (repacked) stockDraft.changes.push(t(result.options.repackSplit ? 'stock.proposal.repack' : 'stock.proposal.keepSplit'));

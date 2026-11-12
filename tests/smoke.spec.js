@@ -370,6 +370,63 @@ test('workshop sheet prints a shape with many angled edges as a full-size templa
     expect(result.lines).toEqual([true, true]);
 });
 
+test('workshop sheet draws holes into cut outlines and lists bought parts without a bar', async ({ page }) => {
+    await gotoApp(page);
+
+    const result = await page.evaluate(() => {
+        const app = window.__app;
+        app.setLanguage('en');
+        const tool = (t) => ({ op: 'subtract', tool: { local: true, px: 0, py: 0, pz: 0, rx: 0, ry: 0, rz: 0, ...t } });
+        app.restoreScene(JSON.stringify({
+            pieces: [{
+                type: 'Board', id: 1, label: 'Corner', px: 0, py: 0, pz: 0, rx: 0, ry: 0, rz: 0,
+                w: 300, h: 100, d: 18, notches: 5, csgOps: [
+                    tool({ type: 'Board', px: 150, py: 50, rz: Math.PI / 4, w: 100, h: 100, d: 30 }),
+                    // Through the thickness
+                    tool({ type: 'Dowel', px: -100, rx: Math.PI / 2, r: 4, h: 40 }),
+                    // Along the face, centred on the front face: half a hole, as in one of two glued layers
+                    tool({ type: 'Dowel', px: -50, pz: 9, r: 3, h: 120 }),
+                    // Along the face, inside the wood
+                    tool({ type: 'Dowel', px: 0, r: 2, h: 120 }),
+                    // Blind hole from the back
+                    tool({ type: 'Dowel', px: -120, pz: -9, rx: Math.PI / 2, r: 2, h: 10 })
+                ], csgModified: true
+            }, {
+                type: 'Board', id: 2, label: 'Lid', px: 0, py: 200, pz: 0, rx: 0, ry: 0, rz: 0,
+                w: 340, h: 20, d: 100, notches: 0, csgModified: false, price: 3.5, priceMode: 'fixed', bought: true
+            }],
+            groups: []
+        }));
+        const sheet = app.buildWorkshopSheet();
+        const figure = sheet.querySelector('.sheet-cuts .sheet-cut');
+        const stock = sheet.querySelector('.sheet-stock');
+        const blocks = stock.querySelectorAll('.sheet-stock-profile');
+        return {
+            cutRows: Array.from(figure.querySelectorAll('tbody tr')).map((r) => Array.from(r.children).map((c) => c.textContent)),
+            holeText: figure.querySelector('.sheet-cuts-hint').textContent,
+            circles: figure.querySelectorAll('svg circle').length,
+            hiddenCircles: figure.querySelectorAll('svg circle[stroke-dasharray]').length,
+            dashedLines: figure.querySelectorAll('svg line[stroke-dasharray]').length,
+            bars: Array.from(stock.querySelectorAll('.sheet-stock-bar .sheet-stock-bar-text')).map((el) => el.textContent),
+            bought: blocks[blocks.length - 1].textContent
+        };
+    });
+
+    // The round cuts leave the straight cut's outline alone and come back as holes
+    expect(result.cutRows).toEqual([['A', '45°', '100 mm', '229.3 / 100', '300 / 29.3']]);
+    expect(result.holeText).toBe('Holes, centre from the lower left corner: Ø8 at 50 / 50; ' +
+        'Ø6 as a groove 3 mm deep on the drawn side, from 100 / 0 to 100 / 100; ' +
+        'Ø4 drilled along the face from 150 / 0 to 150 / 100; Ø4 at 30 / 50, 5 mm deep from the back');
+    expect(result.circles).toBe(2);
+    expect(result.hiddenCircles).toBe(1);
+    // Axes of the groove and the hidden bore, plus the two sides of the hidden bore
+    expect(result.dashedLines).toBe(4);
+    // Nothing to cut for a bought part: one line, no bar
+    expect(result.bars).toHaveLength(1);
+    expect(result.bars[0]).toContain('Corner');
+    expect(result.bought).toMatch(/^Bought ready-made, nothing to cut[A-Z] · Pos\. \d Lid \(340\)$/);
+});
+
 test('tall add menu stays inside the window and scrolls to its last item', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 500 });
     await gotoApp(page);

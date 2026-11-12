@@ -1007,8 +1007,10 @@ window.addEventListener('load', function() {
             'stock.proposalApprox': 'Not every cross-section could be proven optimal; this is the best plan found.',
             'stock.optimizeHint': 'Tries other cross-sections from the catalog and repacking split parts, and shows the result before you apply it.',
             'stock.proposal.move': '{part} mm parts from {stock} mm',
+            'stock.proposal.own': '{part} mm parts from their own size',
             'stock.proposal.repack': 'Split parts packed freely',
             'stock.proposal.keepSplit': 'Split parts kept on their source',
+            'stock.proposal.catalog': '{name} {section} mm: lengths and prices from the stock catalog',
             'stock.sum.one': 'Buy 1 piece of stock',
             'stock.sum.many': 'Buy {bars} pieces of stock',
             'stock.sum.noPrice': 'no prices known yet',
@@ -1324,8 +1326,10 @@ window.addEventListener('load', function() {
             'stock.proposalApprox': 'Nicht jeder Querschnitt ließ sich als optimal nachweisen; das ist die beste gefundene Planung.',
             'stock.optimizeHint': 'Probiert andere Querschnitte aus dem Katalog und das Neuverteilen geteilter Teile und zeigt das Ergebnis, bevor du es übernimmst.',
             'stock.proposal.move': 'Teile {part} mm aus {stock} mm',
+            'stock.proposal.own': 'Teile {part} mm aus eigenem Querschnitt',
             'stock.proposal.repack': 'Geteilte Teile frei verteilt',
             'stock.proposal.keepSplit': 'Geteilte Teile bleiben auf ihrem Rohstück',
+            'stock.proposal.catalog': '{name} {section} mm: Längen und Preise aus dem Materialkatalog',
             'stock.sum.one': '1 Stück Rohmaterial kaufen',
             'stock.sum.many': '{bars} Stück Rohmaterial kaufen',
             'stock.sum.noPrice': 'noch keine Preise bekannt',
@@ -6969,26 +6973,59 @@ window.addEventListener('load', function() {
         return a.bars < b.bars;
     }
 
-    // Purchase list optimizer: starting from the given map and options, try packing split parts
-    // freely, and for every part cross-section each stock cross-section with offers in the
-    // project or the catalog that the parts can be ripped from (same thickness, at least as
+    // Purchase list optimizer: starting from the given map, settings and options, try packing
+    // split parts freely, the catalog's lengths and prices for stock that has lengths of its own
+    // in the project, and for every part cross-section each stock cross-section with offers in
+    // the project or the catalog that the parts can be ripped from (same thickness, at least as
     // wide). Changes that make the plan better are kept, until a full pass changes nothing.
-    // Round stock keeps its diameter. The model itself is never touched.
+    // Round stock keeps its diameter. The model itself is never touched, and neither are the
+    // settings passed in: a catalog switch comes back as a copy with that entry's offers cleared.
     function optimizeStock(rows, map, settings, options) {
         var bestMap = Object.assign({}, map);
+        var bestSettings = Object.assign({}, settings);
         var bestOptions = Object.assign({}, options);
-        var bestTotals = stockPlanTotals(buildStockPlan(rows, bestMap, settings, bestOptions));
-        function attempt(m, o) {
-            var totals = stockPlanTotals(buildStockPlan(rows, m, settings, o));
+        var bestTotals = stockPlanTotals(buildStockPlan(rows, bestMap, bestSettings, bestOptions));
+        function attempt(m, s, o) {
+            var totals = stockPlanTotals(buildStockPlan(rows, m, s, o));
             if (!stockTotalsBetter(totals, bestTotals)) return false;
             bestMap = m;
+            bestSettings = s;
             bestOptions = o;
             bestTotals = totals;
             return true;
         }
-        if (pieces.some(function(m) { return !!m.userData.sourceId; })) {
-            attempt(bestMap, Object.assign({}, bestOptions, { repackSplit: !bestOptions.repackSplit }));
+        // Settings s with the catalog's lengths for key instead of the project's, keeping name
+        // and kerf; null when the project has no lengths of its own there or the catalog lacks it
+        function withCatalogOffers(s, key) {
+            var own = s[key];
+            if (!own || !stockCatalogEntry(key)) return null;
+            if (!((Array.isArray(own.offers) && own.offers.length > 0) || own.length > 0)) return null;
+            var copy = Object.assign({}, s);
+            copy[key] = Object.assign({}, own, { offers: null, length: null });
+            return copy;
         }
+        // Project lengths (often saved without prices before the catalog had any) give way to
+        // the catalog's where that makes the plan better
+        function tryCatalogOffers() {
+            var changed = false;
+            Object.keys(bestSettings).forEach(function(key) {
+                var copy = withCatalogOffers(bestSettings, key);
+                if (copy && attempt(bestMap, copy, bestOptions)) changed = true;
+            });
+            return changed;
+        }
+        // Moving parts to stock that still has project lengths without prices can lose on its
+        // own, while the catalog's lengths there change nothing as long as no parts are on it:
+        // so a move is also tried together with the catalog's lengths of the stock it goes to
+        function tryMove(m, target) {
+            if (attempt(m, bestSettings, bestOptions)) return true;
+            var copy = withCatalogOffers(bestSettings, target);
+            return !!copy && attempt(m, copy, bestOptions);
+        }
+        if (pieces.some(function(m) { return !!m.userData.sourceId; })) {
+            attempt(bestMap, bestSettings, Object.assign({}, bestOptions, { repackSplit: !bestOptions.repackSplit }));
+        }
+        tryCatalogOffers();
         var buyable = {};
         stockCatalog.forEach(function(entry) { buyable[entry.profile] = true; });
         Object.keys(settings).forEach(function(key) {
@@ -7005,17 +7042,19 @@ window.addEventListener('load', function() {
                     if (bestMap[p.key] === sec.key) return;
                     var m = Object.assign({}, bestMap);
                     m[p.key] = sec.key;
-                    if (attempt(m, bestOptions)) changed = true;
+                    if (tryMove(m, sec.key)) changed = true;
                 });
                 if (bestMap[p.key] !== undefined) {
                     var auto = Object.assign({}, bestMap);
                     delete auto[p.key];
-                    if (attempt(auto, bestOptions)) changed = true;
+                    if (tryMove(auto, stockAutoKey(profiles, auto, p))) changed = true;
                 }
             });
+            // Parts that moved can make the catalog's lengths pay off for the stock they moved to
+            if (tryCatalogOffers()) changed = true;
             if (!changed) break;
         }
-        return { map: bestMap, options: bestOptions, totals: bestTotals };
+        return { map: bestMap, settings: bestSettings, options: bestOptions, totals: bestTotals };
     }
 
     // Stock letters from plan indices, consecutive ones as a range: 1, 2, 3, 5 → "B–D, F"
@@ -7735,7 +7774,7 @@ window.addEventListener('load', function() {
     }
 
     // Optimize: the best plan found from the current draft goes into the draft, with the
-    // totals before and after and a list of what moved; Apply saves it like any other edit
+    // totals before and after and a list of what changed; Apply saves it like any other edit
     function optimizeStockDraft() {
         if (!stockDraft) return;
         var beforePlan = stockDraftPlan();
@@ -7745,12 +7784,24 @@ window.addEventListener('load', function() {
         if (stockTotalsBetter(result.totals, before)) {
             var was = stockSourcesOf(beforePlan);
             var repacked = !!result.options.repackSplit !== !!stockDraft.options.repackSplit;
+            var oldSettings = stockDraft.settings;
             stockDraft.map = result.map;
+            stockDraft.settings = result.settings;
             stockDraft.options = result.options;
-            var now = stockSourcesOf(stockDraftPlan());
+            var afterPlan = stockDraftPlan();
+            // Stock in the new plan that now takes the catalog's lengths instead of the project's
+            afterPlan.forEach(function(entry) {
+                var key = entry.profile.key;
+                if (oldSettings[key] === result.settings[key] || entry.setting.source !== 'catalog') return;
+                stockDraft.changes.push(t('stock.proposal.catalog', { name: entry.setting.name, section: stockKeyText(key) }));
+                stockDraft.open.add(key);
+            });
+            var now = stockSourcesOf(afterPlan);
             Object.keys(now).forEach(function(section) {
                 if (was[section] === now[section]) return;
-                stockDraft.changes.push(t('stock.proposal.move', { part: stockKeyText(section), stock: stockKeyText(now[section]) }));
+                stockDraft.changes.push(now[section] === section
+                    ? t('stock.proposal.own', { part: stockKeyText(section) })
+                    : t('stock.proposal.move', { part: stockKeyText(section), stock: stockKeyText(now[section]) }));
                 stockDraft.open.add(now[section]);
             });
             if (repacked) stockDraft.changes.push(t(result.options.repackSplit ? 'stock.proposal.repack' : 'stock.proposal.keepSplit'));

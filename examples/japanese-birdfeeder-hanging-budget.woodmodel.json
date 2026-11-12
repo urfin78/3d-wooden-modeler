@@ -1,0 +1,1740 @@
+{
+  "version": 3,
+  "name": "Japanese Bird Feeder (Yagura, hanging, budget)",
+  "created": "2026-08-24T00:00:00.000Z",
+  "pieces": [
+    {
+      "type": "Board",
+      "id": 1,
+      "label": "Bodenplatte",
+      "notches": 1,
+      "csgModified": true,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0.0,
+      "py": 6.0,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 200,
+      "h": 12,
+      "d": 200,
+      "csgOps": [
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": 0,
+            "py": 0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "r": 3,
+            "h": 40
+          }
+        }
+      ],
+      "bought": true
+    },
+    {
+      "type": "Board",
+      "id": 2,
+      "label": "Aussenwand vorn",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0.0,
+      "py": 27.0,
+      "pz": 95.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 200,
+      "h": 30,
+      "d": 10
+    },
+    {
+      "type": "Board",
+      "id": 3,
+      "label": "Aussenwand hinten",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0.0,
+      "py": 27.0,
+      "pz": -95.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 200,
+      "h": 30,
+      "d": 10
+    },
+    {
+      "type": "Board",
+      "id": 4,
+      "label": "Aussenwand links",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -95.0,
+      "py": 27.0,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 10,
+      "h": 30,
+      "d": 180
+    },
+    {
+      "type": "Board",
+      "id": 5,
+      "label": "Aussenwand rechts",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 95.0,
+      "py": 27.0,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 10,
+      "h": 30,
+      "d": 180
+    },
+    {
+      "type": "Board",
+      "id": 6,
+      "label": "Trograhmen vorn",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0.0,
+      "py": 22.0,
+      "pz": 71.5,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 123,
+      "h": 20,
+      "d": 20
+    },
+    {
+      "type": "Board",
+      "id": 7,
+      "label": "Trograhmen hinten",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0.0,
+      "py": 22.0,
+      "pz": -71.5,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 123,
+      "h": 20,
+      "d": 20
+    },
+    {
+      "type": "Board",
+      "id": 8,
+      "label": "Trograhmen links",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -71.5,
+      "py": 22.0,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 20,
+      "h": 20,
+      "d": 123
+    },
+    {
+      "type": "Board",
+      "id": 9,
+      "label": "Trograhmen rechts",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 71.5,
+      "py": 22.0,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 20,
+      "h": 20,
+      "d": 123
+    },
+    {
+      "type": "Board",
+      "id": 11,
+      "label": "Pfosten hinten links",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -71.5,
+      "py": 119.5,
+      "pz": -71.5,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 20,
+      "h": 215,
+      "d": 20
+    },
+    {
+      "type": "Board",
+      "id": 12,
+      "label": "Pfosten vorn links",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -71.5,
+      "py": 119.5,
+      "pz": 71.5,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 20,
+      "h": 215,
+      "d": 20
+    },
+    {
+      "type": "Board",
+      "id": 13,
+      "label": "Pfosten hinten rechts",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 71.5,
+      "py": 119.5,
+      "pz": -71.5,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 20,
+      "h": 215,
+      "d": 20
+    },
+    {
+      "type": "Board",
+      "id": 14,
+      "label": "Pfosten vorn rechts",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 71.5,
+      "py": 119.5,
+      "pz": 71.5,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 20,
+      "h": 215,
+      "d": 20
+    },
+    {
+      "type": "Board",
+      "id": 15,
+      "label": "Traufbalken links",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -71.5,
+      "py": 217.0,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 20,
+      "h": 20,
+      "d": 123
+    },
+    {
+      "type": "Board",
+      "id": 16,
+      "label": "Traufbalken rechts",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 71.5,
+      "py": 217.0,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 20,
+      "h": 20,
+      "d": 123
+    },
+    {
+      "type": "Board",
+      "id": 17,
+      "label": "Giebel hinten",
+      "notches": 17,
+      "csgModified": true,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0.0,
+      "py": 229.9919,
+      "pz": -86.5,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 285,
+      "h": 96,
+      "d": 10,
+      "csgOps": [
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 52.9229,
+            "py": 82.7932,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.663225,
+            "w": 40.5659,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -52.9229,
+            "py": 82.7932,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.663225,
+            "w": 40.5659,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 79.2869,
+            "py": 64.9867,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.523599,
+            "w": 40.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -79.2869,
+            "py": 64.9867,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.523599,
+            "w": 40.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 107.6274,
+            "py": 51.1641,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.383972,
+            "w": 40.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -107.6274,
+            "py": 51.1641,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.383972,
+            "w": 40.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 143.4377,
+            "py": 39.9687,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.244346,
+            "w": 52.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -143.4377,
+            "py": 39.9687,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.244346,
+            "w": 52.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -14.2841,
+            "py": -44.7706,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.71798,
+            "w": 66.8876,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 14.2841,
+            "py": -44.7706,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.71798,
+            "w": 66.8876,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 15.1567,
+            "py": -66.0901,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.523599,
+            "w": 90.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -15.1567,
+            "py": -66.0901,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.523599,
+            "w": 90.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 62.3637,
+            "py": -87.5623,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.383972,
+            "w": 90.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -62.3637,
+            "py": -87.5623,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.383972,
+            "w": 90.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 112.0997,
+            "py": -102.2555,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.244346,
+            "w": 90.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -112.0997,
+            "py": -102.2555,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.244346,
+            "w": 90.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 0.0,
+            "py": 63.8275,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.0,
+            "w": 30.6812,
+            "h": 40.0,
+            "d": 18
+          }
+        }
+      ]
+    },
+    {
+      "type": "Board",
+      "id": 18,
+      "label": "Giebel vorn",
+      "notches": 17,
+      "csgModified": true,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0.0,
+      "py": 229.9919,
+      "pz": 86.5,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "w": 285,
+      "h": 96,
+      "d": 10,
+      "csgOps": [
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 52.9229,
+            "py": 82.7932,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.663225,
+            "w": 40.5659,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -52.9229,
+            "py": 82.7932,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.663225,
+            "w": 40.5659,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 79.2869,
+            "py": 64.9867,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.523599,
+            "w": 40.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -79.2869,
+            "py": 64.9867,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.523599,
+            "w": 40.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 107.6274,
+            "py": 51.1641,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.383972,
+            "w": 40.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -107.6274,
+            "py": 51.1641,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.383972,
+            "w": 40.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 143.4377,
+            "py": 39.9687,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.244346,
+            "w": 52.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -143.4377,
+            "py": 39.9687,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.244346,
+            "w": 52.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -14.2841,
+            "py": -44.7706,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.71798,
+            "w": 66.8876,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 14.2841,
+            "py": -44.7706,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.71798,
+            "w": 66.8876,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 15.1567,
+            "py": -66.0901,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.523599,
+            "w": 90.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -15.1567,
+            "py": -66.0901,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.523599,
+            "w": 90.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 62.3637,
+            "py": -87.5623,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.383972,
+            "w": 90.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -62.3637,
+            "py": -87.5623,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.383972,
+            "w": 90.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 112.0997,
+            "py": -102.2555,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.244346,
+            "w": 90.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -112.0997,
+            "py": -102.2555,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.244346,
+            "w": 90.0,
+            "h": 120.0,
+            "d": 18
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 0.0,
+            "py": 63.8275,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.0,
+            "w": 30.6812,
+            "h": 40.0,
+            "d": 18
+          }
+        }
+      ]
+    },
+    {
+      "type": "Board",
+      "id": 19,
+      "label": "Dachlatte links 1",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -24.0125,
+      "py": 265.5763,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.663225,
+      "w": 28,
+      "h": 10,
+      "d": 265,
+      "angleStart": 86.0,
+      "angleEnd": 128.0
+    },
+    {
+      "type": "Board",
+      "id": 20,
+      "label": "Dachlatte links 2",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -51.7869,
+      "py": 247.3471,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.523599,
+      "w": 40,
+      "h": 10,
+      "d": 265,
+      "angleStart": 86.0,
+      "angleEnd": 86.0
+    },
+    {
+      "type": "Board",
+      "id": 21,
+      "label": "Dachlatte links 3",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -87.0241,
+      "py": 230.1608,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.383972,
+      "w": 40,
+      "h": 10,
+      "d": 265,
+      "angleStart": 86.0,
+      "angleEnd": 86.0
+    },
+    {
+      "type": "Board",
+      "id": 22,
+      "label": "Dachlatte links 4",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -124.3102,
+      "py": 218.0458,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.244346,
+      "w": 40,
+      "h": 10,
+      "d": 265,
+      "angleStart": 90.0,
+      "angleEnd": 86.0
+    },
+    {
+      "type": "Board",
+      "id": 23,
+      "label": "Dachlatte rechts 1",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 24.0125,
+      "py": 265.5763,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": -0.663225,
+      "w": 28,
+      "h": 10,
+      "d": 265,
+      "angleStart": 128.0,
+      "angleEnd": 86.0
+    },
+    {
+      "type": "Board",
+      "id": 24,
+      "label": "Dachlatte rechts 2",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 51.7869,
+      "py": 247.3471,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": -0.523599,
+      "w": 40,
+      "h": 10,
+      "d": 265,
+      "angleStart": 86.0,
+      "angleEnd": 86.0
+    },
+    {
+      "type": "Board",
+      "id": 25,
+      "label": "Dachlatte rechts 3",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 87.0241,
+      "py": 230.1608,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": -0.383972,
+      "w": 40,
+      "h": 10,
+      "d": 265,
+      "angleStart": 86.0,
+      "angleEnd": 86.0
+    },
+    {
+      "type": "Board",
+      "id": 26,
+      "label": "Dachlatte rechts 4",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 124.3102,
+      "py": 218.0458,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": -0.244346,
+      "w": 40,
+      "h": 10,
+      "d": 265,
+      "angleStart": 86.0,
+      "angleEnd": 90.0
+    },
+    {
+      "type": "Board",
+      "id": 27,
+      "label": "First Lage 1",
+      "notches": 13,
+      "csgModified": true,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 5.0,
+      "py": 290.2555,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": -1.570796,
+      "rz": 0.0,
+      "w": 304,
+      "h": 40,
+      "d": 10,
+      "csgOps": [
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 0.0,
+            "py": 46.4871,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.0,
+            "w": 59.2214,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 0.0,
+            "py": -60.0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.0,
+            "w": 600.0,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -56.3002,
+            "py": 48.4511,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.069813,
+            "w": 59.1035,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -34.2486,
+            "py": -59.838,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.069813,
+            "w": 600.0,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -141.5991,
+            "py": 59.5075,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.15708,
+            "w": 120.0506,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -98.9711,
+            "py": -55.0586,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.15708,
+            "w": 600.0,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 56.3002,
+            "py": 48.4511,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.069813,
+            "w": 59.1035,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 34.2486,
+            "py": -59.838,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.069813,
+            "w": 600.0,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 141.5991,
+            "py": 59.5075,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.15708,
+            "w": 120.0506,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 98.9711,
+            "py": -55.0586,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.15708,
+            "w": 600.0,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -179.5589,
+            "py": 11.6125,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.15708,
+            "w": 60.0,
+            "h": 120.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 179.5589,
+            "py": 11.6125,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.15708,
+            "w": 60.0,
+            "h": 120.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": 0,
+            "py": 0,
+            "pz": 5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "r": 3,
+            "h": 80
+          }
+        }
+      ]
+    },
+    {
+      "type": "Board",
+      "id": 29,
+      "label": "First Lage 2",
+      "notches": 13,
+      "csgModified": true,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -5.0,
+      "py": 290.2555,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": -1.570796,
+      "rz": 0.0,
+      "w": 304,
+      "h": 40,
+      "d": 10,
+      "csgOps": [
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 0.0,
+            "py": 46.4871,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.0,
+            "w": 59.2214,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 0.0,
+            "py": -60.0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.0,
+            "w": 600.0,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -56.3002,
+            "py": 48.4511,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.069813,
+            "w": 59.1035,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -34.2486,
+            "py": -59.838,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.069813,
+            "w": 600.0,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -141.5991,
+            "py": 59.5075,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.15708,
+            "w": 120.0506,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -98.9711,
+            "py": -55.0586,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.15708,
+            "w": 600.0,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 56.3002,
+            "py": 48.4511,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.069813,
+            "w": 59.1035,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 34.2486,
+            "py": -59.838,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.069813,
+            "w": 600.0,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 141.5991,
+            "py": 59.5075,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.15708,
+            "w": 120.0506,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 98.9711,
+            "py": -55.0586,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.15708,
+            "w": 600.0,
+            "h": 80.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": -179.5589,
+            "py": 11.6125,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.15708,
+            "w": 60.0,
+            "h": 120.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Board",
+            "local": true,
+            "px": 179.5589,
+            "py": 11.6125,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.15708,
+            "w": 60.0,
+            "h": 120.0,
+            "d": 30
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": 0,
+            "py": 0,
+            "pz": -5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "r": 3,
+            "h": 80
+          }
+        }
+      ]
+    },
+    {
+      "type": "Dowel",
+      "id": 28,
+      "label": "Aufhängeseil Ø5",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 0.0,
+      "py": 155.0,
+      "pz": 0.0,
+      "rx": 0.0,
+      "ry": 0.0,
+      "rz": 0.0,
+      "r": 2.5,
+      "h": 370,
+      "bought": true
+    }
+  ],
+  "groups": [
+    {
+      "gId": "grp_1",
+      "px": 0,
+      "py": 0,
+      "pz": 0,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0
+    }
+  ],
+  "rulers": [
+    {
+      "p1": [
+        -100,
+        0,
+        100
+      ],
+      "p2": [
+        100,
+        0,
+        100
+      ]
+    }
+  ],
+  "stock": [
+    {
+      "profile": "10x30",
+      "name": "Kiefer",
+      "offers": [
+        {
+          "length": 900,
+          "price": 2.5
+        },
+        {
+          "length": 2000,
+          "price": 4.75
+        }
+      ],
+      "kerf": 3,
+      "parts": [
+        "10x30"
+      ]
+    },
+    {
+      "profile": "10x40",
+      "name": "Kiefer",
+      "offers": [
+        {
+          "length": 900,
+          "price": 3.0
+        },
+        {
+          "length": 2000,
+          "price": 5.5
+        }
+      ],
+      "kerf": 3,
+      "parts": [
+        "10x35.8"
+      ]
+    },
+    {
+      "profile": "10x96",
+      "name": "Kiefer",
+      "offers": [
+        {
+          "length": 900,
+          "price": 5.4
+        }
+      ],
+      "kerf": 3
+    },
+    {
+      "profile": "20x20",
+      "name": "Kiefer",
+      "offers": [
+        {
+          "length": 900,
+          "price": 2.45
+        },
+        {
+          "length": 2000,
+          "price": 5.35
+        }
+      ],
+      "kerf": 3
+    }
+  ]
+}

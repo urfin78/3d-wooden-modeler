@@ -969,6 +969,14 @@ window.addEventListener('load', function() {
             'sheet.cuts.col.from': 'From (x / y)',
             'sheet.cuts.col.to': 'To (x / y)',
             'sheet.cuts.contour': 'Saw along the outline, e.g. with a jigsaw: the full-size template follows on the next pages.',
+            'sheet.cuts.holes': 'Holes, centre from the lower left corner: {list}',
+            'sheet.cuts.hole': 'Ø{dia} at {u} / {v}',
+            'sheet.cuts.bore': 'Ø{dia} drilled along the face from {a} to {b}',
+            'sheet.cuts.holeBlind': 'Ø{dia} at {u} / {v}, {depth} mm deep from the {side}',
+            'sheet.cuts.groove': 'Ø{dia} as a groove {depth} mm deep on the {side}, from {a} to {b}',
+            'sheet.cuts.slot': 'Ø{dia} as a slot through the full thickness, from {a} to {b}',
+            'sheet.cuts.side.front': 'drawn side',
+            'sheet.cuts.side.back': 'back',
             'sheet.template': 'Full-size templates',
             'sheet.template.hint': 'Print at 100 % scale, not "fit to page", and check the 100 mm line with a ruler. Line up the crosses of neighbouring sheets, glue the template onto the board and saw along the line.',
             'sheet.template.sheet': 'Pos. {pos} · {name} · sheet {n} of {total}',
@@ -987,6 +995,7 @@ window.addEventListener('load', function() {
             'sheet.col.stock': 'From stock',
             'toolbar.stock': 'Stock Material…',
             'sheet.stock.part': 'Pos. {pos}',
+            'sheet.stock.bought': 'Bought ready-made, nothing to cut',
             'stock.title': 'Stock material',
             'stock.hint': 'What you need to buy to saw every part. Nothing needs to be entered: open a material to change its lengths, prices or the stock a part is sawn from.',
             'stock.invalid': 'Enter a cross-section such as 12x50 or Ø6',
@@ -1288,6 +1297,14 @@ window.addEventListener('load', function() {
             'sheet.cuts.col.from': 'Von (x / y)',
             'sheet.cuts.col.to': 'Bis (x / y)',
             'sheet.cuts.contour': 'Entlang der Kontur sägen, z. B. mit der Stichsäge: Die 1:1-Schablone folgt auf den nächsten Seiten.',
+            'sheet.cuts.holes': 'Bohrungen, Mitte ab der linken unteren Ecke: {list}',
+            'sheet.cuts.hole': 'Ø{dia} bei {u} / {v}',
+            'sheet.cuts.bore': 'Ø{dia} längs in der Fläche gebohrt, von {a} bis {b}',
+            'sheet.cuts.holeBlind': 'Ø{dia} bei {u} / {v}, {depth} mm tief von der {side}',
+            'sheet.cuts.groove': 'Ø{dia} als Rille, {depth} mm tief auf der {side}, von {a} bis {b}',
+            'sheet.cuts.slot': 'Ø{dia} als Schlitz durch die ganze Dicke, von {a} bis {b}',
+            'sheet.cuts.side.front': 'gezeichneten Seite',
+            'sheet.cuts.side.back': 'Rückseite',
             'sheet.template': 'Schablonen 1:1',
             'sheet.template.hint': 'Mit 100 % drucken, nicht „an Seite anpassen“, und die 100-mm-Linie mit dem Lineal prüfen. Die Kreuze benachbarter Blätter aufeinanderlegen, die Schablone auf das Brett kleben und entlang der Linie sägen.',
             'sheet.template.sheet': 'Pos. {pos} · {name} · Blatt {n} von {total}',
@@ -1295,7 +1312,7 @@ window.addEventListener('load', function() {
             'sheet.empty': 'Das Modell ist leer – nichts zu drucken.',
             'sheet.stock.summary': 'Ausgangsmaterial:',
             'sheet.stock.item': '{qty}× {name}',
-            'sheet.stock.title': 'Schneideplan',
+            'sheet.stock.title': 'Zuschnittplan',
             'sheet.stock.hint': 'Jeder Balken ist ein Stück Rohmaterial, maßstäblich vom linken Ende aus gezeichnet; sein Buchstabe steht auch in der Stückliste. Die Teile werden auf die erhältlichen Längen verteilt (Materialkatalog oder Datei → Ausgangsmaterial, sonst 2000 mm, Rundstab 1000 mm), bei bekannten Preisen in der günstigsten Mischung. Teile, die im Modell aus einem Rohstück geteilt wurden, bleiben auf diesem Stück, außer sie werden neu verteilt. Jeder Schnitt kostet die Schnittfuge. Gehrungen und Schrägschnitte werden danach aus dem Rohling gesägt.',
             'sheet.stock.heading': '{name} {section} mm',
             'sheet.stock.bar': '{ids} · {name}',
@@ -1306,6 +1323,7 @@ window.addEventListener('load', function() {
             'sheet.col.stock': 'Aus Rohstück',
             'toolbar.stock': 'Ausgangsmaterial …',
             'sheet.stock.part': 'Pos. {pos}',
+            'sheet.stock.bought': 'Fertig gekauft, nichts zu sägen',
             'stock.title': 'Ausgangsmaterial',
             'stock.hint': 'Was du kaufen musst, um alle Teile zu sägen. Eintragen musst du nichts: Klapp ein Material auf, um Längen, Preise oder das Ausgangsmaterial eines Teils zu ändern.',
             'stock.invalid': 'Querschnitt eingeben, z. B. 12x50 oder Ø6',
@@ -6082,18 +6100,167 @@ window.addEventListener('load', function() {
         return merged;
     }
 
+    function isRoundCut(op) {
+        return !!op.tool && SHEET_CUT_ROUND_TOOLS.indexOf(op.tool.type) !== -1;
+    }
+
+    // Geometry of a board with only its straight cuts, in its own frame: the cuts replayed on a
+    // fresh blank, leaving out the round ones. null when a cut fails.
+    function straightCutGeometry(ud) {
+        var target = new THREE.Mesh(boardGeometry(ud.w, ud.h, ud.d, ud.angleStart, ud.angleEnd));
+        target.updateMatrixWorld(true);
+        try {
+            ud.csgOps.forEach(function(op) {
+                if (isRoundCut(op)) return;
+                var tool = pieceFromSpec(op.tool);
+                if (!tool) return;
+                pieceCounter--; // pieceFromSpec counted it as a new piece
+                tool.position.set(op.tool.px || 0, op.tool.py || 0, op.tool.pz || 0);
+                tool.rotation.set(op.tool.rx || 0, op.tool.ry || 0, op.tool.rz || 0);
+                target.add(tool);
+                tool.updateMatrixWorld(true);
+                try {
+                    var cut = csgSubtract(target, tool);
+                    target.geometry.dispose();
+                    target.geometry = cut;
+                } finally {
+                    target.remove(tool);
+                    tool.geometry.dispose();
+                    tool.material.dispose();
+                }
+            });
+        } catch (e) {
+            target.geometry.dispose();
+            return null;
+        }
+        return target.geometry;
+    }
+
+    // A round cut seen on the drawn face, in mm from the lower left corner of the blank. side says
+    // where a cut that does not go all the way opens: 'front' on the face at the far end of the
+    // thickness, 'back' on the other one (the caller turns them round when the drawing looks at
+    // the near face).
+    // - a hole across the face: { u, v, r }, plus depth and side when it stops inside the part
+    // - a bore lying in the face: { bore, a, b, r, w } with w half its width on the face. Inside
+    //   the wood it is hidden; cut open at a face it is a groove with depth and side, e.g. half a
+    //   hole in each of two layers glued together; open at both faces it is a slot (side 'both').
+    // Holes at a slant to the face, or not reaching the part, give null.
+    function outlineHole(tool, min, max, uAxis, vAxis, thin) {
+        var eps = 0.01;
+        var r = tool.type === 'Tapered Leg' ? Math.max(tool.rTop, tool.rBottom) : tool.r;
+        var axis = new THREE.Vector3(0, 1, 0).applyEuler(new THREE.Euler(tool.rx || 0, tool.ry || 0, tool.rz || 0)).toArray();
+        var center = [tool.px || 0, tool.py || 0, tool.pz || 0];
+        var half = (tool.h || 0) / 2;
+        var width = max[uAxis] - min[uAxis];
+        var height = max[vAxis] - min[vAxis];
+        var across = Math.abs(axis[thin]);
+        var c = center[thin];
+        if (across > 0.99) {
+            var u = center[uAxis] - min[uAxis];
+            var v = center[vAxis] - min[vAxis];
+            var from = Math.max(c - half * across, min[thin]);
+            var to = Math.min(c + half * across, max[thin]);
+            if (to - from <= eps || u < -r || u > width + r || v < -r || v > height + r) return null;
+            var front = to >= max[thin] - eps;
+            var back = from <= min[thin] + eps;
+            if (front && back) return { u: u, v: v, r: r };
+            if (!front && !back) return null;
+            return { u: u, v: v, r: r, depth: to - from, side: front ? 'front' : 'back' };
+        }
+        if (across > 0.01) return null;
+        var lo = Math.max(c - r, min[thin]);
+        var hi = Math.min(c + r, max[thin]);
+        if (hi - lo <= eps) return null;
+        var hole = { bore: true, r: r, w: r };
+        var opensFront = c + r > max[thin] + eps;
+        var opensBack = c - r < min[thin] - eps;
+        if (opensFront && opensBack) {
+            hole.side = 'both';
+        } else if (opensFront || opensBack) {
+            hole.side = opensFront ? 'front' : 'back';
+            hole.depth = hi - lo;
+            var dist = opensFront ? max[thin] - c : c - min[thin];
+            hole.w = Math.sqrt(Math.max(0, r * r - dist * dist));
+        }
+        // Clip the bore's axis to the blank (Liang-Barsky)
+        var a = [center[uAxis] - min[uAxis] - axis[uAxis] * half, center[vAxis] - min[vAxis] - axis[vAxis] * half];
+        var d = [axis[uAxis] * 2 * half, axis[vAxis] * 2 * half];
+        var t0 = 0;
+        var t1 = 1;
+        var limits = [[-d[0], a[0]], [d[0], width - a[0]], [-d[1], a[1]], [d[1], height - a[1]]];
+        for (var i = 0; i < 4; i++) {
+            var pp = limits[i][0];
+            var q = limits[i][1];
+            if (Math.abs(pp) < 1e-9) {
+                if (q < 0) return null;
+                continue;
+            }
+            var t = q / pp;
+            if (pp < 0) t0 = Math.max(t0, t);
+            else t1 = Math.min(t1, t);
+        }
+        if (t1 - t0 < 1e-6) return null;
+        hole.a = [a[0] + d[0] * t0, a[1] + d[1] * t0];
+        hole.b = [a[0] + d[0] * t1, a[1] + d[1] * t1];
+        return hole;
+    }
+
+    // A bore cut down to the part where it runs inside the outline, from its first entry to its
+    // last exit; null when it misses the outline
+    function clipBoreToOutline(hole, edges) {
+        var a = hole.a;
+        var d = [hole.b[0] - a[0], hole.b[1] - a[1]];
+        var ts = [0, 1];
+        edges.forEach(function(e) {
+            var ed = [e.b[0] - e.a[0], e.b[1] - e.a[1]];
+            var den = d[0] * ed[1] - d[1] * ed[0];
+            if (Math.abs(den) < 1e-9) return;
+            var w = [e.a[0] - a[0], e.a[1] - a[1]];
+            var t = (w[0] * ed[1] - w[1] * ed[0]) / den;
+            var s = (w[0] * d[1] - w[1] * d[0]) / den;
+            if (t > 0 && t < 1 && s >= 0 && s <= 1) ts.push(t);
+        });
+        ts.sort(function(x, y) { return x - y; });
+        var from = null;
+        var to = null;
+        for (var i = 0; i + 1 < ts.length; i++) {
+            var mid = (ts[i] + ts[i + 1]) / 2;
+            if (ts[i + 1] - ts[i] < 1e-6 || !outlineContains(edges, a[0] + d[0] * mid, a[1] + d[1] * mid)) continue;
+            if (from === null) from = ts[i];
+            to = ts[i + 1];
+        }
+        if (from === null) return null;
+        return Object.assign({}, hole, {
+            a: [a[0] + d[0] * from, a[1] + d[1] * from],
+            b: [a[0] + d[0] * to, a[1] + d[1] * to]
+        });
+    }
+
     // Outline of a cut board on its largest face, in mm from the lower left corner of the blank,
     // with the long edge horizontal. Returns null unless straight cuts run at an angle to the
-    // edges: a square notch needs no angle, and a round tool would only give a list of facets.
+    // edges: a square notch needs no angle. Round cuts would only give a list of facets, so the
+    // outline is taken from the straight cuts alone and the round ones come back as holes.
     // The outline comes from the walls standing on the face. Their edges on the face plane cover
     // it completely, whereas the triangles of the face itself have T-junctions after CSG.
     function pieceCutOutline(m) {
-        var ops = m.userData.csgOps || [];
-        var round = ops.some(function(op) {
-            return op.tool && SHEET_CUT_ROUND_TOOLS.indexOf(op.tool.type) !== -1;
-        });
-        if (round) return null;
-        var source = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry;
+        var ud = m.userData;
+        var ops = ud.csgOps || [];
+        var roundOps = ops.filter(isRoundCut);
+        var geometry = m.geometry;
+        if (roundOps.length > 0) {
+            // Only cuts recorded in the piece's own frame can be replayed without the round ones
+            if (ud.type !== 'Board' || !ops.every(function(op) { return op.op === 'subtract' && op.tool && op.tool.local; })) return null;
+            geometry = straightCutGeometry(ud);
+            if (!geometry) return null;
+        }
+        var source = geometry.index ? geometry.toNonIndexed() : geometry;
+        var outline = cutOutlineOf(source, roundOps);
+        if (source !== geometry) source.dispose();
+        if (geometry !== m.geometry) geometry.dispose();
+        return outline;
+    }
+
+    function cutOutlineOf(source, roundOps) {
         var attr = source.attributes.position;
         var box = new THREE.Box3().setFromBufferAttribute(attr);
         var min = box.min.toArray();
@@ -6136,7 +6303,75 @@ window.addEventListener('load', function() {
         });
         if (cuts.length === 0 || cuts.length > SHEET_CUT_MAX_EDGES) return null;
         cuts.sort(function(x, y) { return (x.a[0] + x.b[0]) - (y.a[0] + y.b[0]); });
-        return { width: size[uAxis], height: size[vAxis], edges: edges, cuts: cuts };
+        // With u to the right and v up, the drawing looks at the face at the far end of the
+        // thickness only when u, v and the thickness make a right-handed set of axes
+        var fromFar = (vAxis - uAxis + 3) % 3 === 1;
+        var holes = roundOps.map(function(op) {
+            var hole = outlineHole(op.tool, min, max, uAxis, vAxis, thin);
+            if (hole && !fromFar && (hole.side === 'front' || hole.side === 'back')) {
+                hole.side = hole.side === 'front' ? 'back' : 'front';
+            }
+            return hole && hole.bore ? clipBoreToOutline(hole, edges) : hole;
+        }).filter(Boolean);
+        return { width: size[uAxis], height: size[vAxis], edges: edges, cuts: cuts, holes: holes };
+    }
+
+    // Holes drawn into an outline: a circle with a centre cross, or a bore as two lines with its
+    // axis. What lies behind the drawn face is dashed. x and y map outline mm to SVG units, unit
+    // is the SVG size of one mm.
+    function drawOutlineHoles(svg, holes, x, y, unit, stroke) {
+        var g = svgEl('g', { stroke: '#000', 'stroke-width': stroke, fill: 'none' }, svg);
+        var dash = (2 * unit) + ' ' + (1.5 * unit);
+        holes.forEach(function(hole) {
+            var r = hole.r * unit;
+            var hidden = hole.side === 'back' || (hole.bore && !hole.side);
+            if (!hole.bore) {
+                var cx = x(hole.u);
+                var cy = y(hole.v);
+                var circle = { cx: cx, cy: cy, r: r };
+                if (hidden) circle['stroke-dasharray'] = dash;
+                svgEl('circle', circle, g);
+                var arm = r + 3 * unit;
+                svgEl('line', { x1: cx - arm, y1: cy, x2: cx + arm, y2: cy, 'stroke-width': stroke / 2 }, g);
+                svgEl('line', { x1: cx, y1: cy - arm, x2: cx, y2: cy + arm, 'stroke-width': stroke / 2 }, g);
+                return;
+            }
+            var ax = x(hole.a[0]);
+            var ay = y(hole.a[1]);
+            var bx = x(hole.b[0]);
+            var by = y(hole.b[1]);
+            var len = Math.hypot(bx - ax, by - ay);
+            var nx = -(by - ay) / len * hole.w * unit;
+            var ny = (bx - ax) / len * hole.w * unit;
+            [1, -1].forEach(function(side) {
+                var line = { x1: ax + side * nx, y1: ay + side * ny, x2: bx + side * nx, y2: by + side * ny };
+                if (hidden) line['stroke-dasharray'] = dash;
+                svgEl('line', line, g);
+            });
+            svgEl('line', {
+                x1: ax, y1: ay, x2: bx, y2: by, 'stroke-width': stroke / 2,
+                'stroke-dasharray': (6 * unit) + ' ' + (1.5 * unit) + ' ' + (1 * unit) + ' ' + (1.5 * unit)
+            }, g);
+        });
+    }
+
+    // "Holes (centre from the lower left corner): Ø6 at 152 / 20" below a drawing, if there are any
+    function addOutlineHoleText(fig, holes) {
+        if (holes.length === 0) return;
+        var list = holes.map(function(hole) {
+            var params = { dia: formatMm(hole.r * 2) };
+            if (hole.depth !== undefined) params.depth = formatMm(hole.depth);
+            if (hole.side === 'front' || hole.side === 'back') params.side = t('sheet.cuts.side.' + hole.side);
+            if (!hole.bore) {
+                params.u = formatMm(hole.u);
+                params.v = formatMm(hole.v);
+                return t(hole.side ? 'sheet.cuts.holeBlind' : 'sheet.cuts.hole', params);
+            }
+            params.a = formatMm(hole.a[0]) + ' / ' + formatMm(hole.a[1]);
+            params.b = formatMm(hole.b[0]) + ' / ' + formatMm(hole.b[1]);
+            return t(hole.side === 'both' ? 'sheet.cuts.slot' : hole.side ? 'sheet.cuts.groove' : 'sheet.cuts.bore', params);
+        });
+        sheetEl('p', 'sheet-cuts-hint', fig).textContent = t('sheet.cuts.holes', { list: list.join('; ') });
     }
 
     // Even-odd test against the outline edges; used to put a cut's letter outside the part
@@ -6167,9 +6402,11 @@ window.addEventListener('load', function() {
                 stroke: '#000', 'stroke-width': 3, 'stroke-linecap': 'round'
             }, svg);
         });
+        drawOutlineHoles(svg, outline.holes, function(u) { return left + u * scale; }, function(v) { return bottom - v * scale; }, scale, 2);
         drawDimension(svg, left, left + outline.width * scale, bottom, true, outline.width);
         drawDimension(svg, top, bottom, left + outline.width * scale, false, outline.height);
         sheetEl('p', 'sheet-cuts-hint', fig).textContent = t('sheet.cuts.contour');
+        addOutlineHoleText(fig, outline.holes);
         sheetEl('figcaption', null, fig).textContent = cutCaption(group, pos);
     }
 
@@ -6234,6 +6471,7 @@ window.addEventListener('load', function() {
                         stroke: '#000', 'stroke-width': 0.35, 'stroke-linecap': 'round'
                     }, svg);
                 });
+                drawOutlineHoles(svg, outline.holes, function(u) { return u; }, function(v) { return topV - v; }, 1, 0.35);
                 // Crosses at the middle of each overlap with a neighbour
                 var endU = startU + SHEET_TEMPLATE_W;
                 var inset = 8;
@@ -6272,6 +6510,7 @@ window.addEventListener('load', function() {
                 stroke: outline.cuts.indexOf(e) === -1 ? '#000' : '#c8452f', 'stroke-width': 3, 'stroke-linecap': 'round'
             }, svg);
         });
+        drawOutlineHoles(svg, outline.holes, px, py, scale, 2);
         outline.cuts.forEach(function(e, i) {
             var midU = (e.a[0] + e.b[0]) / 2;
             var midV = (e.a[1] + e.b[1]) / 2;
@@ -6302,6 +6541,7 @@ window.addEventListener('load', function() {
             sheetEl('td', 'num', row).textContent = formatMm(e.a[0]) + ' / ' + formatMm(e.a[1]);
             sheetEl('td', 'num', row).textContent = formatMm(e.b[0]) + ' / ' + formatMm(e.b[1]);
         });
+        addOutlineHoleText(fig, outline.holes);
         sheetEl('figcaption', null, fig).textContent = cutCaption(group, pos);
     }
 
@@ -7200,23 +7440,38 @@ window.addEventListener('load', function() {
         }).join(' · ') + (rest ? ' · ' + rest : '');
     }
 
+    // Parts bought ready-made have nothing to cut: they get one line at the end instead of a bar
     function buildStockPage(parent, plan) {
         if (plan.length === 0) return;
         var page = sheetEl('section', 'sheet-page sheet-stock', parent);
         sheetEl('h2', null, page).textContent = t('sheet.stock.title');
         sheetEl('p', 'sheet-cuts-hint', page).textContent = t('sheet.stock.hint');
+        var bought = [];
         plan.forEach(function(entry) {
+            entry.bars.forEach(function(bar) {
+                if (bar.bought) bought.push({ index: bar.index, part: bar.parts[0] });
+            });
+            var groups = groupIdenticalBars(entry).filter(function(group) { return !group.bar.bought; });
+            if (groups.length === 0) return;
             var block = sheetEl('div', 'sheet-stock-profile', page);
             sheetEl('h3', null, block).textContent = t('sheet.stock.heading', {
                 name: entry.setting.name,
                 section: stockSectionText(entry.profile)
             });
-            var maxLen = entry.bars.reduce(function(m, b) { return Math.max(m, stockBarLength(b)); }, 0);
+            var maxLen = groups.reduce(function(m, group) { return Math.max(m, stockBarLength(group.bar)); }, 0);
             var scale = (STOCK_BAR_W - 2) / maxLen;
-            groupIdenticalBars(entry).forEach(function(group) {
+            groups.forEach(function(group) {
                 buildStockBar(block, entry, group, scale);
             });
         });
+        if (bought.length === 0) return;
+        bought.sort(function(a, b) { return a.index - b.index; });
+        var list = sheetEl('div', 'sheet-stock-profile', page);
+        sheetEl('h3', null, list).textContent = t('sheet.stock.bought');
+        sheetEl('div', 'sheet-stock-bar-text', list).textContent = bought.map(function(item) {
+            return cutLetter(item.index) + ' · ' + t('sheet.stock.part', { pos: item.part.pos }) + ' ' +
+                item.part.name + ' (' + formatMm(item.part.length) + ')';
+        }).join(' · ');
     }
 
     // Stock dialog: a shopping list with one entry per stock cross-section. The head of an

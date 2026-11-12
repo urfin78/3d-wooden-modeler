@@ -800,3 +800,21 @@ test('optimize moves parts back to their own size when the catalog makes it chea
     ]);
     expect(result.after).toEqual([['13.5x30', [[900, 3.45]]]]);
 });
+
+test('language and currency selects in the settings menu keep it open', async ({ page }) => {
+    await gotoApp(page);
+    await page.evaluate(() => window.__app.setLanguage('de'));
+    const menu = page.locator('#settings-dropdown');
+    await menu.locator('button').first().click();
+    await expect(menu).toHaveClass(/\bopen\b/);
+    // Clicking the select used to close the menu, and the select's list with it
+    await page.locator('#lang-select').click();
+    await expect(menu).toHaveClass(/\bopen\b/);
+    await page.locator('#lang-select').selectOption('en');
+    expect(await page.evaluate(() => window.__app.getLanguage())).toBe('en');
+    await page.locator('#currency-select').click();
+    await expect(menu).toHaveClass(/\bopen\b/);
+    // A click outside still closes it
+    await page.mouse.click(5, 400);
+    await expect(menu).not.toHaveClass(/\bopen\b/);
+});

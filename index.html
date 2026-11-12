@@ -8517,7 +8517,12 @@ window.addEventListener('load', function() {
     wireDropdown(document.getElementById('file-dropdown'));
     wireDropdown(document.getElementById('settings-dropdown'));
 
-    document.addEventListener('click', closeAllDropdowns);
+    // A click anywhere closes the menus, except on a form control inside one (language,
+    // currency): closing the menu would close the select's own list before a choice is made
+    document.addEventListener('click', function(e) {
+        if (e.target.closest && e.target.closest('.menu-panel select, .menu-panel input, .menu-panel option')) return;
+        closeAllDropdowns();
+    });
 
     // Mode toggles (icons only)
     document.getElementById('btn-snap').addEventListener('click', function() {

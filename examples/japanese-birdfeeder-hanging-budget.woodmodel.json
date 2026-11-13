@@ -7,7 +7,7 @@
       "type": "Board",
       "id": 1,
       "label": "Bodenplatte",
-      "notches": 1,
+      "notches": 5,
       "csgModified": true,
       "price": 0,
       "priceMode": "fixed",
@@ -39,6 +39,66 @@
             "rz": 0,
             "r": 3,
             "h": 40
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": -71.5,
+            "py": 0,
+            "pz": -71.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "r": 3,
+            "h": 20
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": -71.5,
+            "py": 0,
+            "pz": 71.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "r": 3,
+            "h": 20
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": 71.5,
+            "py": 0,
+            "pz": -71.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "r": 3,
+            "h": 20
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": 71.5,
+            "py": 0,
+            "pz": 71.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "r": 3,
+            "h": 20
           }
         }
       ],
@@ -232,8 +292,8 @@
       "type": "Board",
       "id": 11,
       "label": "Pfosten hinten links",
-      "notches": 0,
-      "csgModified": false,
+      "notches": 2,
+      "csgModified": true,
       "price": 0,
       "priceMode": "fixed",
       "sourceId": null,
@@ -249,14 +309,46 @@
       "rz": 0.0,
       "w": 20,
       "h": 215,
-      "d": 20
+      "d": 20,
+      "csgOps": [
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": 0,
+            "py": -93.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "r": 3,
+            "h": 32
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": 5,
+            "py": 97.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 1.570796,
+            "r": 3,
+            "h": 14
+          }
+        }
+      ]
     },
     {
       "type": "Board",
       "id": 12,
       "label": "Pfosten vorn links",
-      "notches": 0,
-      "csgModified": false,
+      "notches": 2,
+      "csgModified": true,
       "price": 0,
       "priceMode": "fixed",
       "sourceId": null,
@@ -272,14 +364,46 @@
       "rz": 0.0,
       "w": 20,
       "h": 215,
-      "d": 20
+      "d": 20,
+      "csgOps": [
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": 0,
+            "py": -93.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "r": 3,
+            "h": 32
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": 5,
+            "py": 97.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 1.570796,
+            "r": 3,
+            "h": 14
+          }
+        }
+      ]
     },
     {
       "type": "Board",
       "id": 13,
       "label": "Pfosten hinten rechts",
-      "notches": 0,
-      "csgModified": false,
+      "notches": 2,
+      "csgModified": true,
       "price": 0,
       "priceMode": "fixed",
       "sourceId": null,
@@ -295,14 +419,46 @@
       "rz": 0.0,
       "w": 20,
       "h": 215,
-      "d": 20
+      "d": 20,
+      "csgOps": [
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": 0,
+            "py": -93.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "r": 3,
+            "h": 32
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": -5,
+            "py": 97.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 1.570796,
+            "r": 3,
+            "h": 14
+          }
+        }
+      ]
     },
     {
       "type": "Board",
       "id": 14,
       "label": "Pfosten vorn rechts",
-      "notches": 0,
-      "csgModified": false,
+      "notches": 2,
+      "csgModified": true,
       "price": 0,
       "priceMode": "fixed",
       "sourceId": null,
@@ -318,14 +474,46 @@
       "rz": 0.0,
       "w": 20,
       "h": 215,
-      "d": 20
+      "d": 20,
+      "csgOps": [
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": 0,
+            "py": -93.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "r": 3,
+            "h": 32
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": -5,
+            "py": 97.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 1.570796,
+            "r": 3,
+            "h": 14
+          }
+        }
+      ]
     },
     {
       "type": "Board",
       "id": 15,
       "label": "Traufbalken links",
-      "notches": 0,
-      "csgModified": false,
+      "notches": 2,
+      "csgModified": true,
       "price": 0,
       "priceMode": "fixed",
       "sourceId": null,
@@ -333,7 +521,7 @@
       "sourcePriceMode": null,
       "sourceLabel": null,
       "groupId": "grp_1",
-      "px": -71.5,
+      "px": -51.5,
       "py": 217.0,
       "pz": 0.0,
       "rx": 0.0,
@@ -341,14 +529,46 @@
       "rz": 0.0,
       "w": 20,
       "h": 20,
-      "d": 123
+      "d": 163,
+      "csgOps": [
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": -3.5,
+            "py": 0,
+            "pz": -71.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 1.570796,
+            "r": 3,
+            "h": 17
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": -3.5,
+            "py": 0,
+            "pz": 71.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 1.570796,
+            "r": 3,
+            "h": 17
+          }
+        }
+      ]
     },
     {
       "type": "Board",
       "id": 16,
       "label": "Traufbalken rechts",
-      "notches": 0,
-      "csgModified": false,
+      "notches": 2,
+      "csgModified": true,
       "price": 0,
       "priceMode": "fixed",
       "sourceId": null,
@@ -356,7 +576,7 @@
       "sourcePriceMode": null,
       "sourceLabel": null,
       "groupId": "grp_1",
-      "px": 71.5,
+      "px": 51.5,
       "py": 217.0,
       "pz": 0.0,
       "rx": 0.0,
@@ -364,7 +584,39 @@
       "rz": 0.0,
       "w": 20,
       "h": 20,
-      "d": 123
+      "d": 163,
+      "csgOps": [
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": 3.5,
+            "py": 0,
+            "pz": -71.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 1.570796,
+            "r": 3,
+            "h": 17
+          }
+        },
+        {
+          "op": "subtract",
+          "tool": {
+            "type": "Dowel",
+            "local": true,
+            "px": 3.5,
+            "py": 0,
+            "pz": 71.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 1.570796,
+            "r": 3,
+            "h": 17
+          }
+        }
+      ]
     },
     {
       "type": "Board",
@@ -1646,6 +1898,182 @@
       "r": 2.5,
       "h": 370,
       "bought": true
+    },
+    {
+      "type": "Dowel",
+      "id": 30,
+      "label": "Dübel Pfostenfuß hinten links",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -71.5,
+      "py": 20,
+      "pz": -71.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "r": 3,
+      "h": 40
+    },
+    {
+      "type": "Dowel",
+      "id": 31,
+      "label": "Dübel Pfostenfuß vorn links",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -71.5,
+      "py": 20,
+      "pz": 71.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "r": 3,
+      "h": 40
+    },
+    {
+      "type": "Dowel",
+      "id": 32,
+      "label": "Dübel Pfostenfuß hinten rechts",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 71.5,
+      "py": 20,
+      "pz": -71.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "r": 3,
+      "h": 40
+    },
+    {
+      "type": "Dowel",
+      "id": 33,
+      "label": "Dübel Pfostenfuß vorn rechts",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 71.5,
+      "py": 20,
+      "pz": 71.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "r": 3,
+      "h": 40
+    },
+    {
+      "type": "Dowel",
+      "id": 34,
+      "label": "Dübel Traufbalken hinten links",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -60,
+      "py": 217,
+      "pz": -71.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 1.570796,
+      "r": 3,
+      "h": 25
+    },
+    {
+      "type": "Dowel",
+      "id": 35,
+      "label": "Dübel Traufbalken vorn links",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": -60,
+      "py": 217,
+      "pz": 71.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 1.570796,
+      "r": 3,
+      "h": 25
+    },
+    {
+      "type": "Dowel",
+      "id": 36,
+      "label": "Dübel Traufbalken hinten rechts",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 60,
+      "py": 217,
+      "pz": -71.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 1.570796,
+      "r": 3,
+      "h": 25
+    },
+    {
+      "type": "Dowel",
+      "id": 37,
+      "label": "Dübel Traufbalken vorn rechts",
+      "notches": 0,
+      "csgModified": false,
+      "price": 0,
+      "priceMode": "fixed",
+      "sourceId": null,
+      "sourcePrice": 0,
+      "sourcePriceMode": null,
+      "sourceLabel": null,
+      "groupId": "grp_1",
+      "px": 60,
+      "py": 217,
+      "pz": 71.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 1.570796,
+      "r": 3,
+      "h": 25
     }
   ],
   "groups": [
@@ -1732,6 +2160,17 @@
         {
           "length": 2000,
           "price": 5.35
+        }
+      ],
+      "kerf": 3
+    },
+    {
+      "profile": "R6",
+      "name": "Buche Rundstab",
+      "offers": [
+        {
+          "length": 1000,
+          "price": 1.49
         }
       ],
       "kerf": 3

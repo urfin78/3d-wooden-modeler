@@ -281,6 +281,32 @@ test('workshop sheet gives enclosed parts a detail view and restores materials',
     expect(result.after).toEqual(result.before);
 });
 
+test('workshop sheet gives a dowel flush in a through hole a detail view, not a rod sticking out', async ({ page }) => {
+    await gotoApp(page);
+
+    const details = await page.evaluate(() => {
+        const app = window.__app;
+        const base = { notches: 0, csgModified: false, rx: 0, ry: 0, rz: 0 };
+        const hole = { op: 'subtract', tool: { type: 'Dowel', local: true, px: 0, py: 0, pz: 0, rx: 0, ry: 0, rz: 0, r: 5, h: 240 } };
+        const drilled = { ...base, type: 'Board', w: 200, h: 200, d: 200, notches: 1, csgModified: true, csgOps: [hole] };
+        app.restoreScene(JSON.stringify({
+            pieces: [
+                { ...drilled, id: 1, label: 'Block', px: 0, py: 100, pz: 0 },
+                // Ends flush with both faces: only its round ends show
+                { ...base, type: 'Dowel', id: 2, label: 'Flush Pin', px: 0, py: 100, pz: 0, r: 5, h: 200 },
+                { ...drilled, id: 3, label: 'Far Block', px: 800, py: 100, pz: 0 },
+                // Sticks out 100 mm at both ends: plainly visible
+                { ...base, type: 'Dowel', id: 4, label: 'Long Rod', px: 800, py: 100, pz: 0, r: 5, h: 400 }
+            ],
+            groups: []
+        }));
+        return Array.from(app.buildWorkshopSheet().querySelectorAll('.sheet-detail figcaption')).map((c) => c.textContent);
+    });
+
+    expect(details).toHaveLength(1);
+    expect(details[0]).toContain('Pos. 2 ');
+});
+
 test('workshop sheet draws miters and angled cuts, but no page without any', async ({ page }) => {
     await gotoApp(page);
 

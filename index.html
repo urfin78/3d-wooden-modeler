@@ -5599,23 +5599,59 @@ window.addEventListener('load', function() {
         return stats;
     }
 
+    // Area in mm² of a piece's end: the smallest shadow its geometry casts along one of its own
+    // axes, e.g. πr² for a dowel. Half the summed |area vector| of the triangles is the exact
+    // shadow of a closed convex mesh and an upper bound otherwise.
+    function pieceEndArea(m) {
+        var pos = m.geometry.attributes.position;
+        var index = m.geometry.index;
+        var count = index ? index.count : pos.count;
+        var a = new THREE.Vector3();
+        var b = new THREE.Vector3();
+        var c = new THREE.Vector3();
+        var sum = [0, 0, 0];
+        for (var k = 0; k + 2 < count; k += 3) {
+            a.fromBufferAttribute(pos, index ? index.getX(k) : k);
+            b.fromBufferAttribute(pos, index ? index.getX(k + 1) : k + 1);
+            c.fromBufferAttribute(pos, index ? index.getX(k + 2) : k + 2);
+            c.sub(a);
+            b.sub(a).cross(c);
+            sum[0] += Math.abs(b.x);
+            sum[1] += Math.abs(b.y);
+            sum[2] += Math.abs(b.z);
+        }
+        // Each cross product is twice its triangle's area, and front and back both cast the shadow
+        return Math.min(sum[0], sum[1], sum[2]) / 4;
+    }
+
     // Decide where each part gets its position number: `overviews` lists one opaque view per
-    // needed direction (the first is always the isometric one), `enclosed` the pieces that are
-    // not visible from any direction and need an X-ray detail view.
+    // needed direction (the first is always the isometric one), `enclosed` the pieces that need
+    // an X-ray detail view: not visible from any direction, or showing no more than about one
+    // end of themselves from every direction, like a dowel flush in a through hole.
     function analyzeVisibility(box) {
         var up = new THREE.Vector3(0, 1, 0);
-        var results = SHEET_PROBE_DIRS.map(function(dir) {
-            var cam = makeSheetCamera(
+        var cams = SHEET_PROBE_DIRS.map(function(dir) {
+            return makeSheetCamera(
                 box, new THREE.Vector3().fromArray(dir), up,
                 SHEET_VIEW_W / 2, SHEET_VIEW_H / 2, SHEET_VIEW_MARGIN / 2
             );
+        });
+        var results = cams.map(function(cam) {
             return measureVisibility(cam, SHEET_VIEW_W / 2, SHEET_VIEW_H / 2);
+        });
+        var endOnly = pieces.map(function(m, i) {
+            var shown = 0;
+            results.forEach(function(stats, d) {
+                var pxPerMm = (SHEET_VIEW_W / 2) / (cams[d].right - cams[d].left);
+                shown = Math.max(shown, stats[i].count / (pxPerMm * pxPerMm));
+            });
+            return shown < pieceEndArea(m);
         });
         var covered = pieces.map(function() { return false; });
         function uncoveredIn(stats) {
             var list = [];
             stats.forEach(function(s, i) {
-                if (!covered[i] && s.count >= SHEET_MIN_VISIBLE_PX) list.push(i);
+                if (!covered[i] && !endOnly[i] && s.count >= SHEET_MIN_VISIBLE_PX) list.push(i);
             });
             return list;
         }
